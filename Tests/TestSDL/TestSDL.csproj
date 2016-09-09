@@ -36,4 +36,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\SDL2-CS\SDL2-CS.csproj">
+      <Project>{85480198-8711-4355-830E-72FD794AD3F6}</Project>
+      <Name>SDL2-CS</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
