@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SDL2;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,13 +41,19 @@ namespace TestSDLEmbedding
 
         static void Main(string[] args)
         {
-            string resourceName = "TestSDLEmbedding.lib.x86.SLD2.dll";
+            string resourceName = "TestSDLEmbedding.lib.x86.SDL2.dll";
             string libraryName = "SLD2.dll";
 
             // create and load library from the resource
             string tempDllPath = LoadUnmanagedLibraryFromResource(Assembly.GetExecutingAssembly(),
                 resourceName,
                 libraryName);
+
+            if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) != 0)
+            {
+                Console.WriteLine($"SDL_Init Error: {SDL.SDL_GetError()}");
+                return;
+            }
         }
     }
 }
