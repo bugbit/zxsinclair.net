@@ -12,7 +12,7 @@ namespace TestHighPerformanceTimer
         private Int64 frequency = 0;
 
         // Windows CE native library with QueryPerformanceCounter().
-        private const string lib = "coredll.dll";
+        private const string lib = "kernel32.dll";
         [DllImport(lib)]
         private static extern int QueryPerformanceCounter(ref Int64 count);
         [DllImport(lib)]
