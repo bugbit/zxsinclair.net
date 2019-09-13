@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x64", "x64", "{C6BC9615-834
 		libs\x64\SDL2.dll = libs\x64\SDL2.dll
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHighPerformanceTimer", "TestHighPerformanceTimer\TestHighPerformanceTimer.csproj", "{C85DB84E-B533-4A77-B1F3-D948410D2C8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,38 @@ Global
 		{85480198-8711-4355-830E-72FD794AD3F6}.Release-Net4|x64.Build.0 = Release|x64
 		{85480198-8711-4355-830E-72FD794AD3F6}.Release-Net4|x86.ActiveCfg = Release|x86
 		{85480198-8711-4355-830E-72FD794AD3F6}.Release-Net4|x86.Build.0 = Release|x86
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|ARM.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|x64.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug|x86.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|Any CPU.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|Any CPU.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|ARM.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|ARM.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|x64.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|x64.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|x86.ActiveCfg = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Debug-Net4|x86.Build.0 = Debug|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|ARM.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|ARM.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|x64.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|x64.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release|x86.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|Any CPU.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|Any CPU.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|ARM.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|ARM.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x64.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x64.Build.0 = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x86.ActiveCfg = Release|Any CPU
+		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
