@@ -97,46 +97,6 @@ namespace TestHighPerformanceTimer
                 3 ticks -> 1 cycle
              */
 
-            var pCycle = 1;
-
-            while (pCycle <= 30)
-            {
-                var pTick1 = Stopwatch.GetTimestamp();
-
-                pCycle++;
-
-                var pTick2 = Stopwatch.GetTimestamp();
-                var pTicks = pTick2 - pTick1;
-
-                var pTick12 = pFreq2.Value;
-
-                pCycle++;
-
-                var pTick22 = pFreq2.Value;
-                var pTicks2 = pTick22 - pTick12;
-
-                var pSW = Stopwatch.StartNew();
-
-                pCycle++;
-
-                pSW.Stop();
-
-                var pTicks3 = pSW.ElapsedTicks;
-
-                var pTick14 = DateTime.UtcNow.Ticks;
-
-                pCycle++;
-
-                var pTick24 = DateTime.UtcNow.Ticks;
-                var pTicks4 = pTick24 - pTick14;
-
-                Console.WriteLine($"Stopwatch 1 cycle : {pTicks}");
-                Console.WriteLine($"HiResTimer 1 cycle : {pTicks2}");
-                Console.WriteLine($"new Stopwatch 1 cycle : {pTicks3}");
-                Console.WriteLine($"DateTime 1 cycle : {pTicks4}");
-                Console.WriteLine();
-            }
-
             Console.ReadLine();
         }
 

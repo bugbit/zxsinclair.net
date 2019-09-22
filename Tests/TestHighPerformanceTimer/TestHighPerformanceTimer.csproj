@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="HighResolutionDateTime.cs" />
     <Compile Include="HiResTimer.cs" />
+    <Compile Include="Ticks.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
