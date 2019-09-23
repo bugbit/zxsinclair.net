@@ -36,7 +36,7 @@ namespace TestHighPerformanceTimer
             {
                 var pFreq = CalcQPFrequency();
 
-                return (pFreq > 0) ? (ITimer)new WinHiResTimer(pFreq, true) : new WinLowResTimer(Stopwatch.Frequency, false);
+                return (pFreq != 0 && pFreq != 1000) ? (ITimer)new WinHiResTimer(pFreq, true) : new WinLowResTimer(Stopwatch.Frequency, false);
             }
 
             return new SysTimer();
