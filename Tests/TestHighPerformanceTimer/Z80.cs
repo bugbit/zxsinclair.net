@@ -10,7 +10,7 @@ namespace TestHighPerformanceTimer
         private IClock mClock;
         private byte[] mMemory = new byte[32768];
         private Action[] mInstrs = new Action[256];
-        private UInt32 mPC = 0;
+        private UInt16 mPC = 0;
 
         public Z80(IClock argClock)
         {

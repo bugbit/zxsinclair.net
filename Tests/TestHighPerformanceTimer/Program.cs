@@ -13,7 +13,6 @@ namespace TestHighPerformanceTimer
 
         static void Main(string[] args)
         {
-
             /*
                 La precisión de 15 ms (en realidad puede ser de 15-25 ms) se basa en la resolución del temporizador de Windows 55 Hz / 65 Hz. Este es también el período básico de TimeSlice.
                 El valor del reloj del sistema que DateTime.Now lee solo se actualiza cada 15 ms aproximadamente (o 10 ms en algunos sistemas), razón por la cual los tiempos se cuantifican alrededor de esos intervalos. 
@@ -118,7 +117,11 @@ namespace TestHighPerformanceTimer
 
             /*
                 1 tick =>  100ns
-                1 cycle => 285,71ns
+
+                224cycles => 64 ns
+                  x cycles=> 100 ns
+
+                x = 350 => 350 cycles => 1 ticks
              
                 3500000
                 10000000
@@ -129,11 +132,12 @@ namespace TestHighPerformanceTimer
 
                 cl = fc/ft
 
-                1 ticks => 0,35 cycle
+                0,00285 ticks => 1 cycle
 
                 0,00285 ticks -> 1 cycle
                 199,680    ->  69888 cycle
                 0,64 ticks  ->  224 cycle
+                1 ticks -> 350 cycle
 
                 69888 cycle -> 20ms
 
@@ -153,10 +157,22 @@ namespace TestHighPerformanceTimer
             pZ80.Reset();
 
             var pTicksO1 = 0;
+            var pCycleTicks = 350;
             var pTicksO11 = pTimer.Ticks;
+            var pTicksCycle = pTimer.Ticks;
+            var pTicksCycle2 = 0L;
 
-            for (var i = 0; i < 224; i += 4)
+            for (var i = 0; i < 224 * 312; i += 4)
+            {
                 pZ80.Execute();
+                pCycleTicks -= 4;
+                if (pCycleTicks <= 0)
+                {
+                    while ((pTicksCycle2 = pTimer.Ticks) <= pTicksCycle) ;
+                    pTicksCycle = pTicksCycle2;
+                    pCycleTicks += 350;
+                }
+            }
 
             var pTicksO21 = pTimer.Ticks;
 
@@ -166,9 +182,20 @@ namespace TestHighPerformanceTimer
 
             var pTicksO2 = 0;
             var pTicksO12 = pTimer.Ticks;
+            pTicksCycle = pTimer.Ticks;
+            pTicksCycle2 = 0L;
 
-            for (var i = 0; i < 224; i += 4)
-                pZ80.Execute2();
+            for (var i = 0; i < 224 * 312; i += 4)
+            {
+                pZ80.Execute();
+                pCycleTicks -= 4;
+                if (pCycleTicks <= 0)
+                {
+                    while ((pTicksCycle2 = pTimer.Ticks) <= pTicksCycle) ;
+                    pTicksCycle = pTicksCycle2;
+                    pCycleTicks += 350;
+                }
+            }
 
             var pTicksO22 = pTimer.Ticks;
 
