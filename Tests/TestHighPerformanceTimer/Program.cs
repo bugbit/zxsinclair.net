@@ -16,7 +16,9 @@ namespace TestHighPerformanceTimer
 
             /*
                 La precisión de 15 ms (en realidad puede ser de 15-25 ms) se basa en la resolución del temporizador de Windows 55 Hz / 65 Hz. Este es también el período básico de TimeSlice.
-                El valor del reloj del sistema que DateTime.Nowlee solo se actualiza cada 15 ms aproximadamente (o 10 ms en algunos sistemas), razón por la cual los tiempos se cuantifican alrededor de esos intervalos. Hay un efecto de cuantificación adicional que resulta del hecho de que su código se está ejecutando en un sistema operativo multiproceso y, por lo tanto, hay tramos donde su aplicación no está "viva" y, por lo tanto, no mide el tiempo actual real.
+                El valor del reloj del sistema que DateTime.Now lee solo se actualiza cada 15 ms aproximadamente (o 10 ms en algunos sistemas), razón por la cual los tiempos se cuantifican alrededor de esos intervalos. 
+                Hay un efecto de cuantificación adicional que resulta del hecho de que su código se está ejecutando en un sistema operativo multiproceso y, por lo tanto, hay tramos donde su aplicación no está "viva" y, por lo tanto, 
+                no mide el tiempo actual real.
              */
 
             SerialPi();
@@ -115,8 +117,19 @@ namespace TestHighPerformanceTimer
             var pZ80 = new Z80(pClock);
 
             /*
+                1 tick =>  100ns
+                1 cycle => 285,71ns
+             
                 3500000
                 10000000
+
+                cl      1
+             ------- = ----
+                fc      ft
+
+                cl = fc/ft
+
+                1 ticks => 0,35 cycle
 
                 0,00285 ticks -> 1 cycle
                 199,680    ->  69888 cycle
