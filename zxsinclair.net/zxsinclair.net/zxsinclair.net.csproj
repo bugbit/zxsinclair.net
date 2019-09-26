@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{57B83DD0-DD5D-4B2A-9950-4836BE8083E2}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>zxsinclair.net</RootNamespace>
+    <RootNamespace>ZXSinclairNet</RootNamespace>
     <AssemblyName>zxsinclair.net</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -47,6 +47,9 @@
     <OutputPath>bin\x64\Release\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>ZXSinclairNet.ZXSinclair</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="hello.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -67,6 +70,7 @@
     <Compile Include="SDL2\SDL2_image.cs" />
     <Compile Include="SDL2\SDL2_mixer.cs" />
     <Compile Include="SDL2\SDL2_ttf.cs" />
+    <Compile Include="ZXSinclair.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL2-CS.dll.config" />
