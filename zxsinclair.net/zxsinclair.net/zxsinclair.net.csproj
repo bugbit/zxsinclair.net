@@ -65,7 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
-    <Compile Include="SDL2\LPUtf8StrMarshaler.cs" />
     <Compile Include="SDL2\SDL2.cs" />
     <Compile Include="SDL2\SDL2_image.cs" />
     <Compile Include="SDL2\SDL2_mixer.cs" />

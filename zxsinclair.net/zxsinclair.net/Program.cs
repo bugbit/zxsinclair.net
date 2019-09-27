@@ -5,8 +5,8 @@ namespace TestSDL
 {
     class MainClass
     {
-        public unsafe static void Main(string[] args)
-        {
+        public static void Main(string[] args)
+        {           
             if (SDL.SDL_Init(SDL.SDL_INIT_VIDEO) != 0)
             {
                 Console.WriteLine($"SDL_Init Error: {SDL.SDL_GetError()}");
@@ -69,14 +69,21 @@ namespace TestSDL
 
             UInt32[] pixels = new UInt32[320 * 320];
 
-            fixed (UInt32* ptr = &pixels[0])
+            unsafe
             {
-                UInt32* ptr2 = ptr;
-                for (var i = 320 * 320; i-- > 0;)
-                    *ptr2++ = 0xFF00FF00; // rgra 0xAARRGGRR
+                fixed (UInt32* ptr = &pixels[0])
+                {
+                    UInt32* ptr2 = ptr;
+                    for (var i = 320 * 320; i-- > 0;)
+                        *ptr2++ = 0xFF00FF00; // rgra 0xAARRGGRR
 
-                SDL.SDL_UpdateTexture(tex, IntPtr.Zero, (IntPtr)ptr, 320 * 4);
+                    SDL.SDL_UpdateTexture(tex, IntPtr.Zero, (IntPtr)ptr, 320 * 4);
+                }
             }
+
+            
+
+            
 
             //A sleepy rendering loop, wait for 3 seconds and render and present the screen each time
             for (int i = 0; i < 3; ++i)
