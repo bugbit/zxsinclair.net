@@ -48,7 +48,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ZXSinclairNet.ZXSinclair</StartupObject>
+    <StartupObject>TestSDL.MainClass</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="hello.bmp">
