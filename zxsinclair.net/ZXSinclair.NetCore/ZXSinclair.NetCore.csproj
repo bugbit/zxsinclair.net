@@ -1,8 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Company>Bugbit</Company>
+    <Description>ZXSinclair Emulador ZX Computers make in .Net and .Net CORE</Description>
+    <Copyright>Copyright © 2016 Óscar Hernández Bañó</Copyright>
+    <PackageProjectUrl>https://github.com/bugbit/zxsinclair.net</PackageProjectUrl>
+    <Product>ZXSinclair.Net Edition Nieblita</Product>
+    <Authors>Óscar Hernández Bañó</Authors>
+    <RepositoryUrl>https://github.com/bugbit/zxsinclair.net</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -16,5 +24,7 @@
   </PropertyGroup>
 
   <Import Project="..\ZXSinclair.Shared\ZXSinclair.Shared.projitems" Label="Shared" />
+
+  <Import Project="..\ZXSinclair.Resources\ZXSinclair.Resources.projitems" Label="Shared" />
 
 </Project>

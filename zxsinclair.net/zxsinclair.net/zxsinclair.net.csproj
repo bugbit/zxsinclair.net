@@ -50,5 +50,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\ZXSinclair.Shared\ZXSinclair.Shared.projitems" Label="Shared" />
+  <Import Project="..\ZXSinclair.Resources\ZXSinclair.Resources.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

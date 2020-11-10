@@ -16,18 +16,14 @@
 #endregion
 
 using System;
-using ZXSinclair.Main;
+using System.Collections.Generic;
+using System.Security.Permissions;
+using System.Text;
 
-namespace ZXSinclair.NetCore
+namespace ZXSinclair.Main
 {
-    class Program
+    public class ZXCmdLine
     {
-        static void Main(string[] args)
-        {
-            using (var pApp = new ZXSinclairApp(args))
-            {
-                pApp.Run();
-            }
-        }
+        public string[] Tests { get; set; }
     }
 }

@@ -318,6 +318,14 @@ namespace ZXSinclair.Native
                 Android
             }
 
+            [Flags]
+            public enum MessageBoxFlags : uint
+            {
+                Error = 0x00000010,
+                Warning = 0x00000020,
+                Information = 0x00000040
+            }
+
             [StructLayout(LayoutKind.Sequential)]
             public struct SDL_SysWMinfo
             {
@@ -414,6 +422,18 @@ namespace ZXSinclair.Native
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate int d_sdl_getwindowborderssize(IntPtr window, out int top, out int left, out int right, out int bottom);
             public static d_sdl_getwindowborderssize GetBorderSize = FuncLoader.LoadFunction<d_sdl_getwindowborderssize>(NativeLibrary, "SDL_GetWindowBordersSize");
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate int d_sdl_Showsplemessageboxshow(MessageBoxFlags flags, ref byte title, ref byte message, IntPtr window);
+            public static d_sdl_Showsplemessageboxshow SDL_ShowSimpleMessageBox = FuncLoader.LoadFunction<d_sdl_Showsplemessageboxshow>(NativeLibrary, "SDL_ShowSimpleMessageBox");
+
+            public static int ShowSimpleMessageBox(MessageBoxFlags flags, string title, string message, IntPtr window)
+            {
+                var titlebytes = Encoding.UTF8.GetBytes(title);
+                var messagebytes = Encoding.UTF8.GetBytes(message);
+
+                return GetError(SDL_ShowSimpleMessageBox(flags, ref titlebytes[0], ref messagebytes[0], window));
+            }
         }
 
         public static class Display

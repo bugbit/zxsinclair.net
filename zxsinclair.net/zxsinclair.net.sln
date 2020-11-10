@@ -8,10 +8,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net", "ZXSinclai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.NetCore", "ZXSinclair.NetCore\ZXSinclair.NetCore.csproj", "{12DDBC0E-2861-465F-843C-66CEDF797F5E}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Resources", "ZXSinclair.Resources\ZXSinclair.Resources.shproj", "{974E507E-398A-43F4-9432-38595736C3DE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{0f478a7e-8ca8-498b-a522-0c6e5968c766}*SharedItemsImports = 13
+		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
+		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{974e507e-398a-43f4-9432-38595736c3de}*SharedItemsImports = 13
+		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

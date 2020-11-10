@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // conjunto de atributos. Cambie estos valores de atributo para modificar la información
 // asociada a un ensamblado.
 [assembly: AssemblyTitle("ZXSinclair.Net")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("ZXSinclair Emulador ZX Computers make in .Net and .Net CORE")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ZXSinclair.Net")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCompany("Bugbit")]
+[assembly: AssemblyProduct("ZXSinclair.Net Edition Nieblita")]
+[assembly: AssemblyCopyright("Copyright © 2016 Óscar Hernández Bañó")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
