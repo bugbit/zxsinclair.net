@@ -9,9 +9,11 @@
     <Import_RootNamespace>ZXSinclair.Resources</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)strings.es.resx" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)strings.resx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ResManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ResStringsManager.cs" />
   </ItemGroup>
 </Project>

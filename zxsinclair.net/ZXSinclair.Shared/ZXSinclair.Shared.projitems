@@ -9,6 +9,8 @@
     <Import_RootNamespace>ZXSinclair</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Ops.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Regs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLineException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXSinclairApp.cs" />

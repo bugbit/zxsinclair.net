@@ -23,7 +23,6 @@ using System.Text;
 namespace ZXSinclair.Main
 {
     public class ZXCmdLine
-    {
-        public string[] Tests { get; set; }
+    {        
     }
 }

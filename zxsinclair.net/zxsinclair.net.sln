@@ -6,15 +6,24 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Shared", "ZXSinc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net", "ZXSinclair.Net\ZXSinclair.Net.csproj", "{C58CE06D-C2C7-4576-9505-4D7F8FA1380E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.NetCore", "ZXSinclair.NetCore\ZXSinclair.NetCore.csproj", "{12DDBC0E-2861-465F-843C-66CEDF797F5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.NetCore", "ZXSinclair.NetCore\ZXSinclair.NetCore.csproj", "{12DDBC0E-2861-465F-843C-66CEDF797F5E}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Resources", "ZXSinclair.Resources\ZXSinclair.Resources.shproj", "{974E507E-398A-43F4-9432-38595736C3DE}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Test.Shared", "ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.shproj", "{5400C285-CD3D-4588-9973-F5EDFF96B186}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.NetCore.Test", "ZXSinclair.NetCore.Test\ZXSinclair.NetCore.Test.csproj", "{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.Test", "ZXSinclair.Net.Test\ZXSinclair.Net.Test.csproj", "{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{0f478a7e-8ca8-498b-a522-0c6e5968c766}*SharedItemsImports = 13
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
+		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{31f1e6de-ca91-4f3a-9179-a9821b1e1e0e}*SharedItemsImports = 4
+		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{4ed28548-1d02-4789-8af7-bc1fccd0840d}*SharedItemsImports = 5
+		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{5400c285-cd3d-4588-9973-f5edff96b186}*SharedItemsImports = 13
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{974e507e-398a-43f4-9432-38595736c3de}*SharedItemsImports = 13
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
@@ -52,6 +61,30 @@ Global
 		{12DDBC0E-2861-465F-843C-66CEDF797F5E}.Release|x64.Build.0 = Release|Any CPU
 		{12DDBC0E-2861-465F-843C-66CEDF797F5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{12DDBC0E-2861-465F-843C-66CEDF797F5E}.Release|x86.Build.0 = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|x64.Build.0 = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Debug|x86.Build.0 = Debug|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|x64.ActiveCfg = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|x64.Build.0 = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|x86.ActiveCfg = Release|Any CPU
+		{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}.Release|x86.Build.0 = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|x64.Build.0 = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Debug|x86.Build.0 = Debug|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x64.ActiveCfg = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x64.Build.0 = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x86.ActiveCfg = Release|Any CPU
+		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

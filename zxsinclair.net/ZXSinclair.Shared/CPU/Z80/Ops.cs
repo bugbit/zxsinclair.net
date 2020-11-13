@@ -19,18 +19,35 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ZXSinclair.Resources
+namespace ZXSinclair.CPU.Z80
 {
-    public class ResManager
+    public class Ops
     {
-        private static readonly Lazy<ResManager> mInstance = new Lazy<ResManager>(() => new ResManager());
+        private Regs mRegs = new Regs();
 
-        private ResManager()
+        public Regs Regs => mRegs;
+
+        public void Ld_R1_R2(Action<byte> argSet, Func<byte> argGet)
         {
-
+            mRegs.PC += 2;
+            argSet.Invoke(argGet.Invoke());
+            mRegs.PC += 2;
+        }
+        public void Ld_R1_R2(Action argSetGet)
+        {
+            mRegs.PC += 2;
+            argSetGet.Invoke();
+            mRegs.PC += 2;
+        }
+        public void LdA_B_1()
+        {
+            mRegs.PC += 2;
+            mRegs.A = mRegs.B;
+            mRegs.PC += 2;
         }
 
-        public static ResManager Instance => mInstance.Value;
-        public ResStringsManager Strings { get; } = new ResStringsManager();
+        public void LdA_B_2() => Ld_R1_R2(mRegs.CreateSetterA(), mRegs.CreateGetterB());
+
+        public void LdA_B_3() => Ld_R1_R2(() => mRegs.A = mRegs.B);
     }
 }

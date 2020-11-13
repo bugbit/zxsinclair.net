@@ -118,9 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NoTestParamCmdLineError" xml:space="preserve">
-    <value>The test was not specified on the command line!</value>
+    <value>No se ha espeficidado el test en la línea de comando</value>
   </data>
   <data name="ParamCmdLineInvalidError" xml:space="preserve">
-    <value>'{0}' Invalid argument</value>
+    <value>'{0}' argumento incorrecto</value>
   </data>
 </root>

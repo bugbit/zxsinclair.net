@@ -17,20 +17,33 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
 using System.Text;
 
 namespace ZXSinclair.Resources
 {
-    public class ResManager
+    public class ResStringsManager
     {
-        private static readonly Lazy<ResManager> mInstance = new Lazy<ResManager>(() => new ResManager());
+        private ResourceManager mResMng;
 
-        private ResManager()
+        internal ResStringsManager()
         {
+            var pAssembly = typeof(ResStringsManager).Assembly;
+            var pName = $"{pAssembly.GetName().Name}.strings";
 
+            mResMng = new ResourceManager(pName, pAssembly);
         }
 
-        public static ResManager Instance => mInstance.Value;
-        public ResStringsManager Strings { get; } = new ResStringsManager();
+        public string this[string argKey]
+        {
+            get => mResMng.GetString(argKey);
+        }
+
+        public string this[string argKey, params object[] argParams]
+        {
+            get => string.Format(mResMng.GetString(argKey), argParams);
+        }
     }
 }

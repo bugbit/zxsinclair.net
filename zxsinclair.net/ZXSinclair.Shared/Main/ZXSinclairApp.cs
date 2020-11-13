@@ -83,20 +83,11 @@ namespace ZXSinclair.Main
                 {
                     var pOpt = pArg.Substring(1);
 
-#if DEBUG
-                    if (pOpt.Equals("test", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        if (i >= mArgs.Length)
-                            throw new ZXCmdLineException("No se ha espeficidado el test en la línea de comando");
-                        CmdLine.Tests = mArgs[i++].Split('+');
-                    }
-                    else
-#endif
                     if (pOpt.Equals("xxx", StringComparison.InvariantCultureIgnoreCase))
                     {
                     }
                     else
-                        throw new ZXCmdLineException(string.Format("{0} argumento incorrecto", pArg));
+                        throw new ZXCmdLineException(Resources.ResManager.Instance.Strings["ParamCmdLineInvalidError", pArg]);
                 }
             }
         }
