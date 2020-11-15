@@ -9,6 +9,7 @@
     <Import_RootNamespace>ZXSinclair.Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Z80OpLetA_B.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPURegisterPerfomTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MemoryPerfomTest.cs" />
   </ItemGroup>
 </Project>

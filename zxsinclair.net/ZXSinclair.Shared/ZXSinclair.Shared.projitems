@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\ESignals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IBuses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Cpu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IMemory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Regs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLineException.cs" />

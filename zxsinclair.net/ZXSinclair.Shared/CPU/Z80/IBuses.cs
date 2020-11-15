@@ -2,8 +2,8 @@
 /*
     ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
     Copyright (C) 2016 Oscar Hernandez Bano
-    This file is part of ZEsarUX.
-    ZEsarUX is free software: you can redistribute it and/or modify
+    This file is part of ZXSincalir.Net.
+    ZXSincalir.Net is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -21,9 +21,7 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public interface IBuses
+    public interface IBuses : IMemory
     {
-        byte ReadMemory(int argMemory);
-        void WriteMemory(int argMemory, byte argData);
     }
 }

@@ -19,18 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ZXSinclair.Resources
+namespace ZXSinclair.CPU.Z80
 {
-    public class ResManager
+    public interface IMemory
     {
-        private static readonly Lazy<ResManager> mInstance = new Lazy<ResManager>(() => new ResManager());
-
-        private ResManager()
-        {
-
-        }
-
-        public static ResManager Instance => mInstance.Value;
-        public ResStringsManager Strings { get; } = new ResStringsManager();
+        byte ReadMemory(int argMemory);
+        void WriteMemory(int argMemory, byte argData);
     }
 }
