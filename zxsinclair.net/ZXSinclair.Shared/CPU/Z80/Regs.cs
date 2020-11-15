@@ -89,6 +89,9 @@ namespace ZXSinclair.CPU.Z80
         [FieldOffset(26)]
         public byte ML;
 
+        public void SetA_B() => A = B;
+
+        public Action CreateA_B() => () => A = B;
         public Func<byte> CreateGetterB() { return () => B; }
         public Action<byte> CreateSetterA() { return v => A = v; }
     }

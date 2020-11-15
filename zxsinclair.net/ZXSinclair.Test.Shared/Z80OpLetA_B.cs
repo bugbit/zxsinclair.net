@@ -16,42 +16,59 @@
 #endregion
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Z80 = ZXSinclair.CPU.Z80;
 
 namespace ZXSinclair.NetCore.Test
 {
     [TestClass]
     public class Z80OpLetA_B
     {
-        private CPU.Z80.Ops mOps = new CPU.Z80.Ops();
+        private Z80.Cpu mCPU = new Z80.Cpu();
 
         [TestInitialize]
         public void SetUp()
         {
-            mOps = new CPU.Z80.Ops();
+            mCPU = new Z80.Cpu();
             TestLDA_BMethod1();
             TestLDA_BMethod2();
             TestLDA_BMethod3();
+            TestLDA_BMethod4();
+            TestLDA_BMethod5();
         }
 
         [TestMethod]
         public void TestLDA_BMethod1()
         {
             for (var i = 0; i < 200000; i++)
-                mOps.LdA_B_1();
+                mCPU.LdA_B_1();
         }
 
         [TestMethod]
         public void TestLDA_BMethod2()
         {
             for (var i = 0; i < 200000; i++)
-                mOps.LdA_B_2();
+                mCPU.LdA_B_2();
         }
 
         [TestMethod]
         public void TestLDA_BMethod3()
         {
             for (var i = 0; i < 200000; i++)
-                mOps.LdA_B_3();
+                mCPU.LdA_B_3();
+        }
+
+        [TestMethod]
+        public void TestLDA_BMethod4()
+        {
+            for (var i = 0; i < 200000; i++)
+                mCPU.LdA_B_4();
+        }
+
+        [TestMethod]
+        public void TestLDA_BMethod5()
+        {
+            for (var i = 0; i < 200000; i++)
+                mCPU.LdA_B_5();
         }
     }
 }

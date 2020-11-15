@@ -21,33 +21,9 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public class Ops
+    public interface IBuses
     {
-        private Regs mRegs = new Regs();
-
-        public Regs Regs => mRegs;
-
-        public void Ld_R1_R2(Action<byte> argSet, Func<byte> argGet)
-        {
-            mRegs.PC += 2;
-            argSet.Invoke(argGet.Invoke());
-            mRegs.PC += 2;
-        }
-        public void Ld_R1_R2(Action argSetGet)
-        {
-            mRegs.PC += 2;
-            argSetGet.Invoke();
-            mRegs.PC += 2;
-        }
-        public void LdA_B_1()
-        {
-            mRegs.PC += 2;
-            mRegs.A = mRegs.B;
-            mRegs.PC += 2;
-        }
-
-        public void LdA_B_2() => Ld_R1_R2(mRegs.CreateSetterA(), mRegs.CreateGetterB());
-
-        public void LdA_B_3() => Ld_R1_R2(() => mRegs.A = mRegs.B);
+        byte ReadMemory(int argMemory);
+        void WriteMemory(int argMemory, byte argData);
     }
 }
