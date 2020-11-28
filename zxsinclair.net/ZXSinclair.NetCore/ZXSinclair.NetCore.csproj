@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Company>Bugbit</Company>
     <Description>ZXSinclair Emulador ZX Computers make in .Net and .Net CORE</Description>
     <Copyright>Copyright © 2016 Óscar Hernández Bañó</Copyright>

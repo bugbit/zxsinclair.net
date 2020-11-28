@@ -70,7 +70,7 @@ namespace ZXSinclair.Test
         {
             for (var i = 0; i < 500000; i++)
                 for (var j = 0; j < 4096; j++)
-                    ReadMemoryNative1(j);
+                    ReadMemoryNative2(j);
         }
 
         [TestMethod]

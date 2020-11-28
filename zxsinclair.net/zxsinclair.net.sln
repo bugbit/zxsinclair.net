@@ -12,9 +12,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Resources", "ZXS
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Test.Shared", "ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.shproj", "{5400C285-CD3D-4588-9973-F5EDFF96B186}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.NetCore.Test", "ZXSinclair.NetCore.Test\ZXSinclair.NetCore.Test.csproj", "{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.NetCore.Test", "ZXSinclair.NetCore.Test\ZXSinclair.NetCore.Test.csproj", "{4ED28548-1D02-4789-8AF7-BC1FCCD0840D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.Test", "ZXSinclair.Net.Test\ZXSinclair.Net.Test.csproj", "{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Blazor", "ZXSinclair.Blazor\ZXSinclair.Blazor.csproj", "{B10C2DF1-3752-45DB-B801-6DDD39C23533}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Blazor.Test", "ZXSinclair.Blazor.Test\ZXSinclair.Blazor.Test.csproj", "{56EB9704-65B4-4DC2-82E4-70943570440F}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -85,6 +89,30 @@ Global
 		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x64.Build.0 = Release|Any CPU
 		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x86.ActiveCfg = Release|Any CPU
 		{31F1E6DE-CA91-4F3A-9179-A9821B1E1E0E}.Release|x86.Build.0 = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|x64.Build.0 = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Debug|x86.Build.0 = Debug|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|x64.ActiveCfg = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|x64.Build.0 = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|x86.ActiveCfg = Release|Any CPU
+		{B10C2DF1-3752-45DB-B801-6DDD39C23533}.Release|x86.Build.0 = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|x64.Build.0 = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Debug|x86.Build.0 = Debug|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|x64.ActiveCfg = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|x64.Build.0 = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|x86.ActiveCfg = Release|Any CPU
+		{56EB9704-65B4-4DC2-82E4-70943570440F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

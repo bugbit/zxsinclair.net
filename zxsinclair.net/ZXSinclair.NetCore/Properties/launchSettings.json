@@ -1,8 +1,7 @@
 {
   "profiles": {
     "ZXSinclair.NetCore": {
-      "commandName": "Project",
-      "commandLineArgs": "--test"
+      "commandName": "Project"
     }
   }
 }

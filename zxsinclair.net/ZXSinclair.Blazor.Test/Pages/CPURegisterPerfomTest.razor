@@ -1,0 +1,114 @@
+﻿@page "/cpuregisterPerformTest"
+@using System.Diagnostics
+@using System.Runtime.InteropServices
+
+<h3>CPURegisterPerfomTest</h3>
+<button @onclick="TestLDR1R2_ManagedMethod2_Click">TestLDR1R2_ManagedMethod2</button>
+<button @onclick="TestLDR1R2_ManagedMethod3_Click">TestLDR1R2_ManagedMethod3</button>
+<p>Duracion: @ElapsedMS ms</p>
+@code {
+    [StructLayout(LayoutKind.Explicit)]
+    public class RegsManager
+    {
+        [FieldOffset(0)]
+        public ushort AF = 0;
+        [FieldOffset(2)]
+        public ushort BC = 0;
+        [FieldOffset(1)]
+        public byte A;
+        [FieldOffset(0)]
+        public byte F;
+        [FieldOffset(3)]
+        public byte B;
+
+        /*
+            Code IL:
+                // Method begins at RVA 0x2416
+                // Code size 13 (0xd)
+                .maxstack 8
+                // A = B;
+                IL_0000: ldarg.0
+                IL_0001: ldarg.0
+                IL_0002: ldfld uint8 ZXSinclair.Test.CPURegisterPerfomTest/RegsManager::B
+                IL_0007: stfld uint8 ZXSinclair.Test.CPURegisterPerfomTest/RegsManager::A
+                // }
+                IL_000c: ret
+         */
+        public void SetA_B() => A = B;
+
+        public Action CreateA_B() => () => A = B;
+    }
+
+    public record RegsManager2
+    {
+        public byte A;
+        public byte B;
+
+        public Action CreateA_B() => () => A = B;
+    }
+
+    double ElapsedMS;
+    private RegsManager mRegsM;
+    private RegsManager2 mRegsM2;
+    private int mTStates;
+    private Action mLetA_B_Manager;
+    private Action mLetA_B_Manager2;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        mRegsM = new RegsManager();
+        mRegsM2 = new RegsManager2();
+        mLetA_B_Manager = mRegsM.CreateA_B();
+        mLetA_B_Manager2 = mRegsM2.CreateA_B();
+    }
+
+    private void TestLDR1R2_ManagedMethod2_Click()
+    {
+        var pTicks1 = Stopwatch.GetTimestamp();
+        //var pCrono = Stopwatch.StartNew();
+
+        TestLDR1R2_ManagedMethod2();
+        //pCrono.Stop();
+        var pTicks2 = Stopwatch.GetTimestamp();
+        var pTicks = (int)(pTicks2 - pTicks1);
+
+        ElapsedMS = (pTicks) * 1000L / Stopwatch.Frequency;
+        //duracion = pCrono.ElapsedMilliseconds;
+    }
+
+    private void TestLDR1R2_ManagedMethod3_Click()
+    {
+        var pTicks1 = Stopwatch.GetTimestamp();
+        //var pCrono = Stopwatch.StartNew();
+
+        TestLDR1R2_ManagedMethod3();
+        //pCrono.Stop();
+        var pTicks2 = Stopwatch.GetTimestamp();
+        var pTicks = (int)(pTicks2 - pTicks1);
+
+        ElapsedMS = (pTicks) * 1000L / Stopwatch.Frequency;
+        //duracion = pCrono.ElapsedMilliseconds;
+    }
+
+    public void TestLDR1R2_ManagedMethod2()
+    {
+        for (var i = 0; i < 500000; i++)
+            LdA_B_Managed2();
+    }
+
+    public void TestLDR1R2_ManagedMethod3()
+    {
+        for (var i = 0; i < 500000; i++)
+            LdA_B_Managed3();
+    }
+
+    private void LdA_B_Managed2() => LdR1R2_Managed2(mLetA_B_Manager);
+    private void LdA_B_Managed3() => LdR1R2_Managed2(mLetA_B_Manager2);
+
+    private void LdR1R2_Managed2(Action argLd)
+    {
+        argLd.Invoke();
+        mTStates += 2;
+    }
+}

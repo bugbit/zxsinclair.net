@@ -1,0 +1,110 @@
+﻿@page "/memoryperfomtest"
+@using System.Diagnostics
+
+<h3>MemoryPerfomTest</h3>
+<button @onclick="TestPerfomManagedMethod_Click">TestPerfomManagedMethod</button>
+<button @onclick="TestPerfomNative1Method_Click">TestPerfomNative1Method</button>
+<button @onclick="TestPerfomNative2Method_Click">TestPerfomNative2Method</button>
+<p>Duracion: @ElapsedMS ms</p>
+
+@code {
+    unsafe struct MemoryNative
+    {
+        public fixed byte memorynative[4096];
+    }
+
+    double ElapsedMS;
+    private byte[] mMemoryManaged;
+    private MemoryNative mMemoryNative;
+    private unsafe byte* mMemN;
+
+    protected unsafe override void OnInitialized()
+    {
+        base.OnInitialized();
+        fixed (byte* ptr = &mMemoryNative.memorynative[0])
+        {
+            mMemN = ptr;
+            var ptr1 = ptr;
+
+            for (var i = 0; i < 4096; i++)
+                *ptr1++ = (byte)(i % 255);
+            mMemoryManaged = new byte[4096];
+            for (var i = 0; i < 4096; i++)
+                mMemoryManaged[i] = (byte)(i % 255);
+        }
+    }
+
+    private void TestPerfomManagedMethod_Click()
+    {
+        var pTicks1 = Stopwatch.GetTimestamp();
+
+        TestPerfomManagedMethod();
+
+        var pTicks2 = Stopwatch.GetTimestamp();
+        var pTicks = (int)(pTicks2 - pTicks1);
+
+        ElapsedMS = (pTicks) * 1000L / Stopwatch.Frequency;
+    }
+
+    private void TestPerfomNative1Method_Click()
+    {
+        var pTicks1 = Stopwatch.GetTimestamp();
+
+        TestPerfomNative1Method();
+
+        var pTicks2 = Stopwatch.GetTimestamp();
+        var pTicks = (int)(pTicks2 - pTicks1);
+
+        ElapsedMS = (pTicks) * 1000L / Stopwatch.Frequency;
+    }
+
+    private void TestPerfomNative2Method_Click()
+    {
+        var pTicks1 = Stopwatch.GetTimestamp();
+
+        TestPerfomNative2Method();
+
+        var pTicks2 = Stopwatch.GetTimestamp();
+        var pTicks = (int)(pTicks2 - pTicks1);
+
+        ElapsedMS = (pTicks) * 1000L / Stopwatch.Frequency;
+    }
+
+    public void TestPerfomManagedMethod()
+    {
+        for (var i = 0; i < 5000; i++)
+            for (var j = 0; j < 4096; j++)
+                ReadMemoryMamaged(j);
+    }
+
+    public void TestPerfomNative1Method()
+    {
+        for (var i = 0; i < 5000; i++)
+            for (var j = 0; j < 4096; j++)
+                ReadMemoryNative1(j);
+    }
+
+    public void TestPerfomNative2Method()
+    {
+        for (var i = 0; i < 5000; i++)
+            for (var j = 0; j < 4096; j++)
+                ReadMemoryNative2(j);
+    }
+
+    private unsafe byte ReadMemoryNative1(int argMem)
+    {
+        return mMemN[argMem];
+    }
+
+    private unsafe byte ReadMemoryNative2(int argMem)
+    {
+        byte* ptr = mMemN + argMem;
+
+        return *ptr;
+    }
+
+    private byte ReadMemoryMamaged(int argMem)
+    {
+        return mMemoryManaged[argMem];
+    }
+}
