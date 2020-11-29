@@ -24,6 +24,8 @@ namespace ZXSinclair.CPU.Z80
     [Flags]
     public enum ESignals
     {
-        None = 0
+        None = 0,
+        WAIT = 1 << 24,
+        M1 = 1 << 27
     }
 }

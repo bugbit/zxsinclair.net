@@ -16,18 +16,19 @@
 #endregion
 
 using System;
-using ZXSinclair.Main;
+using System.Collections.Generic;
+using System.Text;
 
-namespace ZXSinclair.NetCore
+namespace ZXSinclair.CPU
 {
-    class Program
+    public class RamManaged<D> : MemoryManagedBase<D>
     {
-        static void Main(string[] args)
+        public RamManaged(int argSize) : base(argSize)
         {
-            using (var pApp = new SDL.Main.ZXSinclairSDLApp(args))
-            {
-                pApp.Run();
-            }
+        }
+
+        public RamManaged(int argSize, int argMask) : base(argSize, argMask)
+        {
         }
     }
 }

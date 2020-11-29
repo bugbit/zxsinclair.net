@@ -16,18 +16,17 @@
 #endregion
 
 using System;
-using ZXSinclair.Main;
+using System.Collections.Generic;
+using System.Text;
 
-namespace ZXSinclair.NetCore
+namespace ZXSinclair.CPU
 {
-    class Program
+    public class RomManaged<D> : MemoryManagedBase<D>
     {
-        static void Main(string[] args)
-        {
-            using (var pApp = new SDL.Main.ZXSinclairSDLApp(args))
-            {
-                pApp.Run();
-            }
-        }
+        public RomManaged(int argSize) : base(argSize) { }
+
+        public RomManaged(int argSize, int argMask) : base(argSize, argMask) { }
+
+        public override void WriteMemory(int argMemory, D argData) { }
     }
 }

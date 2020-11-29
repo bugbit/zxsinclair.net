@@ -16,18 +16,30 @@
 #endregion
 
 using System;
-using ZXSinclair.Main;
+using System.Collections.Generic;
+using System.Text;
 
-namespace ZXSinclair.NetCore
+namespace ZXSinclair.CPU
 {
-    class Program
+    public class MemoryManagedBase<D> : IMemory<int, D>
     {
-        static void Main(string[] args)
+        protected D[] mBufferData;
+        protected int mMask;
+
+        public MemoryManagedBase(int argSize, int argMask)
         {
-            using (var pApp = new SDL.Main.ZXSinclairSDLApp(args))
-            {
-                pApp.Run();
-            }
+            mBufferData = new D[argSize];
+            mMask = argMask;
+        }
+
+        public MemoryManagedBase(int argSize) : this(argSize, argSize - 1) { }
+
+        public D ReadMemory(int argMemory) => mBufferData[argMemory % mMask];
+
+        public virtual void WriteMemory(int argMemory, D argData) => mBufferData[argMemory % mMask] = argData;
+
+        void IDisposable.Dispose()
+        {
         }
     }
 }

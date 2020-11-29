@@ -19,11 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ZXSinclair.CPU.Z80
+namespace ZXSinclair.CPU
 {
-    public interface IMemory
+    public interface IMemory<A, D> : IDisposable  // A = Address D= Data
     {
-        byte ReadMemory(int argMemory);
-        void WriteMemory(int argMemory, byte argData);
+        D ReadMemory(A argMemory);
+        void WriteMemory(A argMemory, D argData);
     }
 }

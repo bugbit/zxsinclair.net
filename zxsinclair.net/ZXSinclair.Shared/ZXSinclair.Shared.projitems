@@ -9,25 +9,15 @@
     <Import_RootNamespace>ZXSinclair</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\IMemory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\MemoryManagedBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\RamManaged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\RomManaged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\ESignals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IBuses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Cpu.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IMemory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Regs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLineException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Main\ZXSinclairApp.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\FuncLoader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\MarshalHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\OS.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\SDL2.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)x64\SDL2.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)x86\SDL2.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

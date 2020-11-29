@@ -51,6 +51,6 @@
   </ItemGroup>
   <Import Project="..\ZXSinclair.Shared\ZXSinclair.Shared.projitems" Label="Shared" />
   <Import Project="..\ZXSinclair.Resources\ZXSinclair.Resources.projitems" Label="Shared" />
-  <Import Project="..\ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems" Label="Shared" />
+  <Import Project="..\ZXSinclair.SDL.Shared\ZXSinclair.SDL.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

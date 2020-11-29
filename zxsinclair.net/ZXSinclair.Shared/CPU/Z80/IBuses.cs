@@ -21,7 +21,7 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public interface IBuses : IMemory
+    public interface IBuses : IMemory<int, byte>
     {
     }
 }

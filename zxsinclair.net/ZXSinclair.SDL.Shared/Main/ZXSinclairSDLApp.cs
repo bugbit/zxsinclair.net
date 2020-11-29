@@ -18,15 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ZXSinclair.Main;
 using ZXSinclair.Native;
 
-namespace ZXSinclair.Main
+namespace ZXSinclair.SDL.Main
 {
     /*
         ZXSinclair.Net.prueba.resources
         ZXSinclair.NetCore.prueba.resources
      */
-    public class ZXSinclairApp : IDisposable
+    public class ZXSinclairSDLApp : IDisposable
     {
         private bool disposedValue;
         private string[] mArgs;
@@ -34,7 +35,7 @@ namespace ZXSinclair.Main
 
         public ZXCmdLine CmdLine { get; } = new ZXCmdLine();
 
-        public ZXSinclairApp(string[] argArgs)
+        public ZXSinclairSDLApp(string[] argArgs)
         {
             mArgs = argArgs;
         }
@@ -111,7 +112,7 @@ namespace ZXSinclair.Main
         }
 
         // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
-        ~ZXSinclairApp()
+        ~ZXSinclairSDLApp()
         {
             // No cambie este código. Coloque el código de limpieza en el método "Dispose(bool disposing)".
             Dispose(disposing: false);

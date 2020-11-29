@@ -20,26 +20,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.Blazor", "ZXSinc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.Blazor.Test", "ZXSinclair.Blazor.Test\ZXSinclair.Blazor.Test.csproj", "{56EB9704-65B4-4DC2-82E4-70943570440F}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.Core.Shared", "ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.shproj", "{979D2CA9-8FCA-4A3F-A114-0E685A3D91F1}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZXSinclair.SDL.Shared", "ZXSinclair.SDL.Shared\ZXSinclair.SDL.Shared.shproj", "{A3B5A43D-04AB-4E89-84C1-097D3E979174}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{0f478a7e-8ca8-498b-a522-0c6e5968c766}*SharedItemsImports = 13
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
+		ZXSinclair.SDL.Shared\ZXSinclair.SDL.Shared.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{12ddbc0e-2861-465f-843c-66cedf797f5e}*SharedItemsImports = 5
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{31f1e6de-ca91-4f3a-9179-a9821b1e1e0e}*SharedItemsImports = 4
 		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{31f1e6de-ca91-4f3a-9179-a9821b1e1e0e}*SharedItemsImports = 4
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{4ed28548-1d02-4789-8af7-bc1fccd0840d}*SharedItemsImports = 5
 		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{4ed28548-1d02-4789-8af7-bc1fccd0840d}*SharedItemsImports = 5
 		ZXSinclair.Test.Shared\ZXSinclair.Test.Shared.projitems*{5400c285-cd3d-4588-9973-f5edff96b186}*SharedItemsImports = 13
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{56eb9704-65b4-4dc2-82e4-70943570440f}*SharedItemsImports = 5
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{974e507e-398a-43f4-9432-38595736c3de}*SharedItemsImports = 13
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{979d2ca9-8fca-4a3f-a114-0e685a3d91f1}*SharedItemsImports = 13
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{b10c2df1-3752-45db-b801-6ddd39c23533}*SharedItemsImports = 5
+		ZXSinclair.SDL.Shared\ZXSinclair.SDL.Shared.projitems*{a3b5a43d-04ab-4e89-84c1-097d3e979174}*SharedItemsImports = 13
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{b10c2df1-3752-45db-b801-6ddd39c23533}*SharedItemsImports = 5
-		ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
+		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{b10c2df1-3752-45db-b801-6ddd39c23533}*SharedItemsImports = 5
 		ZXSinclair.Resources\ZXSinclair.Resources.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
+		ZXSinclair.SDL.Shared\ZXSinclair.SDL.Shared.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
 		ZXSinclair.Shared\ZXSinclair.Shared.projitems*{c58ce06d-c2c7-4576-9505-4d7f8fa1380e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

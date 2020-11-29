@@ -18,6 +18,4 @@
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
 
-  <Import Project="..\ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems" Label="Shared" />
-
 </Project>

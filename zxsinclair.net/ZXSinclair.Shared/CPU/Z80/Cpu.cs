@@ -21,21 +21,32 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public class Cpu
+    public class Cpu : IDisposable
     {
         protected Regs mRegs = new Regs();
         protected int mTStates;
         protected ESignals mSignals = ESignals.None;
         protected IBuses mBuses;
+        private bool disposedValue;
 
-        public Regs Regs => mRegs;
+        public Regs Regs { get => mRegs; private set => mRegs = value; }
         public int TStates => mTStates;
         public ESignals Signals { get => mSignals; set => mSignals = value; }
         public IBuses Buses { get => mBuses; set => mBuses = value; }
 
-        public void ExcecInstruction()
+        public void ExecInstruction()
         {
+            Signals |= ESignals.M1;
+            AddCycles(1);
+            Signals |= ESignals.WAIT;
+            AddCycles(1);
+            Signals &= ~(ESignals.WAIT | ESignals.M1);
 
+            Regs.R++;
+
+            var pInstr = Buses.ReadMemory(Regs.PC);
+
+            AddCycles(2);
         }
 
         public void Ld_R1_R2(Action<byte> argSet, Func<byte> argGet)
@@ -65,5 +76,37 @@ namespace ZXSinclair.CPU.Z80
         public void LdA_B_5() => Ld_R1_R2(mRegs.CreateA_B());
 
         protected void AddCycles(int argTStates) => mTStates += argTStates;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: eliminar el estado administrado (objetos administrados)
+                    Buses?.Dispose();
+                }
+
+                // TODO: liberar los recursos no administrados (objetos no administrados) y reemplazar el finalizador
+                // TODO: establecer los campos grandes como NULL
+                disposedValue = true;
+                Buses = null;
+                Regs = null;
+            }
+        }
+
+        // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
+        ~Cpu()
+        {
+            // No cambie este código. Coloque el código de limpieza en el método "Dispose(bool disposing)".
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            // No cambie este código. Coloque el código de limpieza en el método "Dispose(bool disposing)".
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
