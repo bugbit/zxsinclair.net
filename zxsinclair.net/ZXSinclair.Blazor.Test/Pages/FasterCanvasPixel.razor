@@ -1,0 +1,207 @@
+﻿@page "/fastercanvaspixel"
+@using System.Runtime.InteropServices
+@inject IJSRuntime JS;
+
+<h3>FasterCanvasPixel</h3>
+
+<canvas id="canvas" height="256" width="256"></canvas>
+<br />
+@Time
+<button class="btn btn-primary" @onclick="ClickMe">Click me</button>
+<button class="btn btn-primary" @onclick="ClickMe2">Click me2</button>
+<button class="btn btn-primary" @onclick="ClickMe3">Click me3</button>
+
+@code
+{
+    // https://docs.microsoft.com/es-es/dotnet/csharp/whats-new/csharp-9
+    // https://hacks.mozilla.org/2011/12/faster-canvas-pixel-manipulation-with-typed-arrays/
+    // https://www.davideguida.com/blazor-gamedev-part-2-canvas-initialization/
+    // https://docs.microsoft.com/en-us/aspnet/core/blazor/webassembly-performance-best-practices?view=aspnetcore-5.0#avoid-unnecessary-rendering-of-component-subtrees
+    // https://docs.microsoft.com/en-us/aspnet/core/blazor/call-javascript-from-dotnet?view=aspnetcore-5.0#capture-references-to-elements
+
+    private string Time;
+    private uint[] Screen;
+    private int Desp;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Screen = new uint[256 * 256];
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initcanvas" /*, DotNetObjectReference.Create(this)*/);
+        }
+    }
+
+    private void ClickMe()
+    {
+        var pStart = System.Diagnostics.Stopwatch.StartNew();
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JS;
+
+        var index = 0;
+
+        for (var y = 0; y < 256; ++y)
+        {
+            for (var x = 0; x < 256; ++x)
+            {
+                var value = (x * y & 0xff);
+                var rgba = (255 << 24) | // alpha
+
+                (value << 16) | // blue
+                (value << 8) |  // green
+                value;  // red
+
+                //data[index] = value;    // red
+                //data[++index] = value;    // green
+                //data[++index] = value;    // blue
+                //data[++index] = 255;      // alpha
+                //     data[y * canvasWidth + x] =
+                //(255 << 24) |	// alpha
+                //(value << 16) |	// blue
+                //(value << 8) |	// green
+                // value;     // red
+
+                unmarshalledRuntime.InvokeUnmarshalled<int, int, bool>("setpixel", index++, rgba);
+            }
+        }
+        unmarshalledRuntime.InvokeUnmarshalled<bool>("putimage");
+        pStart.Stop();
+        Time = pStart.Elapsed.ToString();
+    }
+
+    private unsafe void ClickMe2()
+    {
+        var pStart = System.Diagnostics.Stopwatch.StartNew();
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JS;
+
+        fixed (uint* ptr = &Screen[0])
+        {
+            var ptr2 = ptr;
+            for (var y = 0; y < 256; ++y)
+            {
+                for (var x = 0; x < 256; ++x)
+                {
+                    var value = (x * y & 0xff);
+                    var rgba = (255 << 24) | // alpha
+
+                    (value << 16) | // blue
+                    (value << 8) |  // green
+                    value;  // red
+
+                    //data[index] = value;    // red
+                    //data[++index] = value;    // green
+                    //data[++index] = value;    // blue
+                    //data[++index] = 255;      // alpha
+                    //     data[y * canvasWidth + x] =
+                    //(255 << 24) |	// alpha
+                    //(value << 16) |	// blue
+                    //(value << 8) |	// green
+                    // value;     // red
+
+                    //unmarshalledRuntime.InvokeUnmarshalled<int, int, bool>("setpixel", index++, rgba);
+                    *ptr2++ = (uint)rgba;
+                }
+            }
+        }
+        //Allocate memory
+        var gch = GCHandle.Alloc(Screen, GCHandleType.Pinned);
+        var pinned = gch.AddrOfPinnedObject();
+
+        unmarshalledRuntime.InvokeUnmarshalled<IntPtr, bool>("putimage2", pinned);
+        gch.Free();
+        pStart.Stop();
+        Time = pStart.Elapsed.ToString();
+    }
+
+    private void ClickMe3()
+    {
+        var pStart = System.Diagnostics.Stopwatch.StartNew();
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JS;
+
+        var idx = 0;
+
+        for (var y = 0; y < 256; ++y)
+        {
+            for (var x = 0; x < 256; ++x)
+            {
+                var value = (x * y & 0xff);
+                var rgba = (255 << 24) | // alpha
+
+                (value << 16) | // blue
+                (value << 8) |  // green
+                value;  // red
+
+                //data[index] = value;    // red
+                //data[++index] = value;    // green
+                //data[++index] = value;    // blue
+                //data[++index] = 255;      // alpha
+                //     data[y * canvasWidth + x] =
+                //(255 << 24) |	// alpha
+                //(value << 16) |	// blue
+                //(value << 8) |	// green
+                // value;     // red
+
+                //unmarshalledRuntime.InvokeUnmarshalled<int, int, bool>("setpixel", index++, rgba);
+                Screen[idx++] = (uint)rgba;
+            }
+        }
+        //Allocate memory
+        var gch = GCHandle.Alloc(Screen, GCHandleType.Pinned);
+        var pinned = gch.AddrOfPinnedObject();
+
+        unmarshalledRuntime.InvokeUnmarshalled<IntPtr, bool>("putimage2", pinned);
+        gch.Free();
+        pStart.Stop();
+        Time = pStart.Elapsed.ToString();
+    }
+
+    [JSInvokable]
+    public unsafe void GameLoop(float timeStamp)
+    {
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JS;
+
+        fixed (uint* ptr = &Screen[0])
+        {
+            var ptr2 = ptr;
+            for (var y = 0; y < 256; ++y)
+            {
+                for (var x = 0; x < 256; ++x)
+                {
+                    var value = (x * y & 0xff) + Desp;
+                    var rgba = (255 << 24) | // alpha
+
+                    (value << 16) | // blue
+                    (value << 8) |  // green
+                    value;  // red
+
+                    //data[index] = value;    // red
+                    //data[++index] = value;    // green
+                    //data[++index] = value;    // blue
+                    //data[++index] = 255;      // alpha
+                    //     data[y * canvasWidth + x] =
+                    //(255 << 24) |	// alpha
+                    //(value << 16) |	// blue
+                    //(value << 8) |	// green
+                    // value;     // red
+
+                    //unmarshalledRuntime.InvokeUnmarshalled<int, int, bool>("setpixel", index++, rgba);
+                    *ptr2++ = (uint)rgba;
+                }
+            }
+        }
+        //Allocate memory
+        var gch = GCHandle.Alloc(Screen, GCHandleType.Pinned);
+        var pinned = gch.AddrOfPinnedObject();
+
+        unmarshalledRuntime.InvokeUnmarshalled<IntPtr, bool>("putimage2", pinned);
+        gch.Free();
+        Desp += 1;
+        if (Desp > 255)
+            Desp = 0;
+    }
+}

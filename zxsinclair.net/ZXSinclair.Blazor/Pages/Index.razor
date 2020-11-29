@@ -5,3 +5,13 @@
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+<button @onclick="test">test</button>
+
+@code
+{
+    void test()
+    {
+        var x = ZXSinclair.Resources.ResManager.Instance.Strings["ParamCmdLineInvalidError", "x"];
+    }
+}

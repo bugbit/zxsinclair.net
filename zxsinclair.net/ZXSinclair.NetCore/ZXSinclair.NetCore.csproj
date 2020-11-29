@@ -27,4 +27,6 @@
 
   <Import Project="..\ZXSinclair.Resources\ZXSinclair.Resources.projitems" Label="Shared" />
 
+  <Import Project="..\ZXSinclair.Core.Shared\ZXSinclair.Core.Shared.projitems" Label="Shared" />
+
 </Project>
