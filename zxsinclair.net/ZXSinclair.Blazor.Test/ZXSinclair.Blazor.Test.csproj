@@ -6,10 +6,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DOTNETCORE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DOTNETCORE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
+
+  <Import Project="..\ZXSinclair.Shared\ZXSinclair.Shared.projitems" Label="Shared" />
+
+  <Import Project="..\ZXSinclair.Perform.Shared\ZXSinclair.Perform.Shared.projitems" Label="Shared" />
 
 </Project>

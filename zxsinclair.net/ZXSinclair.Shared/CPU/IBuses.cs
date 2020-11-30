@@ -19,10 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ZXSinclair.CPU.Z80
+namespace ZXSinclair.CPU
 {
-    public interface IBuses : CPU.IBuses<int, byte>
+    public interface IBuses<A, D> : IDisposable
     {
-        IIOPort IOPort { get; set; }
+        IMemory<A, D> Memory { get; set; }
     }
 }

@@ -18,11 +18,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Z80 = ZXSinclair.CPU.Z80;
 
-namespace ZXSinclair.CPU.Z80
+namespace ZXSinclair.Perform
 {
-    public interface IBuses : CPU.IBuses<int, byte>
+    public class CPUPerformTest
     {
-        IIOPort IOPort { get; set; }
+        private Z80.Cpu mZ80 = new Z80.Cpu();
+
+        public void TestExecInstructionMethod()
+        {
+            for (var i = 0; i < 224 * 312; i += 4)
+                mZ80.ExecInstruction();
+        }
     }
 }

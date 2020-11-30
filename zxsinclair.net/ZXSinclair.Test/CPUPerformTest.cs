@@ -18,11 +18,27 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Z80 = ZXSinclair.CPU.Z80;
 
-namespace ZXSinclair.CPU.Z80
+namespace ZXSinclair.Test
 {
-    public interface IBuses : CPU.IBuses<int, byte>
+    [TestClass]
+    public class CPUPerformTest
     {
-        IIOPort IOPort { get; set; }
+        private Z80.Cpu mZ80;
+
+        [TestInitialize]
+        public void SetUp()
+        {
+            mZ80 = new Z80.Cpu();
+        }
+
+        [TestMethod]
+        public void TestExecInstructionMethod()
+        {
+            for (var i = 0; i < 224 * 312; i += 4)
+                mZ80.ExecInstruction();
+        }
     }
 }

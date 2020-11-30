@@ -9,13 +9,19 @@
     <Import_RootNamespace>ZXSinclair</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\IBuses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\IMemory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\MemoryManagedBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\MemoryNull.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\RamManaged.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\RomManaged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Buses.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Buses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\ESignals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IBuses.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Cpu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IIOPort.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IOPortNull.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Regs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLineException.cs" />

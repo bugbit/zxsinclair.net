@@ -21,8 +21,8 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public interface IBuses : CPU.IBuses<int, byte>
+    public class Buses : CPU.Buses<int, byte>, IBuses
     {
-        IIOPort IOPort { get; set; }
+        public IIOPort IOPort { get; set; }
     }
 }

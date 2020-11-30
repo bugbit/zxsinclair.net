@@ -3,13 +3,13 @@
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>5400c285-cd3d-4588-9973-f5edff96b186</SharedGUID>
+    <SharedGUID>26a37ecc-c3dc-4777-bf0a-09435d39baf3</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>ZXSinclair.Test</Import_RootNamespace>
+    <Import_RootNamespace>ZXSinclair.Perform</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CPURegisterPerfomTest.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MemoryPerfomTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CPUPerformTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tests.cs" />
   </ItemGroup>
 </Project>

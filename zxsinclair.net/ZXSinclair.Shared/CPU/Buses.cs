@@ -17,58 +17,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text;
 
-namespace ZXSinclair.CPU.Z80
+namespace ZXSinclair.CPU
 {
-    public class Cpu : IDisposable
+    public class Buses<A, D> : IBuses<A, D>
     {
-        protected Regs mRegs = new Regs();
-        protected int mTStates;
-        protected ESignals mSignals = ESignals.None;
-        protected Action[] mInstrucciones;
         private bool disposedValue;
 
-        public Regs Regs { get => mRegs; private set => mRegs = value; }
-        public int TStates => mTStates;
-        public ESignals Signals { get => mSignals; set => mSignals = value; }
-        public IBuses Buses { get; private set; } = new Buses { Memory = MemoryNull<int, byte>.Instance, IOPort = IOPortNull.Instance };
-
-        public Cpu()
-        {
-            Reset();
-            mInstrucciones = new Action[256];
-
-            Parallel.For(0, 256, i => mInstrucciones[i] = NOP);
-        }
-
-        public void Reset()
-        {
-            mRegs.Reset();
-            mTStates = 0;
-        }
-
-        public void ExecInstruction()
-        {
-            Signals |= ESignals.M1;
-            AddCycles(1);
-            Signals |= ESignals.WAIT;
-            AddCycles(1);
-            Signals &= ~(ESignals.WAIT | ESignals.M1);
-
-            Regs.RefreshR();
-
-            var pInstr = Buses.Memory.ReadMemory(Regs.GetPCAndInc());
-
-            AddCycles(2);
-
-            mInstrucciones[pInstr].Invoke();
-        }
-
-        public void NOP() { }       
-
-        protected void AddCycles(int argTStates) => mTStates += argTStates;
+        public IMemory<A, D> Memory { get; set; }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -77,20 +34,18 @@ namespace ZXSinclair.CPU.Z80
                 if (disposing)
                 {
                     // TODO: eliminar el estado administrado (objetos administrados)
-                    Buses?.Dispose();
+                    Memory?.Dispose();
                 }
 
                 // TODO: liberar los recursos no administrados (objetos no administrados) y reemplazar el finalizador
                 // TODO: establecer los campos grandes como NULL
-                Buses = null;
-                Regs = null;
-                mInstrucciones = null;
+                Memory = null;
                 disposedValue = true;
             }
         }
 
         // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
-        ~Cpu()
+        ~Buses()
         {
             // No cambie este código. Coloque el código de limpieza en el método "Dispose(bool disposing)".
             Dispose(disposing: false);

@@ -33,14 +33,14 @@ namespace ZXSinclair.CPU.Z80
         public ushort DE = 0;
         [FieldOffset(6)]
         public ushort HL = 0;
-        [FieldOffset(8)]
-        public ushort _AF = 0;
-        [FieldOffset(10)]
-        public ushort _BC = 0;
-        [FieldOffset(12)]
-        public ushort _DE = 0;
-        [FieldOffset(14)]
-        public ushort _HL = 0;
+        //[FieldOffset(8)]
+        //public ushort _AF = 0;
+        //[FieldOffset(10)]
+        //public ushort _BC = 0;
+        //[FieldOffset(12)]
+        //public ushort _DE = 0;
+        //[FieldOffset(14)]
+        //public ushort _HL = 0;
         [FieldOffset(16)]
         public ushort IX = 0;
         [FieldOffset(18)]
@@ -51,8 +51,8 @@ namespace ZXSinclair.CPU.Z80
         public ushort PC = 0;
         [FieldOffset(24)]
         public ushort SP = 0;
-        [FieldOffset(26)]
-        public ushort MW = 0;    // MEMPTR
+        //[FieldOffset(26)]
+        //public ushort MW = 0;    // MEMPTR
 
 
         [FieldOffset(1)]
@@ -71,23 +71,44 @@ namespace ZXSinclair.CPU.Z80
         public byte H;
         [FieldOffset(6)]
         public byte L;
-        [FieldOffset(17)]
-        public byte XH;
-        [FieldOffset(16)]
-        public byte XL;
-        [FieldOffset(19)]
-        public byte YH;
-        [FieldOffset(18)]
-        public byte YL;
+        //[FieldOffset(17)]
+        //public byte XH;
+        //[FieldOffset(16)]
+        //public byte XL;
+        //[FieldOffset(19)]
+        //public byte YH;
+        //[FieldOffset(18)]
+        //public byte YL;
         [FieldOffset(21)]
         public byte I;
         [FieldOffset(20)]
         public byte R;
 
-        [FieldOffset(27)]
-        public byte MH;
-        [FieldOffset(26)]
-        public byte ML;
+        //[FieldOffset(27)]
+        //public byte MH;
+        //[FieldOffset(26)]
+        //public byte ML;
+
+        public void Reset()
+        {
+            AF = BC = DE = HL = IX = IY = PC = SP = 0;
+            I = 0;
+        }
+
+        public void RefreshR()
+        {
+            int r = R;
+
+            R = (byte)((r + 1) & 0x7F | (r & 0x80));
+        }
+
+        public ushort GetPCAndInc()
+        {
+            unchecked
+            {
+                return PC++;
+            }
+        }
 
         public void SetA_B() => A = B;
 

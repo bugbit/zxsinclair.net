@@ -21,8 +21,16 @@ using System.Text;
 
 namespace ZXSinclair.CPU.Z80
 {
-    public interface IBuses : CPU.IBuses<int, byte>
+    public class IOPortNull : IIOPort
     {
-        IIOPort IOPort { get; set; }
+        private static readonly Lazy<IOPortNull> mInstance = new Lazy<IOPortNull>(() => new IOPortNull());
+
+        private IOPortNull() { }
+
+        public static IIOPort Instance => mInstance.Value;
+
+        public byte ReadPort(int argDir) => 0;
+
+        public void WritePort(int argDir, byte argData) { }
     }
 }
