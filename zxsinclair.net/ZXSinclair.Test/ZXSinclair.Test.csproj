@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -21,6 +21,8 @@
     <PackageReference Include="coverlet.collector" Version="1.3.0" />
   </ItemGroup>
 
-  <Import Project="..\ZXSinclair.Shared\ZXSinclair.Shared.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\ZXSinclair.NetCore\ZXSinclair.NetCore.csproj" />
+  </ItemGroup>
 
 </Project>

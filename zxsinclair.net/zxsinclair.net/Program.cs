@@ -27,7 +27,7 @@ namespace ZXSinclair.Net
     {
         static void Main(string[] args)
         {
-            using (var pApp = new SDL.Main.ZXSinclairSDLApp(args))
+            using (var pApp = new SDL.Main.ZXSinclairApp(args))
             {
                 pApp.Run();
             }

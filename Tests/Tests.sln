@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.572
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSDL", "TestSDL\TestSDL.csproj", "{6F9A088D-56D4-4314-A75D-A49EDDC1BF46}"
 EndProject
@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x64", "x64", "{C6BC9615-834
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHighPerformanceTimer", "TestHighPerformanceTimer\TestHighPerformanceTimer.csproj", "{C85DB84E-B533-4A77-B1F3-D948410D2C8F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FasterCanvasPixelBlazorApp", "FasterCanvasPixelBlazorApp\FasterCanvasPixelBlazorApp.csproj", "{6F81D72F-E354-4401-9E7D-B182D9E13B22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +139,38 @@ Global
 		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x64.Build.0 = Release|Any CPU
 		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x86.ActiveCfg = Release|Any CPU
 		{C85DB84E-B533-4A77-B1F3-D948410D2C8F}.Release-Net4|x86.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|ARM.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|x64.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug|x86.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|Any CPU.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|ARM.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|ARM.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|x64.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|x64.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|x86.ActiveCfg = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Debug-Net4|x86.Build.0 = Debug|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|ARM.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|ARM.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|x64.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|x64.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|x86.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release|x86.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|Any CPU.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|Any CPU.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|ARM.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|ARM.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|x64.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|x64.Build.0 = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|x86.ActiveCfg = Release|Any CPU
+		{6F81D72F-E354-4401-9E7D-B182D9E13B22}.Release-Net4|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

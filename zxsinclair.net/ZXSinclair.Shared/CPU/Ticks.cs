@@ -18,18 +18,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Z80 = ZXSinclair.CPU.Z80;
 
-namespace ZXSinclair.Perform
+namespace ZXSinclair.CPU
 {
-    public class CPUPerformTest
+    public class Ticks : ITicks
     {
-        private Z80.Cpu mZ80 = new Z80.Cpu { Ticks = new CPU.Ticks() };
+        protected int mTStates;
 
-        public void TestExecInstructionMethod()
-        {
-            for (var i = 0; i < 224 * 312; i += 4)
-                mZ80.ExecInstruction();
-        }
+        public int TStates => mTStates;
+
+        public void AddCycles(int argTStates) => mTStates += argTStates;
+
+        public void Reset() => mTStates = 0;
     }
 }

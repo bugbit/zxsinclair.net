@@ -4,15 +4,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
+using static System.Console;
+
 namespace ZXSinclair.Perform
 {
     public static class Tests
     {
-        public static Action<string> WriteTest { get; set; }
+        static void Main(string[] args) => Run();
 
         public static void Run()
         {
             ExecTests(5, typeof(CPUPerformTest), nameof(CPUPerformTest.TestExecInstructionMethod));
+            WriteLine("Pulse ENTER para finalizar");
+            ReadLine();
         }
 
         private static void ExecTests(int n, Type type, params string[] methods)
@@ -34,7 +38,7 @@ namespace ZXSinclair.Perform
                     var pTicks = (int)(pTicks2 - pTicks1);
                     var pElapsedMS = (pTicks) * 1000.0 / Stopwatch.Frequency;
 
-                    WriteTest?.Invoke($"{n} {a.m} {pElapsedMS} ms");
+                    WriteLine($"{n} {a.m} {pElapsedMS} ms");
                 }
             }
         }

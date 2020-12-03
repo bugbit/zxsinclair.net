@@ -17,60 +17,85 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text;
+using ZXSinclair.Main;
+using ZXSinclair.Native;
 
-namespace ZXSinclair.CPU.Z80
+using static ZXSinclair.Native.SDL2.SDL;
+using static ZXSinclair.Native.SDL2.SDL_messagebox;
+using static ZXSinclair.Native.SDL2.SDL_error;
+
+namespace ZXSinclair.SDL.Main
 {
-    // http://www.z80.info/zip/z80cpu_um.pdf
-    // http://www.z80.info/zip/z80-documented.pdf
-    // https://worldofspectrum.org/z88forever/dn327/z80undoc.htm
-    // https://worldofspectrum.org/faq/resources/documents.htm
-    public class Cpu : IDisposable
+    /*
+        ZXSinclair.Net.prueba.resources
+        ZXSinclair.NetCore.prueba.resources
+     */
+    public class ZXSinclairApp : IDisposable
     {
-        protected ITicks mTicks;
-        protected Regs mRegs = new Regs();
-        protected ESignals mSignals = ESignals.None;
-        protected Action[] mInstrucciones;
         private bool disposedValue;
+        private string[] mArgs;
+        private bool mIsSDLInit;
 
-        public ITicks Ticks { get => mTicks; set => mTicks = value; }
-        public Regs Regs { get => mRegs; private set => mRegs = value; }
-        public ESignals Signals { get => mSignals; set => mSignals = value; }
-        public IBuses Buses { get; private set; } = new Buses { Memory = MemoryNull<int, byte>.Instance, IOPort = IOPortNull.Instance };
+        public ZXCmdLine CmdLine { get; } = new ZXCmdLine();
 
-        public Cpu()
+        public ZXSinclairApp(string[] argArgs)
         {
-            Reset();
-            mInstrucciones = new Action[256];
-
-            Parallel.For(0, 256, i => mInstrucciones[i] = NOP);
+            mArgs = argArgs;
         }
 
-        public void Reset()
+        public void Run()
         {
-            mTicks?.Reset();
-            mRegs.Reset();
+            if (Init())
+            {
+
+            }
+            SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags.SDL_MESSAGEBOX_INFORMATION, "ZXSinclair", "Hello", IntPtr.Zero);
         }
 
-        public void ExecInstruction()
+        private bool Init()
         {
-            Signals |= ESignals.M1;
-            mTicks.AddCycles(1);
-            Signals |= ESignals.WAIT;
-            mTicks.AddCycles(1);
-            Signals &= ~(ESignals.WAIT | ESignals.M1);
+            var pRet = SDL_Init(SDL_INIT_VIDEO);
 
-            Regs.RefreshR();
+            if (pRet != 0)
+                throw new ApplicationException(SDL_GetError());
 
-            var pInstr = Buses.Memory.ReadMemory(Regs.GetPCAndInc());
+            mIsSDLInit = true;
 
-            mTicks.AddCycles(2);
+            try
+            {
+                InitCmdLine();
+            }
+            catch (Exception ex)
+            {
+                SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "ZXSinclair", ex.Message, IntPtr.Zero);
 
-            mInstrucciones[pInstr].Invoke();
+                return false;
+            }
+
+            return true;
         }
 
-        public void NOP() { }
+        private void InitCmdLine()
+        {
+            var i = 0;
+
+            while (i < mArgs.Length)
+            {
+                var pArg = mArgs[i++];
+
+                if (pArg.StartsWith("-"))
+                {
+                    var pOpt = pArg.Substring(1);
+
+                    if (pOpt.Equals("xxx", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                    }
+                    else
+                        throw new ZXCmdLineException(Resources.ResManager.Instance.Strings["ParamCmdLineInvalidError", pArg]);
+                }
+            }
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -79,20 +104,19 @@ namespace ZXSinclair.CPU.Z80
                 if (disposing)
                 {
                     // TODO: eliminar el estado administrado (objetos administrados)
-                    Buses?.Dispose();
                 }
 
                 // TODO: liberar los recursos no administrados (objetos no administrados) y reemplazar el finalizador
+                if (mIsSDLInit)
+                    SDL_Quit();
+
                 // TODO: establecer los campos grandes como NULL
-                Buses = null;
-                Regs = null;
-                mInstrucciones = null;
                 disposedValue = true;
             }
         }
 
         // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
-        ~Cpu()
+        ~ZXSinclairApp()
         {
             // No cambie este código. Coloque el código de limpieza en el método "Dispose(bool disposing)".
             Dispose(disposing: false);
