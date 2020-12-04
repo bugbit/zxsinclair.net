@@ -26,6 +26,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IIOPort.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\IOPortNull.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CPU\Z80\Regs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\IMachine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\IMemory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\Machine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\MemoryNull.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\RAM.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\ROM.cs" />
+    <Compile Include="..\ZXSinclair.Shared\Machines\Memory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\Z80\MachineZ80.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Machines\Z80\Regs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXCmdLineException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main\ZXSinclairApp.cs" />
