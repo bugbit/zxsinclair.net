@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ZXSinclair.Machines.Z80
 {
@@ -37,5 +39,27 @@ namespace ZXSinclair.Machines.Z80
         }
 
         public Regs Regs => mRegs;
+
+        public override void Reset()
+        {
+            base.Reset();
+            mRegs.Reset();
+        }
+
+        protected override byte FetchOpCode() => PeekByte(mRegs.GetPCAndInc());
+
+        protected override void ExecOpCode(int argOpCode)
+        {
+            mRegs.RefreshR();
+
+            base.ExecOpCode(argOpCode);
+        }
+
+        protected override void FillTableOpCodes()
+        {
+            var q = from r in OpCodes.Rs from r1 in OpCodes.Rs select (r << 3) | r1;
+
+            Parallel.ForEach(q, r_r1 => mOpCodes[OpCodes.LD_r_r1 | r_r1] = mRegs.CreateLDR_R1(r_r1));
+        }
     }
 }

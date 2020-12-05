@@ -15,15 +15,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
+
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ZXSinclair.Common;
 
-namespace ZXSinclair.Machines
+namespace ZXSinclair.Machines.Z80
 {
-    public interface IMachine : IReset, IDisposable
+    public partial class OpCodes
     {
-        IMemory[] Memories { get; }
+        public const int R_A = 0b111;
+        public const int R_B = 0b000;
+        public const int R_C = 0b001;
+        public const int R_D = 0b010;
+        public const int R_E = 0b011;
+        public const int R_H = 0b100;
+        public const int R_L = 0b101;
+
+        public static readonly int[] Rs = { R_A, R_B, R_C, R_D, R_E, R_H, R_L };
+        public static readonly char[] Car_Rs = { 'A', 'B', 'C', 'D', 'E', 'H', 'L' };
+
+        public const int LD_r_r1 = 0b01000000;
+        public const int LD_r_r1_msk = 0b11000000;
     }
 }

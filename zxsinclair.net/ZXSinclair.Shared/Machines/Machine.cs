@@ -43,6 +43,7 @@ namespace ZXSinclair.Machines
             mOpCodes = new Action[256];
 
             Parallel.For(0, 256, i => mOpCodes[i] = NOP);
+            FillTableOpCodes();
         }
 
         public virtual void Reset()
@@ -64,7 +65,7 @@ namespace ZXSinclair.Machines
 
         public Task Start() => Task.Factory.StartNew(StartTask);
 
-        public void SignalSync() => mSemSync.Release();
+        public void SignalSync() => mSemSync.Release();        
 
         protected virtual void ResetMemories() { }
 
@@ -73,7 +74,7 @@ namespace ZXSinclair.Machines
         protected void Poke(int argAddress, byte argData) => MemoryNull.Instance.WriteMemory(argAddress, argData);
 
         protected virtual byte FetchOpCode() => 0;
-        protected void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();
+        protected virtual void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();
         protected void NOP() { }
 
         protected virtual void FillTableOpCodes() { }

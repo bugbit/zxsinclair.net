@@ -19,11 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using ZXSinclair.Common;
 
 namespace ZXSinclair.Machines.Z80
 {
     [StructLayout(LayoutKind.Explicit)]
-    public class Regs
+    public partial class Regs : IReset
     {
         [FieldOffset(0)]
         public ushort AF = 0;
@@ -115,5 +116,22 @@ namespace ZXSinclair.Machines.Z80
         public Action CreateA_B() => () => A = B;
         public Func<byte> CreateGetterB() { return () => B; }
         public Action<byte> CreateSetterA() { return v => A = v; }
+
+        ///// <summary>
+        ///// R=r1
+        ///// 00rrrrRRR
+        ///// </summary>
+        ///// <param name="r_r1"></param>
+        ///// <returns></returns>
+        //public Action CreateLDR_R1(int r_r1)
+        //{
+        //    switch (r_r1)
+        //    {
+        //        case (OpCodes.R_A << 3) | OpCodes.R_A:
+        //            return () => A = A;
+        //    }
+
+        //    return null;
+        //}
     }
 }
