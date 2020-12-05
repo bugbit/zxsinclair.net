@@ -29,213 +29,60 @@ namespace ZXSinclair.Machines.Z80
         /// </summary>
         /// <param name="r_r1"></param>
         /// <returns></returns>
-        public Action CreateLDR_R1(int r_r1)
+        public Action CreateLDR_R1(int r_r1)=> r_r1 switch
         {
-            switch (r_r1)
-            {
 
-
-                case (OpCodes.R_A << 3) | OpCodes.R_A:
-                    return () => A = A;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_B:
-                    return () => A = B;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_C:
-                    return () => A = C;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_D:
-                    return () => A = D;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_E:
-                    return () => A = E;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_H:
-                    return () => A = H;
-
-
-                case (OpCodes.R_A << 3) | OpCodes.R_L:
-                    return () => A = L;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_A:
-                    return () => B = A;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_B:
-                    return () => B = B;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_C:
-                    return () => B = C;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_D:
-                    return () => B = D;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_E:
-                    return () => B = E;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_H:
-                    return () => B = H;
-
-
-                case (OpCodes.R_B << 3) | OpCodes.R_L:
-                    return () => B = L;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_A:
-                    return () => C = A;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_B:
-                    return () => C = B;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_C:
-                    return () => C = C;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_D:
-                    return () => C = D;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_E:
-                    return () => C = E;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_H:
-                    return () => C = H;
-
-
-                case (OpCodes.R_C << 3) | OpCodes.R_L:
-                    return () => C = L;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_A:
-                    return () => D = A;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_B:
-                    return () => D = B;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_C:
-                    return () => D = C;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_D:
-                    return () => D = D;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_E:
-                    return () => D = E;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_H:
-                    return () => D = H;
-
-
-                case (OpCodes.R_D << 3) | OpCodes.R_L:
-                    return () => D = L;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_A:
-                    return () => E = A;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_B:
-                    return () => E = B;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_C:
-                    return () => E = C;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_D:
-                    return () => E = D;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_E:
-                    return () => E = E;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_H:
-                    return () => E = H;
-
-
-                case (OpCodes.R_E << 3) | OpCodes.R_L:
-                    return () => E = L;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_A:
-                    return () => H = A;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_B:
-                    return () => H = B;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_C:
-                    return () => H = C;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_D:
-                    return () => H = D;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_E:
-                    return () => H = E;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_H:
-                    return () => H = H;
-
-
-                case (OpCodes.R_H << 3) | OpCodes.R_L:
-                    return () => H = L;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_A:
-                    return () => L = A;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_B:
-                    return () => L = B;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_C:
-                    return () => L = C;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_D:
-                    return () => L = D;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_E:
-                    return () => L = E;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_H:
-                    return () => L = H;
-
-
-                case (OpCodes.R_L << 3) | OpCodes.R_L:
-                    return () => L = L;
-
-
-            }
-
-            return null;
-        }
+(OpCodes.R_A << 3) | OpCodes.R_A => () => A = A,
+(OpCodes.R_A << 3) | OpCodes.R_B => () => A = B,
+(OpCodes.R_A << 3) | OpCodes.R_C => () => A = C,
+(OpCodes.R_A << 3) | OpCodes.R_D => () => A = D,
+(OpCodes.R_A << 3) | OpCodes.R_E => () => A = E,
+(OpCodes.R_A << 3) | OpCodes.R_H => () => A = H,
+(OpCodes.R_A << 3) | OpCodes.R_L => () => A = L,
+(OpCodes.R_B << 3) | OpCodes.R_A => () => B = A,
+(OpCodes.R_B << 3) | OpCodes.R_B => () => B = B,
+(OpCodes.R_B << 3) | OpCodes.R_C => () => B = C,
+(OpCodes.R_B << 3) | OpCodes.R_D => () => B = D,
+(OpCodes.R_B << 3) | OpCodes.R_E => () => B = E,
+(OpCodes.R_B << 3) | OpCodes.R_H => () => B = H,
+(OpCodes.R_B << 3) | OpCodes.R_L => () => B = L,
+(OpCodes.R_C << 3) | OpCodes.R_A => () => C = A,
+(OpCodes.R_C << 3) | OpCodes.R_B => () => C = B,
+(OpCodes.R_C << 3) | OpCodes.R_C => () => C = C,
+(OpCodes.R_C << 3) | OpCodes.R_D => () => C = D,
+(OpCodes.R_C << 3) | OpCodes.R_E => () => C = E,
+(OpCodes.R_C << 3) | OpCodes.R_H => () => C = H,
+(OpCodes.R_C << 3) | OpCodes.R_L => () => C = L,
+(OpCodes.R_D << 3) | OpCodes.R_A => () => D = A,
+(OpCodes.R_D << 3) | OpCodes.R_B => () => D = B,
+(OpCodes.R_D << 3) | OpCodes.R_C => () => D = C,
+(OpCodes.R_D << 3) | OpCodes.R_D => () => D = D,
+(OpCodes.R_D << 3) | OpCodes.R_E => () => D = E,
+(OpCodes.R_D << 3) | OpCodes.R_H => () => D = H,
+(OpCodes.R_D << 3) | OpCodes.R_L => () => D = L,
+(OpCodes.R_E << 3) | OpCodes.R_A => () => E = A,
+(OpCodes.R_E << 3) | OpCodes.R_B => () => E = B,
+(OpCodes.R_E << 3) | OpCodes.R_C => () => E = C,
+(OpCodes.R_E << 3) | OpCodes.R_D => () => E = D,
+(OpCodes.R_E << 3) | OpCodes.R_E => () => E = E,
+(OpCodes.R_E << 3) | OpCodes.R_H => () => E = H,
+(OpCodes.R_E << 3) | OpCodes.R_L => () => E = L,
+(OpCodes.R_H << 3) | OpCodes.R_A => () => H = A,
+(OpCodes.R_H << 3) | OpCodes.R_B => () => H = B,
+(OpCodes.R_H << 3) | OpCodes.R_C => () => H = C,
+(OpCodes.R_H << 3) | OpCodes.R_D => () => H = D,
+(OpCodes.R_H << 3) | OpCodes.R_E => () => H = E,
+(OpCodes.R_H << 3) | OpCodes.R_H => () => H = H,
+(OpCodes.R_H << 3) | OpCodes.R_L => () => H = L,
+(OpCodes.R_L << 3) | OpCodes.R_A => () => L = A,
+(OpCodes.R_L << 3) | OpCodes.R_B => () => L = B,
+(OpCodes.R_L << 3) | OpCodes.R_C => () => L = C,
+(OpCodes.R_L << 3) | OpCodes.R_D => () => L = D,
+(OpCodes.R_L << 3) | OpCodes.R_E => () => L = E,
+(OpCodes.R_L << 3) | OpCodes.R_H => () => L = H,
+(OpCodes.R_L << 3) | OpCodes.R_L => () => L = L,
+
+        };
     }
 }
-
 

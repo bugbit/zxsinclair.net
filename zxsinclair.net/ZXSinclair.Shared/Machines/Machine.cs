@@ -39,6 +39,7 @@ namespace ZXSinclair.Machines
 
         public Machine()
         {
+            mMemories = CreateMemories();
             Reset();
             mOpCodes = new Action[256];
 
@@ -53,6 +54,9 @@ namespace ZXSinclair.Machines
             ResetMemories();
             mSemSync = new SemaphoreSlim(0, 1);
         }
+        public virtual byte PeekByte(int argAddress) => MemoryNull.Instance.ReadMemory(argAddress);
+
+        public virtual void Poke(int argAddress, byte argData) => MemoryNull.Instance.WriteMemory(argAddress, argData);
 
         public void ExecInstruction()
         {
@@ -65,13 +69,11 @@ namespace ZXSinclair.Machines
 
         public Task Start() => Task.Factory.StartNew(StartTask);
 
-        public void SignalSync() => mSemSync.Release();        
+        public void SignalSync() => mSemSync.Release();
 
-        protected virtual void ResetMemories() { }
+        protected virtual IMemory[] CreateMemories() => new[] { MemoryNull.Instance };
 
-        protected byte PeekByte(int argAddress) => MemoryNull.Instance.ReadMemory(argAddress);
-
-        protected void Poke(int argAddress, byte argData) => MemoryNull.Instance.WriteMemory(argAddress, argData);
+        protected virtual void ResetMemories() { }        
 
         protected virtual byte FetchOpCode() => 0;
         protected virtual void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();

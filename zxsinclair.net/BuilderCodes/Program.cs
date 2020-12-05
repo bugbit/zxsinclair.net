@@ -46,10 +46,8 @@ namespace ZXSinclair.Machines.Z80
         /// </summary>
         /// <param name=""r_r1""></param>
         /// <returns></returns>
-        public Action CreateLDR_R1(int r_r1)
+        public Action CreateLDR_R1(int r_r1)=> r_r1 switch
         {
-            switch (r_r1)
-            {
 "
         );
 
@@ -57,25 +55,15 @@ namespace ZXSinclair.Machines.Z80
         {
             for (var j = 0; j < OpCodes.Car_Rs.Length; j++)
             {
-                pStream.WriteLine
-                (
-$@"
-                case (OpCodes.R_{OpCodes.Car_Rs[i]} << 3) | OpCodes.R_{OpCodes.Car_Rs[j]}:
-                    return () => {OpCodes.Car_Rs[i]} = {OpCodes.Car_Rs[j]};
-"
-                ); ;
+                pStream.WriteLine($"(OpCodes.R_{OpCodes.Car_Rs[i]} << 3) | OpCodes.R_{OpCodes.Car_Rs[j]} => () => {OpCodes.Car_Rs[i]} = {OpCodes.Car_Rs[j]},");
             }
         }
         pStream.WriteLine
         (
 @"
-            }
-
-            return null;
-        }
+        };
     }
 }
-
 "
         );
     }

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ZXSinclair.Machines;
 using Z80 = ZXSinclair.CPU.Z80;
 
 namespace ZXSinclair.Perform
@@ -26,6 +27,20 @@ namespace ZXSinclair.Perform
     {
         public class MachineZ80Test : Machines.Z80.MachineZ80
         {
+            private ROM mRom = new ROM(0xFFFF);
+
+            public MachineZ80Test()
+            {
+                mRom.BufferData[0] = 0x54; // LD D,H
+            }
+
+            protected override IMemory[] CreateMemories()
+            {
+                return new[] { mRom };
+            }
+
+            public override byte PeekByte(int argAddress) => mRom.ReadMemory(argAddress & 0xFFFF);
+            public override void Poke(int argAddress, byte argData) => mRom.WriteMemory(argAddress & 0xFFFF, argData);
             protected override void Sync()
             {
                 //base.Sync();
@@ -33,7 +48,7 @@ namespace ZXSinclair.Perform
             }
         }
 
-        private Z80.Cpu mZ80 = new Z80.Cpu { Ticks = new CPU.Ticks() };
+        //private Z80.Cpu mZ80 = new Z80.Cpu { Ticks = new CPU.Ticks() };
         private MachineZ80Test mMachineTest = new MachineZ80Test();
 
         public void TestExecInstructionMethod()

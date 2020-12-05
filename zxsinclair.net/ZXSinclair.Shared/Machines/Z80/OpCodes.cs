@@ -37,5 +37,8 @@ namespace ZXSinclair.Machines.Z80
 
         public const int LD_r_r1 = 0b01000000;
         public const int LD_r_r1_msk = 0b11000000;
+
+        public const int LD_A_B = 0x78;
+        public const int LD_A_C = 0x79;
     }
 }

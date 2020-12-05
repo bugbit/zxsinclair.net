@@ -27,6 +27,8 @@ namespace ZXSinclair.Machines.Z80
     // http://www.z80.info/zip/z80-documented.pdf
     // https://worldofspectrum.org/z88forever/dn327/z80undoc.htm
     // https://worldofspectrum.org/faq/resources/documents.htm
+    // http://biblioteca.museo8bits.es/index.php
+    // https://trastero.speccy.org/cosas/Libros/Libros.htm
 
     public class MachineZ80 : Machine
     {

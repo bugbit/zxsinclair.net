@@ -34,6 +34,8 @@ namespace ZXSinclair.Machines
 
         public Memory(int argSize) : this(argSize, argSize - 1) { }
 
+        public byte[] BufferData => mBufferData;
+
         public byte ReadMemory(int argMemory) => mBufferData[argMemory % mMask];
 
         public virtual void WriteMemory(int argMemory, byte argData) => mBufferData[argMemory % mMask] = argData;

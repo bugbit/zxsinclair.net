@@ -133,5 +133,11 @@ namespace ZXSinclair.Machines.Z80
 
         //    return null;
         //}
+
+        public Action CreateLDR_R1_2(int r_r1) => r_r1 switch
+        {
+            (OpCodes.R_A << 3) | OpCodes.R_A => () => A = A,
+            (OpCodes.R_A << 3) | OpCodes.R_B => () => A = B,
+        };
     }
 }
