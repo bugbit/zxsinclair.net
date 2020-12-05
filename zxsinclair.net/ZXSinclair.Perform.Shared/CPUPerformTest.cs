@@ -24,12 +24,25 @@ namespace ZXSinclair.Perform
 {
     public class CPUPerformTest
     {
+        public class MachineZ80Test : Machines.Z80.MachineZ80
+        {
+            protected override void Sync()
+            {
+                //base.Sync();
+                mFinishToken.Cancel();
+            }
+        }
+
         private Z80.Cpu mZ80 = new Z80.Cpu { Ticks = new CPU.Ticks() };
+        private MachineZ80Test mMachineTest = new MachineZ80Test();
 
         public void TestExecInstructionMethod()
         {
-            for (var i = 0; i < 224 * 312; i += 4)
-                mZ80.ExecInstruction();
+            mMachineTest.Reset();
+            mMachineTest.SignalSync();
+            mMachineTest.Start().Wait();
+            //for (var i = 0; i < 224 * 312; i += 4)
+            //    mZ80.ExecInstruction();
         }
     }
 }

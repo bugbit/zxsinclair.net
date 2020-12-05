@@ -30,6 +30,12 @@ namespace ZXSinclair.Machines.Z80
     {
         protected Regs mRegs = new Regs();
 
+        public MachineZ80() : base()
+        {
+            mTSatesFetchOpCode = 4;
+            mTSatesCounterSync = mTSatesToSync = 224 * 312;
+        }
+
         public Regs Regs => mRegs;
     }
 }

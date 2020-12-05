@@ -23,6 +23,11 @@ namespace ZXSinclair.Machines
 {
     public class MemoryNull : IMemory
     {
+        private static readonly Lazy<MemoryNull> mInstance = new Lazy<MemoryNull>(() => new MemoryNull());
+
+        private MemoryNull() { }
+
+        public static IMemory Instance => mInstance.Value;
         public byte ReadMemory(int argMemory) => 0;
 
         public void WriteMemory(int argMemory, byte argData) { }

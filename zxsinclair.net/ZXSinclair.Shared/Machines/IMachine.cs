@@ -21,9 +21,9 @@ using System.Text;
 
 namespace ZXSinclair.Machines
 {
-    public interface IMachine
+    public interface IMachine : IDisposable
     {
-        IMemory[] Memories { get; set; }
+        IMemory[] Memories { get; }
         void Reset();
     }
 }
