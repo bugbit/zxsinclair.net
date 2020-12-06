@@ -38,7 +38,80 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_r_r1 = 0b01000000;
         public const int LD_r_r1_msk = 0b11000000;
 
+        public const int LD_r_n = 0b00000110;
+        public const int LD_r_n_mask = 0b11000111;
+
+        public const int NOP = 0x00;
+
+        public const int LD_B_N = 0x06;
+
+        public const int LD_C_N = 0x0E;
+
+        public const int LD_D_N = 0x16;
+
+        public const int LD_E_N = 0x1E;
+
+        public const int LD_H_N = 0x26;
+
+        public const int LD_L_N = 0x2E;
+
+        public const int LD_A_N = 0x3E;
+
+        public const int LD_B_B = 0x40;
+        public const int LD_B_C = 0x41;
+        public const int LD_B_D = 0x42;
+        public const int LD_B_E = 0x43;
+        public const int LD_B_H = 0x44;
+        public const int LD_B_L = 0x45;
+
+        public const int LD_B_A = 0x47;
+        public const int LD_C_B = 0x48;
+        public const int LD_C_C = 0x49;
+        public const int LD_C_D = 0x4A;
+        public const int LD_C_E = 0x4B;
+        public const int LD_C_H = 0x4C;
+        public const int LD_C_L = 0x4D;
+
+        public const int LD_C_A = 0x4F;
+        public const int LD_D_B = 0x50;
+        public const int LD_D_C = 0x51;
+        public const int LD_D_D = 0x52;
+        public const int LD_D_E = 0x53;
+        public const int LD_D_H = 0x54;
+        public const int LD_D_L = 0x55;
+
+        public const int LD_D_A = 0x57;
+        public const int LD_E_B = 0x58;
+        public const int LD_E_C = 0x59;
+        public const int LD_E_D = 0x5A;
+        public const int LD_E_E = 0x5B;
+        public const int LD_E_H = 0x5C;
+        public const int LD_E_L = 0x5D;
+
+        public const int LD_E_A = 0x5F;
+        public const int LD_H_B = 0x60;
+        public const int LD_H_C = 0x61;
+        public const int LD_H_D = 0x62;
+        public const int LD_H_E = 0x63;
+        public const int LD_H_H = 0x64;
+        public const int LD_H_L = 0x65;
+
+        public const int LD_H_A = 0x67;
+        public const int LD_L_B = 0x68;
+        public const int LD_L_C = 0x69;
+        public const int LD_L_D = 0x6A;
+        public const int LD_L_E = 0x6B;
+        public const int LD_L_H = 0x6C;
+        public const int LD_L_L = 0x6D;
+
+        public const int LD_L_A = 0x6F;
+
         public const int LD_A_B = 0x78;
         public const int LD_A_C = 0x79;
+        public const int LD_A_D = 0x7A;
+        public const int LD_A_E = 0x7B;
+        public const int LD_A_H = 0x7C;
+        public const int LD_A_L = 0x7D;
+        public const int LD_A_A = 0x7F;
     }
 }

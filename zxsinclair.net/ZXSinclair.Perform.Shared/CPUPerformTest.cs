@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ZXSinclair.Machines;
-using Z80 = ZXSinclair.CPU.Z80;
+using ZXSinclair.Machines.Z80;
 
 namespace ZXSinclair.Perform
 {
@@ -31,7 +31,8 @@ namespace ZXSinclair.Perform
 
             public MachineZ80Test()
             {
-                mRom.BufferData[0] = 0x54; // LD D,H
+                //mRom.BufferData[0] = 0x54; // LD D,H
+                mRom.BufferData[0] = OpCodes.LD_A_N;
             }
 
             protected override IMemory[] CreateMemories()

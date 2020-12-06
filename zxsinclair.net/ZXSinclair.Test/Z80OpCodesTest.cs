@@ -27,7 +27,7 @@ using ZXSinclair.Machines.Z80;
 namespace ZXSinclair.Test
 {
     [TestClass]
-    public class Z80OpCodesTest
+    public partial class Z80OpCodesTest
     {
         public class MachineZ80Test : MachineZ80
         {
@@ -57,51 +57,6 @@ namespace ZXSinclair.Test
         public void SetUp()
         {
             mMachineTest = new MachineZ80Test();
-        }
-
-        [TestMethod]
-        public void LD_A_B_Method()
-        {
-            var pRegs = mMachineTest.Regs;
-
-            pRegs.Reset();
-            pRegs.A = 1;
-            pRegs.B = 2;
-
-            mMachineTest.Poke(0, OpCodes.LD_A_B);
-            mMachineTest.ExecInstruction();
-
-            Assert.IsTrue(pRegs.PC == 1);
-            Assert.IsTrue(pRegs.A == 2);
-            Assert.IsTrue(pRegs.B == 2);
-            Assert.IsTrue(pRegs.C == 0);
-            Assert.IsTrue(pRegs.D == 0);
-            Assert.IsTrue(pRegs.E == 0);
-            Assert.IsTrue(pRegs.H == 0);
-            Assert.IsTrue(pRegs.L == 0);
-        }
-       
-        [TestMethod]
-        public void LD_A_C_Method()
-        {
-            var pRegs = mMachineTest.Regs;
-
-            pRegs.Reset();
-            pRegs.A = 1;
-            pRegs.B = 2;
-            pRegs.C = 3;
-
-            mMachineTest.Poke(0, OpCodes.LD_A_C);
-            mMachineTest.ExecInstruction();
-
-            Assert.IsTrue(pRegs.PC == 1);
-            Assert.IsTrue(pRegs.A == 3);
-            Assert.IsTrue(pRegs.B == 2);
-            Assert.IsTrue(pRegs.C == 3);
-            Assert.IsTrue(pRegs.D == 0);
-            Assert.IsTrue(pRegs.E == 0);
-            Assert.IsTrue(pRegs.H == 0);
-            Assert.IsTrue(pRegs.L == 0);
         }
     }
 }

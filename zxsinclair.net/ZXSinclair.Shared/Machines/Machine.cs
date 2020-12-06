@@ -29,6 +29,7 @@ namespace ZXSinclair.Machines
         protected Action[] mOpCodes;
         protected int mTStates;
         protected int mTSatesFetchOpCode = 1;
+        protected int mTSatesReadMem = 1;
         protected int mTSatesToSync = int.MaxValue;
         protected int mTSatesCounterSync;
         protected SemaphoreSlim mSemSync = new SemaphoreSlim(0, 1);
@@ -36,6 +37,7 @@ namespace ZXSinclair.Machines
         private bool disposedValue;
 
         public IMemory[] Memories => mMemories;
+        public int TStates => mTStates;
 
         public Machine()
         {
@@ -73,10 +75,16 @@ namespace ZXSinclair.Machines
 
         protected virtual IMemory[] CreateMemories() => new[] { MemoryNull.Instance };
 
-        protected virtual void ResetMemories() { }        
+        protected virtual void ResetMemories() { }
 
         protected virtual byte FetchOpCode() => 0;
         protected virtual void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();
+        protected virtual byte ReadMemByte(int argAddress)
+        {
+            AddCycles(mTSatesReadMem);
+
+            return PeekByte(argAddress);
+        }
         protected void NOP() { }
 
         protected virtual void FillTableOpCodes() { }

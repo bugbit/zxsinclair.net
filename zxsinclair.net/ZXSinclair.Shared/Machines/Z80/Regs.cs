@@ -111,11 +111,29 @@ namespace ZXSinclair.Machines.Z80
             }
         }
 
-        public void SetA_B() => A = B;
+        public Func<byte> CreateGetR(int r) => r switch
+        {
+            OpCodes.R_A => () => A,
+            OpCodes.R_B => () => B,
+            OpCodes.R_C => () => C,
+            OpCodes.R_D => () => D,
+            OpCodes.R_E => () => E,
+            OpCodes.R_H => () => H,
+            OpCodes.R_L => () => L,
+            _ => () => 0
+        };
 
-        public Action CreateA_B() => () => A = B;
-        public Func<byte> CreateGetterB() { return () => B; }
-        public Action<byte> CreateSetterA() { return v => A = v; }
+        public Action<byte> CreateSetR_N(int r) => r switch
+        {
+            OpCodes.R_A => n => A = n,
+            OpCodes.R_B => n => B = n,
+            OpCodes.R_C => n => C = n,
+            OpCodes.R_D => n => D = n,
+            OpCodes.R_E => n => E = n,
+            OpCodes.R_H => n => H = n,
+            OpCodes.R_L => n => L = n,
+            _ => nn => { }
+        };
 
         ///// <summary>
         ///// R=r1

@@ -29,6 +29,7 @@ namespace ZXSinclair.Machines.Z80
     // https://worldofspectrum.org/faq/resources/documents.htm
     // http://biblioteca.museo8bits.es/index.php
     // https://trastero.speccy.org/cosas/Libros/Libros.htm
+    // https://www.imd.guru/retropedia/desarrollo/z80/opcodes.html
 
     public class MachineZ80 : Machine
     {
@@ -37,6 +38,7 @@ namespace ZXSinclair.Machines.Z80
         public MachineZ80() : base()
         {
             mTSatesFetchOpCode = 4;
+            mTSatesReadMem = 3;
             mTSatesCounterSync = mTSatesToSync = 224 * 312;
         }
 
@@ -50,6 +52,8 @@ namespace ZXSinclair.Machines.Z80
 
         protected override byte FetchOpCode() => PeekByte(mRegs.GetPCAndInc());
 
+        protected byte ReadMemBytePC() => ReadMemByte(mRegs.GetPCAndInc());
+
         protected override void ExecOpCode(int argOpCode)
         {
             mRegs.RefreshR();
@@ -59,9 +63,30 @@ namespace ZXSinclair.Machines.Z80
 
         protected override void FillTableOpCodes()
         {
-            var q = from r in OpCodes.Rs from r1 in OpCodes.Rs select (r << 3) | r1;
+            var qR_R1 = from r in OpCodes.Rs from r1 in OpCodes.Rs select (r << 3) | r1;
 
-            Parallel.ForEach(q, r_r1 => mOpCodes[OpCodes.LD_r_r1 | r_r1] = mRegs.CreateLDR_R1(r_r1));
+            Parallel.ForEach(qR_R1, r_r1 => mOpCodes[OpCodes.LD_r_r1 | r_r1] = mRegs.CreateLDR_R1(r_r1));
+            Parallel.ForEach(OpCodes.Rs, r =>
+                 {
+                     var pSet = mRegs.CreateSetR_N(r);
+
+                     mOpCodes[OpCodes.LD_r_n | (r << 3)] = () => LD_R_N(pSet);
+                 }
+            );
+        }
+
+        protected void LD_A_N()
+        {
+            var n = ReadMemBytePC();
+
+            mRegs.A = n;
+        }
+
+        protected void LD_R_N(Action<byte> argSetR_N)
+        {
+            var n = ReadMemBytePC();
+
+            argSetR_N.Invoke(n);
         }
     }
 }
