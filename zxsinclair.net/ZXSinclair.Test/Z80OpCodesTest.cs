@@ -58,5 +58,210 @@ namespace ZXSinclair.Test
         {
             mMachineTest = new MachineZ80Test();
         }
+
+        [TestMethod]
+        public void LD_A_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_A_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 205, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+
+        [TestMethod]
+        public void LD_B_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_B_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 205, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_C_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_C_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 205, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_D_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_D_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 205, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_E_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_E_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 205, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_H_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_H_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 205, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_L_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_L_N);
+            mMachineTest.Poke(1, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 205, "L");
+        }
     }
 }

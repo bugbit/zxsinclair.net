@@ -73,14 +73,63 @@ namespace ZXSinclair.Machines.Z80
                      mOpCodes[OpCodes.LD_r_n | (r << 3)] = () => LD_R_N(pSet);
                  }
             );
+            //FillTableOpCodes
+            //(
+            //    new Dictionary<byte, Action>
+            //    {
+            //        [OpCodes.LD_A_N] = LD_A_N,
+            //        [OpCodes.LD_B_N] = LD_B_N,
+            //        [OpCodes.LD_C_N] = LD_C_N,
+            //        [OpCodes.LD_D_N] = LD_D_N,
+            //        [OpCodes.LD_E_N] = LD_E_N,
+            //        [OpCodes.LD_H_N] = LD_H_N,
+            //        [OpCodes.LD_L_N] = LD_L_N,
+            //    }
+            //);
         }
 
-        protected void LD_A_N()
-        {
-            var n = ReadMemBytePC();
+        //protected void LD_A_N()
+        //{
+        //    var n = ReadMemBytePC();
 
-            mRegs.A = n;
-        }
+        //    mRegs.A = n;
+        //}
+        //protected void LD_B_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.B = n;
+        //}
+        //protected void LD_C_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.C = n;
+        //}
+        //protected void LD_D_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.D = n;
+        //}
+        //protected void LD_E_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.E = n;
+        //}
+        //protected void LD_H_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.H = n;
+        //}
+        //protected void LD_L_N()
+        //{
+        //    var n = ReadMemBytePC();
+
+        //    mRegs.L = n;
+        //}
 
         protected void LD_R_N(Action<byte> argSetR_N)
         {

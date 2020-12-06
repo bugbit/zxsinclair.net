@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,6 +87,11 @@ namespace ZXSinclair.Machines
             return PeekByte(argAddress);
         }
         protected void NOP() { }
+
+        protected void FillTableOpCodes(IDictionary<byte, Action> argOpCodes)
+        {
+            Parallel.ForEach(argOpCodes, kv => mOpCodes[kv.Key] = kv.Value);
+        }
 
         protected virtual void FillTableOpCodes() { }
 
