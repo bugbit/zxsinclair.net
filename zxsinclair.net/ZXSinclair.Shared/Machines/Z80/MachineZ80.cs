@@ -35,6 +35,7 @@ namespace ZXSinclair.Machines.Z80
     {
         protected Regs mRegs = new Regs();
         protected Action[] mOpCodesDD;
+        protected Action[] mOpCodesFD;
 
         public MachineZ80() : base()
         {
@@ -43,9 +44,12 @@ namespace ZXSinclair.Machines.Z80
             mTSatesCounterSync = mTSatesToSync = 224 * 312;
 
             mOpCodesDD = new Action[256];
+            mOpCodesFD = new Action[256];
 
             Parallel.For(0, 256, i => mOpCodesDD[i] = NOP);
+            Parallel.For(0, 256, i => mOpCodesFD[i] = NOP);
             FillTableOpCodesDD();
+            FillTableOpCodesFD();
         }
 
         public Regs Regs => mRegs;
@@ -90,7 +94,8 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_E_M_HL_M] = LD_E_M_HL_M,
                     [OpCodes.LD_H_M_HL_M] = LD_H_M_HL_M,
                     [OpCodes.LD_L_M_HL_M] = LD_L_M_HL_M,
-                    [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD)
+                    [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
+                    [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
                 }
             ); ;
         }
@@ -101,7 +106,30 @@ namespace ZXSinclair.Machines.Z80
             (
                 mOpCodesDD, new Dictionary<byte, Action>
                 {
-                    [OpCodes.LD_A_M_IX_D_M] = LD_A_M_IX_D_M
+                    [OpCodes.LD_A_M_IX_D_M] = LD_A_M_IX_D_M,
+                    [OpCodes.LD_B_M_IX_D_M] = LD_B_M_IX_D_M,
+                    [OpCodes.LD_C_M_IX_D_M] = LD_C_M_IX_D_M,
+                    [OpCodes.LD_D_M_IX_D_M] = LD_D_M_IX_D_M,
+                    [OpCodes.LD_E_M_IX_D_M] = LD_E_M_IX_D_M,
+                    [OpCodes.LD_H_M_IX_D_M] = LD_H_M_IX_D_M,
+                    [OpCodes.LD_L_M_IX_D_M] = LD_L_M_IX_D_M,
+                }
+            );
+        }
+
+        protected void FillTableOpCodesFD()
+        {
+            FillTableOpCodes
+            (
+                mOpCodesFD, new Dictionary<byte, Action>
+                {
+                    [OpCodes.LD_A_M_IY_D_M] = LD_A_M_IY_D_M,
+                    [OpCodes.LD_B_M_IY_D_M] = LD_B_M_IY_D_M,
+                    [OpCodes.LD_C_M_IY_D_M] = LD_C_M_IY_D_M,
+                    [OpCodes.LD_D_M_IY_D_M] = LD_D_M_IY_D_M,
+                    [OpCodes.LD_E_M_IY_D_M] = LD_E_M_IY_D_M,
+                    [OpCodes.LD_H_M_IY_D_M] = LD_H_M_IY_D_M,
+                    [OpCodes.LD_L_M_IY_D_M] = LD_L_M_IY_D_M,
                 }
             );
         }
@@ -149,6 +177,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.L = n;
         }
 
+        // LD A,(HL)
         protected void LD_A_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -156,6 +185,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.A = n;
         }
 
+        // LD B,(HL)
         protected void LD_B_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -163,6 +193,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.B = n;
         }
 
+        // LD C,(HL)
         protected void LD_C_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -170,6 +201,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.C = n;
         }
 
+        // LD D,(HL)
         protected void LD_D_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -177,6 +209,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.D = n;
         }
 
+        // LD E,(HL)
         protected void LD_E_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -184,6 +217,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.E = n;
         }
 
+        // LD H,(HL)
         protected void LD_H_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -191,6 +225,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.H = n;
         }
 
+        // LD L,(HL)
         protected void LD_L_M_HL_M()
         {
             var n = ReadMemByte(mRegs.HL);
@@ -198,6 +233,7 @@ namespace ZXSinclair.Machines.Z80
             mRegs.L = n;
         }
 
+        // LD A,(IX+d)
         protected void LD_A_M_IX_D_M()
         {
             var d = ReadMemBytePCAndInc();
@@ -207,6 +243,162 @@ namespace ZXSinclair.Machines.Z80
             var n = ReadMemByte(mRegs.IX + d);
 
             mRegs.A = n;
+        }
+
+        // LD B,(IX+d)
+        protected void LD_B_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.B = n;
+        }
+
+        // LD C,(IX+d)
+        protected void LD_C_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.C = n;
+        }
+
+        // LD D,(IX+d)
+        protected void LD_D_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.D = n;
+        }
+
+        // LD E,(IX+d)
+        protected void LD_E_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.E = n;
+        }
+
+        // LD H,(IX+d)
+        protected void LD_H_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.H = n;
+        }
+
+        // LD L,(IX+d)
+        protected void LD_L_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.L = n;
+        }
+
+        // LD A,(IY+d)
+        protected void LD_A_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.A = n;
+        }
+
+        // LD B,(IY+d)
+        protected void LD_B_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.B = n;
+        }
+
+        // LD C,(IY+d)
+        protected void LD_C_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.C = n;
+        }
+
+        // LD D,(IY+d)
+        protected void LD_D_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.D = n;
+        }
+
+        // LD E,(IY+d)
+        protected void LD_E_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.E = n;
+        }
+
+        // LD H,(IY+d)
+        protected void LD_H_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.H = n;
+        }
+
+        // LD L,(IY+d)
+        protected void LD_L_M_IY_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IY + d);
+
+            mRegs.L = n;
         }
     }
 }

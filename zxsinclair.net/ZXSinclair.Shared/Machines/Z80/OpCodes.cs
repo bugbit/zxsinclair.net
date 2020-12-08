@@ -127,5 +127,21 @@ namespace ZXSinclair.Machines.Z80
         public const int OPCODES_DD = 0xDD;
 
         public const int LD_A_M_IX_D_M = 0x7E;
+        public const int LD_B_M_IX_D_M = 0x46;
+        public const int LD_C_M_IX_D_M = 0x4E;
+        public const int LD_D_M_IX_D_M = 0x56;
+        public const int LD_E_M_IX_D_M = 0x5E;
+        public const int LD_H_M_IX_D_M = 0x66;
+        public const int LD_L_M_IX_D_M = 0x6E;
+
+        public const int OPCODES_FD = 0xFD;
+
+        public const int LD_A_M_IY_D_M = 0x7E;
+        public const int LD_B_M_IY_D_M = 0x46;
+        public const int LD_C_M_IY_D_M = 0x4E;
+        public const int LD_D_M_IY_D_M = 0x56;
+        public const int LD_E_M_IY_D_M = 0x5E;
+        public const int LD_H_M_IY_D_M = 0x66;
+        public const int LD_L_M_IY_D_M = 0x6E;
     }
 }
