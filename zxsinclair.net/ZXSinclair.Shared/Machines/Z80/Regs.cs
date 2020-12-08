@@ -134,28 +134,5 @@ namespace ZXSinclair.Machines.Z80
             OpCodes.R_L => n => L = n,
             _ => nn => { }
         };
-
-        ///// <summary>
-        ///// R=r1
-        ///// 00rrrrRRR
-        ///// </summary>
-        ///// <param name="r_r1"></param>
-        ///// <returns></returns>
-        //public Action CreateLDR_R1(int r_r1)
-        //{
-        //    switch (r_r1)
-        //    {
-        //        case (OpCodes.R_A << 3) | OpCodes.R_A:
-        //            return () => A = A;
-        //    }
-
-        //    return null;
-        //}
-
-        public Action CreateLDR_R1_2(int r_r1) => r_r1 switch
-        {
-            (OpCodes.R_A << 3) | OpCodes.R_A => () => A = A,
-            (OpCodes.R_A << 3) | OpCodes.R_B => () => A = B,
-        };
     }
 }

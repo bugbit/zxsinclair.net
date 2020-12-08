@@ -80,6 +80,15 @@ namespace ZXSinclair.Machines
 
         protected virtual byte FetchOpCode() => 0;
         protected virtual void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();
+        protected virtual void ExecOpCode(Action[] argOpCodes, int argOpCode) => argOpCodes[argOpCode].Invoke();
+        protected void ExecInstruction(Action[] argOpCodes)
+        {
+            var pOpCode = FetchOpCode();
+
+            AddCycles(mTSatesFetchOpCode);
+
+            ExecOpCode(argOpCodes, pOpCode);
+        }
         protected virtual byte ReadMemByte(int argAddress)
         {
             AddCycles(mTSatesReadMem);
@@ -90,7 +99,12 @@ namespace ZXSinclair.Machines
 
         protected void FillTableOpCodes(IDictionary<byte, Action> argOpCodes)
         {
-            Parallel.ForEach(argOpCodes, kv => mOpCodes[kv.Key] = kv.Value);
+            FillTableOpCodes(mOpCodes, argOpCodes);
+        }
+
+        protected void FillTableOpCodes(Action[] argOpCodesArr, IDictionary<byte, Action> argOpCodes)
+        {
+            Parallel.ForEach(argOpCodes, kv => argOpCodesArr[kv.Key] = kv.Value);
         }
 
         protected virtual void FillTableOpCodes() { }

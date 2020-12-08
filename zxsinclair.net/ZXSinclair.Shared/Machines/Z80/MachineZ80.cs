@@ -34,12 +34,18 @@ namespace ZXSinclair.Machines.Z80
     public class MachineZ80 : Machine
     {
         protected Regs mRegs = new Regs();
+        protected Action[] mOpCodesDD;
 
         public MachineZ80() : base()
         {
             mTSatesFetchOpCode = 4;
             mTSatesReadMem = 3;
             mTSatesCounterSync = mTSatesToSync = 224 * 312;
+
+            mOpCodesDD = new Action[256];
+
+            Parallel.For(0, 256, i => mOpCodesDD[i] = NOP);
+            FillTableOpCodesDD();
         }
 
         public Regs Regs => mRegs;
@@ -52,7 +58,7 @@ namespace ZXSinclair.Machines.Z80
 
         protected override byte FetchOpCode() => PeekByte(mRegs.GetPCAndInc());
 
-        protected byte ReadMemBytePC() => ReadMemByte(mRegs.GetPCAndInc());
+        protected byte ReadMemBytePCAndInc() => ReadMemByte(mRegs.GetPCAndInc());
 
         protected override void ExecOpCode(int argOpCode)
         {
@@ -66,76 +72,141 @@ namespace ZXSinclair.Machines.Z80
             var qR_R1 = from r in OpCodes.Rs from r1 in OpCodes.Rs select (r << 3) | r1;
 
             Parallel.ForEach(qR_R1, r_r1 => mOpCodes[OpCodes.LD_r_r1 | r_r1] = mRegs.CreateLDR_R1(r_r1));
-            Parallel.ForEach(OpCodes.Rs, r =>
-                 {
-                     var pSet = mRegs.CreateSetR_N(r);
-
-                     mOpCodes[OpCodes.LD_r_n | (r << 3)] = () => LD_R_N(pSet);
-                 }
-            );
-            //FillTableOpCodes
-            //(
-            //    new Dictionary<byte, Action>
-            //    {
-            //        [OpCodes.LD_A_N] = LD_A_N,
-            //        [OpCodes.LD_B_N] = LD_B_N,
-            //        [OpCodes.LD_C_N] = LD_C_N,
-            //        [OpCodes.LD_D_N] = LD_D_N,
-            //        [OpCodes.LD_E_N] = LD_E_N,
-            //        [OpCodes.LD_H_N] = LD_H_N,
-            //        [OpCodes.LD_L_N] = LD_L_N,
-            //    }
-            //);
+            FillTableOpCodes
+            (
+                new Dictionary<byte, Action>
+                {
+                    [OpCodes.LD_A_N] = LD_A_N,
+                    [OpCodes.LD_B_N] = LD_B_N,
+                    [OpCodes.LD_C_N] = LD_C_N,
+                    [OpCodes.LD_D_N] = LD_D_N,
+                    [OpCodes.LD_E_N] = LD_E_N,
+                    [OpCodes.LD_H_N] = LD_H_N,
+                    [OpCodes.LD_L_N] = LD_L_N,
+                    [OpCodes.LD_A_M_HL_M] = LD_A_M_HL_M,
+                    [OpCodes.LD_B_M_HL_M] = LD_B_M_HL_M,
+                    [OpCodes.LD_C_M_HL_M] = LD_C_M_HL_M,
+                    [OpCodes.LD_D_M_HL_M] = LD_D_M_HL_M,
+                    [OpCodes.LD_E_M_HL_M] = LD_E_M_HL_M,
+                    [OpCodes.LD_H_M_HL_M] = LD_H_M_HL_M,
+                    [OpCodes.LD_L_M_HL_M] = LD_L_M_HL_M,
+                    [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD)
+                }
+            ); ;
         }
 
-        //protected void LD_A_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.A = n;
-        //}
-        //protected void LD_B_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.B = n;
-        //}
-        //protected void LD_C_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.C = n;
-        //}
-        //protected void LD_D_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.D = n;
-        //}
-        //protected void LD_E_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.E = n;
-        //}
-        //protected void LD_H_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.H = n;
-        //}
-        //protected void LD_L_N()
-        //{
-        //    var n = ReadMemBytePC();
-
-        //    mRegs.L = n;
-        //}
-
-        protected void LD_R_N(Action<byte> argSetR_N)
+        protected void FillTableOpCodesDD()
         {
-            var n = ReadMemBytePC();
+            FillTableOpCodes
+            (
+                mOpCodesDD, new Dictionary<byte, Action>
+                {
+                    [OpCodes.LD_A_M_IX_D_M] = LD_A_M_IX_D_M
+                }
+            );
+        }
 
-            argSetR_N.Invoke(n);
+        protected void LD_A_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.A = n;
+        }
+        protected void LD_B_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.B = n;
+        }
+        protected void LD_C_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.C = n;
+        }
+        protected void LD_D_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.D = n;
+        }
+        protected void LD_E_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.E = n;
+        }
+        protected void LD_H_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.H = n;
+        }
+        protected void LD_L_N()
+        {
+            var n = ReadMemBytePCAndInc();
+
+            mRegs.L = n;
+        }
+
+        protected void LD_A_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.A = n;
+        }
+
+        protected void LD_B_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.B = n;
+        }
+
+        protected void LD_C_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.C = n;
+        }
+
+        protected void LD_D_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.D = n;
+        }
+
+        protected void LD_E_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.E = n;
+        }
+
+        protected void LD_H_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.H = n;
+        }
+
+        protected void LD_L_M_HL_M()
+        {
+            var n = ReadMemByte(mRegs.HL);
+
+            mRegs.L = n;
+        }
+
+        protected void LD_A_M_IX_D_M()
+        {
+            var d = ReadMemBytePCAndInc();
+
+            AddCycles(5);
+
+            var n = ReadMemByte(mRegs.IX + d);
+
+            mRegs.A = n;
         }
     }
 }
