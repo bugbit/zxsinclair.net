@@ -1,0 +1,38 @@
+﻿@inherits LayoutComponentBase
+@using System.Reflection;
+
+<div class="page">
+    @* <div class="sidebar">
+        <NavMenu />
+        </div> *@
+
+    <main>
+        <div class="top-row px-4 zxtitle">
+            @* <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a> *@
+            <b>@title</b>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+        <div class="botton-row">Develop for 2016-21 Óscar Hernández Bañó</div>
+    </main>
+</div>
+@code
+{
+    string title
+    {
+        get
+        {
+            var pAssembly = typeof(MainLayout).Assembly;
+            var attrs = pAssembly.GetCustomAttributes(false);
+            var product = attrs.OfType<AssemblyProductAttribute>().First().Product;
+            var version = pAssembly.GetName().Version.ToString();
+
+            return $"{product} Version {version}";
+            //name = attrs.OfType<AssemblyProductAttribute>().First().Product;
+
+            //descripcion = pAttrs.OfType<AssemblyDescriptionAttribute>().First().Description;
+        }
+    }
+}

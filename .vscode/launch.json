@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "blazorwasm",
+        "name": "Launch and Debug Blazor WebAssembly Application",
+        "request": "launch",
+        "cwd": "${workspaceFolder}/zxsinclair.net",
+        "browser": "chrome"
+      }
+    ]
+  }
