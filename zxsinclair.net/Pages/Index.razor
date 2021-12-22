@@ -1,7 +1,41 @@
 ﻿@page "/"
-
-<div style="width: 100%;height: 100vh;">
-    <div class="d-flex align-items-center justify-content-center; width:640px; height:480px">
-        <img src="/images/TVEffect.png" width="640" ; height="480" />
-    </div>
+@inject IJSRuntime JS
+<div>
+    <canvas style="background-color: green; position: relative; top: 10px; left: 10px;" width="640"
+        height="480"></canvas>
+    Displaly the Window size: @windowWidth, @windowHeight
+    <button class="btn btn-primary" @onclick="OnButtonClick">Get Dimensions</button>
 </div>
+@code
+{
+    public class WindowDimensions
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+
+    private IJSObjectReference? jsModule;
+    public int windowHeight, windowWidth;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./zxsinclair.module.window.js");
+
+            var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
+
+            Console.WriteLine($"{dimension.Width}x{dimension.Height}");
+            windowHeight = dimension.Height;
+            windowWidth = dimension.Width;
+        }
+    }
+
+    private async Task OnButtonClick()
+    {
+        var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
+
+        windowHeight = dimension.Height;
+        windowWidth = dimension.Width;
+    }
+}
