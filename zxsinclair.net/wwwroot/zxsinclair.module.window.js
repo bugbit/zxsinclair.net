@@ -8,3 +8,9 @@ export function getWindowSize() {
 
     return { width: x, height: y }
 }
+
+export function addEventResize(dotNetHelper, method) {
+    window.addEventListener("resize", function () {
+        dotNetHelper.invokeMethodAsync(method, getWindowSize())
+    });
+}
