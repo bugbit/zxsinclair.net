@@ -1,63 +1,70 @@
 ﻿@page "/"
 @implements IDisposable
 @inject IJSRuntime JS
+@inject HttpClient Http
 <div>
-	<canvas style="background-color: green; position: relative; top: 10px; left: 10px;" width="640"
-			height="480"></canvas>
-	<div>Menu</div>
-	<div>
-		<div style="background-color:black ;background-image: url('/images/zxwallpaper.png'); background-repeat: no-repeat; background-position: bottom right">
-		</div>
-		Browse
-	</div>
-	Displaly the Window size: @windowWidth, @windowHeight
-	<button class="btn btn-primary" @onclick="OnButtonClick">Get Dimensions</button>
+    <canvas style="background-color: green; position: relative; top: 10px; left: 10px;" width="640"
+        height="480"></canvas>
+    <div>Menu</div>
+    <div style="width: 640px; height: 300px;">
+        <div
+            style="width: 640px; height: 23px;background-color:black ;background-image: url('/images/zxwallpaper.png'); background-repeat: no-repeat; background-position: bottom right">
+        </div>
+        <div style="position: relative; top: -22px; left: 0px;">X</div>
+        @* <iframe src="https://github.com/bugbit/zxsinclair.net/blob/master/README.md" width="620px"
+            height="280"></iframe> *@
+    </div>
+    Displaly the Window size: @windowWidth, @windowHeight
+    <button class="btn btn-primary" @onclick="OnButtonClick">Get Dimensions</button>
 </div>
 @code
 {
-	public class WindowDimensions
-	{
-		public int Width { get; set; }
-		public int Height { get; set; }
-	}
+    public class WindowDimensions
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
 
-	private IJSObjectReference? jsModule;
-	private DotNetObjectReference<Index>? objRef;
-	public int windowHeight, windowWidth;
+    private IJSObjectReference? jsModule;
+    private DotNetObjectReference<Index>? objRef;
+    public int windowHeight, windowWidth;
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			objRef = DotNetObjectReference.Create(this);
-			jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./zxsinclair.module.window.js");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./zxsinclair.module.window.js");
 
-			var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
+            var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
 
-			await jsModule.InvokeVoidAsync("addEventResize", objRef, nameof(OnWindowResize));
-			Console.WriteLine($"{dimension.Width}x{dimension.Height}");
-			windowHeight = dimension.Height;
-			windowWidth = dimension.Width;
-		}
-	}
+            await jsModule.InvokeVoidAsync("addEventResize", objRef, nameof(OnWindowResize));
 
-	[JSInvokable]
-	public void OnWindowResize(WindowDimensions e)
-	{
-		windowHeight = e.Height;
-		windowWidth = e.Width;
-	}
+            Console.WriteLine($"{dimension.Width}x{dimension.Height}");
+            windowHeight = dimension.Height;
+            windowWidth = dimension.Width;
 
-	public void Dispose()
-	{
-		objRef?.Dispose();
-	}
+            //await Http.
+        }
+    }
 
-	private async Task OnButtonClick()
-	{
-		var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
+    [JSInvokable]
+    public void OnWindowResize(WindowDimensions e)
+    {
+        windowHeight = e.Height;
+        windowWidth = e.Width;
+    }
 
-		windowHeight = dimension.Height;
-		windowWidth = dimension.Width;
-	}
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+
+    private async Task OnButtonClick()
+    {
+        var dimension = await jsModule.InvokeAsync<WindowDimensions>("getWindowSize");
+
+        windowHeight = dimension.Height;
+        windowWidth = dimension.Width;
+    }
 }
