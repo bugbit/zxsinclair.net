@@ -3,19 +3,25 @@
 @inject IJSRuntime JS
 @inject HttpClient Http
 <div>
-    <canvas style="background-color: green; position: relative; top: 10px; left: 10px;" width="640"
+    <canvas style="background-color: green; position: relative; top: 10px; left: 10px; z-index: 1;" width=" 640"
         height="480"></canvas>
-    <div>Menu</div>
-    <div style="width: 640px; height: 300px;">
+    <div style="z-index: 1;">Keyboard</div>
+    <div
+        style="background-color: black;position: absolute; top:100px; left:0px; width: 640px; height: 300px; border-style: solid; border-width: 1px; z-index: 2;">
         <div
-            style="width: 640px; height: 23px;background-color:black ;background-image: url('/images/zxwallpaper.png'); background-repeat: no-repeat; background-position: bottom right">
+            style="width: 638px; height: 23px;background-color:black ;background-image: url('/images/zxwallpaper.png'); background-repeat: no-repeat; background-position: right">
         </div>
         <div style="position: relative; top: -22px; left: 0px;">X</div>
-        @* <iframe src="https://github.com/bugbit/zxsinclair.net/blob/master/README.md" width="620px"
-            height="280"></iframe> *@
+        <a href="https://github.com/bugbit/zxsinclair.net" target="_blank">ZXSinclair Emulador ZX Computers running on
+            Blazor
+            WebAssembly</a>
+        <p>Version 1.0 - Nieblita edition. 4 December 2021</p>
+        <p>Developed by 1996-2022 Oscar Hernandez Bañó</p>
     </div>
-    Displaly the Window size: @windowWidth, @windowHeight
-    <button class="btn btn-primary" @onclick="OnButtonClick">Get Dimensions</button>
+    @* <div>
+        <p>Displaly the Window size: @windowWidth, @windowHeight</p>
+        <button class="btn btn-primary" @onclick="OnButtonClick">Get Dimensions</button>
+        </div> *@
 </div>
 @code
 {
@@ -43,6 +49,7 @@
             Console.WriteLine($"{dimension.Width}x{dimension.Height}");
             windowHeight = dimension.Height;
             windowWidth = dimension.Width;
+            StateHasChanged();
 
             //await Http.
         }
@@ -53,6 +60,7 @@
     {
         windowHeight = e.Height;
         windowWidth = e.Width;
+        StateHasChanged();
     }
 
     public void Dispose()
