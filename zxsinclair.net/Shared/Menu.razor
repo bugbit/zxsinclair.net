@@ -1,0 +1,28 @@
+<div style="background-color: black; width: @(Width)px; height: @(Height)px; border-style: solid; border-width: 1px;">
+    <div
+        style="width: @(Width-2)px; height: 23px;background-color:black ;background-image: url('/images/zxwallpaper.png'); background-repeat: no-repeat; background-position: right">
+    </div>
+    <div style="position: relative; top: -22px; left: 0px; cursor: pointer;" @onclick="OnButtonCloseClick">X</div>
+    <a href="https://github.com/bugbit/zxsinclair.net" target="_blank">ZXSinclair Emulador ZX Computers running on
+        Blazor
+        WebAssembly</a>
+    <p>Version 1.0 - Nieblita edition. 4 December 2021</p>
+    <p>Developed by 1996-2022 Oscar Hernandez Bañó</p>
+    <p>Press 'F9' or touch screen emulator for menu</p>
+</div>
+
+@code {
+    [Parameter]
+    public int? Width { get; set; }
+
+    [Parameter]
+    public int? Height { get; set; }
+
+    [Parameter]
+    public EventCallback<EventArgs> OnClose { get; set; }
+
+    private async Task OnButtonCloseClick()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

@@ -21,4 +21,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\zxsinclair.net.Core\ZXSinclair.csproj" />
+  </ItemGroup>
+
 </Project>

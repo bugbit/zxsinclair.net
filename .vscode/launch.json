@@ -6,7 +6,7 @@
         "name": "Launch and Debug Blazor WebAssembly Application",
         "request": "launch",
         "cwd": "${workspaceFolder}/zxsinclair.net",
-        //"browser": "chrome",
+        "browser": "chrome",
         "url": "http://localhost:5270"
       }
     ]
