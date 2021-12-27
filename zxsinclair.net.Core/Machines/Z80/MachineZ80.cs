@@ -40,7 +40,7 @@ namespace ZXSinclair.Machines.Z80
         public MachineZ80() : base()
         {
             mTSatesFetchOpCode = 4;
-            mTSatesReadMem = 3;
+            mTSatesReadMem = mTSatesWriteMem = 3;
             mTSatesCounterSync = mTSatesToSync = 224 * 312;
 
             mOpCodesDD = new Action[256];
@@ -94,6 +94,13 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_E_M_HL_M] = LD_E_M_HL_M,
                     [OpCodes.LD_H_M_HL_M] = LD_H_M_HL_M,
                     [OpCodes.LD_L_M_HL_M] = LD_L_M_HL_M,
+                    [OpCodes.LD_M_HL_M_A] = LD_M_HL_M_A,
+                    [OpCodes.LD_M_HL_M_B] = LD_M_HL_M_B,
+                    [OpCodes.LD_M_HL_M_C] = LD_M_HL_M_C,
+                    [OpCodes.LD_M_HL_M_D] = LD_M_HL_M_D,
+                    [OpCodes.LD_M_HL_M_E] = LD_M_HL_M_E,
+                    [OpCodes.LD_M_HL_M_H] = LD_M_HL_M_H,
+                    [OpCodes.LD_M_HL_M_L] = LD_M_HL_M_L,
                     [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
                     [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
                 }
@@ -400,5 +407,26 @@ namespace ZXSinclair.Machines.Z80
 
             mRegs.L = n;
         }
+
+        // LD (HL),A
+        protected void LD_M_HL_M_A() => PokeMemByte(mRegs.HL, mRegs.A);
+
+        // LD (HL),B
+        protected void LD_M_HL_M_B() => PokeMemByte(mRegs.HL, mRegs.B);
+
+        // LD (HL),C
+        protected void LD_M_HL_M_C() => PokeMemByte(mRegs.HL, mRegs.C);
+
+        // LD (HL),D
+        protected void LD_M_HL_M_D() => PokeMemByte(mRegs.HL, mRegs.D);
+
+        // LD (HL),E
+        protected void LD_M_HL_M_E() => PokeMemByte(mRegs.HL, mRegs.E);
+
+        // LD (HL),H
+        protected void LD_M_HL_M_H() => PokeMemByte(mRegs.HL, mRegs.H);
+
+        // LD (HL),L
+        protected void LD_M_HL_M_L() => PokeMemByte(mRegs.HL, mRegs.L);
     }
 }

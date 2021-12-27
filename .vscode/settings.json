@@ -1,3 +1,4 @@
 {
-    "makefile.extensionOutputFolder": "./.vscode"
+    "makefile.extensionOutputFolder": "./.vscode",
+    "dotnet-test-explorer.testProjectPath": "ZXSinclair.Test/*Test.@(csproj|vbproj|fsproj)"
 }

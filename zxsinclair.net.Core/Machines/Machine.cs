@@ -31,6 +31,7 @@ namespace ZXSinclair.Machines
         protected int mTStates;
         protected int mTSatesFetchOpCode = 1;
         protected int mTSatesReadMem = 1;
+        protected int mTSatesWriteMem = 1;
         protected int mTSatesToSync = int.MaxValue;
         protected int mTSatesCounterSync;
         protected SemaphoreSlim mSemSync = new SemaphoreSlim(0, 1);
@@ -94,6 +95,12 @@ namespace ZXSinclair.Machines
             AddCycles(mTSatesReadMem);
 
             return PeekByte(argAddress);
+        }
+        protected void PokeMemByte(int argAddress, byte argData)
+        {
+            AddCycles(mTSatesWriteMem);
+
+            Poke(argAddress, argData);
         }
         protected void NOP() { }
 
