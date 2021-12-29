@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "zxsinclair.net", "zxsinclai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair", "zxsinclair.net.Core\ZXSinclair.csproj", "{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Test", "ZXSinclair.Test\ZXSinclair.Test.csproj", "{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Perform", "ZXSinclair.Perform\ZXSinclair.Perform.csproj", "{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

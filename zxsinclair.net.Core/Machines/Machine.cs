@@ -35,6 +35,8 @@ namespace ZXSinclair.Machines
         protected int mTSatesToSync = int.MaxValue;
         protected int mTSatesCounterSync;
         protected SemaphoreSlim mSemSync = new SemaphoreSlim(0, 1);
+        private object mLockTaskSync = new object();
+        protected TaskCompletionSource<float> mTaskSync = null;
         protected CancellationTokenSource mFinishToken = new CancellationTokenSource();
         private bool disposedValue;
 
@@ -71,9 +73,22 @@ namespace ZXSinclair.Machines
             ExecOpCode(pOpCode);
         }
 
-        public Task Start() => Task.Factory.StartNew(StartTask);
+        public Task Start() => Task.Factory.StartNew(async () => await StartTaskAsync());
 
-        public void SignalSync() => mSemSync.Release();
+        public void SignalSync(float ellapsetime)
+        {
+            // try { mSemSync.Release(); } catch { }
+            TaskCompletionSource<float> t;
+
+            lock (mLockTaskSync)
+            {
+                t = mTaskSync;
+                if (t == null || t.Task.IsCompletedSuccessfully)
+                    return;
+            }
+
+            t.SetResult(ellapsetime);
+        }
 
         protected virtual IMemory[] CreateMemories() => new[] { MemoryNull.Instance };
 
@@ -128,12 +143,57 @@ namespace ZXSinclair.Machines
                 Step();
         }
 
+        protected async Task StartTaskAsync()
+        {
+            while (!mFinishToken.IsCancellationRequested)
+                await StepAsync();
+        }
+
+        protected async Task StepAsync()
+        {
+            ExecInstruction();
+            if (mTSatesCounterSync <= 0)
+            {
+                // mSemSync.Wait();
+                // mSemSync = new SemaphoreSlim(0, 1);
+                TaskCompletionSource<float> t;
+
+                lock (mLockTaskSync)
+                {
+                    t = mTaskSync;
+                    if (t == null)
+                        mTaskSync = t = new TaskCompletionSource<float>();
+                }
+                await t.Task;
+                lock (mLockTaskSync)
+                {
+                    mTaskSync = null;
+                }
+                Sync();
+                mTSatesCounterSync += mTSatesToSync;
+            }
+        }
+
         protected void Step()
         {
             ExecInstruction();
             if (mTSatesCounterSync <= 0)
             {
-                mSemSync.Wait();
+                // mSemSync.Wait();
+                // mSemSync = new SemaphoreSlim(0, 1);
+                TaskCompletionSource<float> t;
+
+                lock (mLockTaskSync)
+                {
+                    t = mTaskSync;
+                    if (t == null)
+                        mTaskSync = t = new TaskCompletionSource<float>();
+                }
+                t.Task.Wait();
+                lock (mLockTaskSync)
+                {
+                    mTaskSync = null;
+                }
                 Sync();
                 mTSatesCounterSync += mTSatesToSync;
             }

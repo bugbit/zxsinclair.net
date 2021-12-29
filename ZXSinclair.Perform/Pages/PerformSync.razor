@@ -1,0 +1,71 @@
+@page "/performsync"
+@using ZXSinclair.Machines;
+@using ZXSinclair.Machines.Z80;
+@inject IJSRuntime JS;
+
+<div>
+    @foreach (var msg in msgs)
+    {
+        <p>@msg</p>
+    }
+</div>
+
+@code
+{
+    public class MachineZ80Test : MachineZ80
+    {
+        private RAM mRam = new RAM(0xFFFF);
+
+        public MachineZ80Test()
+        {
+        }
+
+        protected override IMemory[] CreateMemories()
+        {
+            return new[] { mRam };
+        }
+
+        public override byte PeekByte(int argAddress) => mRam.ReadMemory(argAddress & 0xFFFF);
+        public override void Poke(int argAddress, byte argData) => mRam.WriteMemory(argAddress & 0xFFFF, argData);
+        @* protected override void Sync()
+            {
+            //base.Sync();
+            mFinishToken.Cancel();
+            } *@
+    }
+
+    List<string> msgs;
+    MachineZ80Test machine;
+    float lastTimeStamp;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        msgs = new List<string>();
+        machine = new MachineZ80Test();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            machine.Start();
+            await JS.InvokeVoidAsync("setperformsync", DotNetObjectReference.Create(this));
+        }
+    }
+
+
+    [JSInvokable]
+    public void GameLoop(float timeStamp)
+    {
+        var ellapsetime = timeStamp - lastTimeStamp;
+        var msg = $"timeStamp : {timeStamp} TStates : {machine.TStates} ellapse : {ellapsetime}";
+
+        lastTimeStamp = timeStamp;
+        machine.SignalSync(ellapsetime);
+        Console.WriteLine(msg);
+        msgs.Add(msg);
+        StateHasChanged();
+    }
+}

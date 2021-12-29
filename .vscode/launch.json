@@ -5,9 +5,11 @@
         "type": "blazorwasm",
         "name": "Launch and Debug Blazor WebAssembly Application",
         "request": "launch",
-        "cwd": "${workspaceFolder}/zxsinclair.net",
+        //"cwd": "${workspaceFolder}/zxsinclair.net",
+        "cwd": "${workspaceFolder}/ZXSinclair.Perform",
         "browser": "chrome",
-        "url": "http://localhost:5270"
+        //"url": "http://localhost:5270"
+        "url": "http://localhost:5051"
       }
     ]
   }
