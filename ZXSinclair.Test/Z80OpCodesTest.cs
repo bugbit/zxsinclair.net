@@ -1166,5 +1166,596 @@ namespace ZXSinclair.Test
             Assert.IsTrue(pRegs.L == 7, "L");
             Assert.IsTrue(mMachineTest.PeekByte(pHL) == 7, "(HL)");
         }
+        [TestMethod]
+        public void LD_M_IX_D_M_A_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_A);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 1, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_B_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_B);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 2, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_C_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_C);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 3, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_D_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_D);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 4, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_E_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_E);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 5, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_H_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_H);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 6, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_L_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_L);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == 7, "(IX+d)");
+        }
+
+        [TestMethod]
+        public void LD_M_IY_D_M_A_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_A);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 1, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_B_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_B);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 2, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_C_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_C);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 3, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_D_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_D);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 4, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_E_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_E);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 5, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_H_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_H);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 6, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_L_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_L);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == 7, "(IY+d)");
+        }
+        [TestMethod]
+        public void LD_M_HL_M_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte n = 205;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            var pHL = pRegs.HL;
+
+            mMachineTest.Poke(0, OpCodes.LD_M_HL_M_N);
+            mMachineTest.Poke(1, n);
+            mMachineTest.Poke(pRegs.HL, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 3 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 2, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(mMachineTest.PeekByte(pHL) == n, "(HL)");
+        }
+        [TestMethod]
+        public void LD_M_IX_D_M_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+            byte n = 205;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IX = 0x6776;
+
+            var pIX_d = pRegs.IX + d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_DD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_N);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(3, n);
+            mMachineTest.Poke(pIX_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 4, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == n, "(IX+d)");
+        }
     }
 }

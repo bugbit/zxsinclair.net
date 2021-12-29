@@ -56,6 +56,18 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_m_hl_m_r = 0b01110000;
         public const int LD_m_hl_m_r_mask = 0b11111000;
 
+        public const int LD_m_ix_d_m_r = 0b01110000;
+        public const int LD_m_ix_d_m_r_mask = 0b11111000;
+
+        public const int LD_m_iy_d_m_r = 0b01110000;
+        public const int LD_m_iy_d_m_r_mask = 0b11111000;
+
+        public const int LD_m_hl_m_n = 0b00110110;
+        public const int LD_m_hl_m_n_mask = 0b00110110;
+
+        public const int LD_m_ix_d_m_n = 0b00110110;
+        public const int LD_m_ix_d_m_n_mask = 0b00110110;
+
         public const int NOP = 0x00;
 
         public const int LD_B_N = 0x06;
@@ -136,6 +148,7 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_M_HL_M_E = 0x73;
         public const int LD_M_HL_M_H = 0x74;
         public const int LD_M_HL_M_L = 0x75;
+        public const int LD_M_HL_M_N = 0x36;
 
         public const int OPCODES_DD = 0xDD;
 
@@ -146,6 +159,14 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_E_M_IX_D_M = 0x5E;
         public const int LD_H_M_IX_D_M = 0x66;
         public const int LD_L_M_IX_D_M = 0x6E;
+        public const int LD_M_IX_D_M_A = 0x77;
+        public const int LD_M_IX_D_M_B = 0x70;
+        public const int LD_M_IX_D_M_C = 0x71;
+        public const int LD_M_IX_D_M_D = 0x72;
+        public const int LD_M_IX_D_M_E = 0x73;
+        public const int LD_M_IX_D_M_H = 0x74;
+        public const int LD_M_IX_D_M_L = 0x75;
+        public const int LD_M_IX_D_M_N = 0x36;
 
         public const int OPCODES_FD = 0xFD;
 
@@ -156,5 +177,12 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_E_M_IY_D_M = 0x5E;
         public const int LD_H_M_IY_D_M = 0x66;
         public const int LD_L_M_IY_D_M = 0x6E;
+        public const int LD_M_IY_D_M_A = 0x77;
+        public const int LD_M_IY_D_M_B = 0x70;
+        public const int LD_M_IY_D_M_C = 0x71;
+        public const int LD_M_IY_D_M_D = 0x72;
+        public const int LD_M_IY_D_M_E = 0x73;
+        public const int LD_M_IY_D_M_H = 0x74;
+        public const int LD_M_IY_D_M_L = 0x75;
     }
 }
