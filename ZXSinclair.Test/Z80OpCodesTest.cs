@@ -44,11 +44,11 @@ namespace ZXSinclair.Test
 
             public override byte PeekByte(int argAddress) => mRam.ReadMemory(argAddress & 0xFFFF);
             public override void Poke(int argAddress, byte argData) => mRam.WriteMemory(argAddress & 0xFFFF, argData);
-            protected override void Sync()
-            {
-                //base.Sync();
-                mFinishToken.Cancel();
-            }
+            //protected override void Sync()
+            //{
+            //    //base.Sync();
+            //    mFinishToken.Cancel();
+            //}
         }
 
         private MachineZ80Test mMachineTest;

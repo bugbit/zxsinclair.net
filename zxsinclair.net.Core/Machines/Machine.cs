@@ -32,16 +32,17 @@ namespace ZXSinclair.Machines
         protected int mTSatesFetchOpCode = 1;
         protected int mTSatesReadMem = 1;
         protected int mTSatesWriteMem = 1;
-        protected int mTSatesToSync = int.MaxValue;
-        protected int mTSatesCounterSync;
-        protected SemaphoreSlim mSemSync = new SemaphoreSlim(0, 1);
-        private object mLockTaskSync = new object();
-        protected TaskCompletionSource<float> mTaskSync = null;
+        protected int mTSatesToFrame = int.MaxValue;
+        protected int mTSatesCounterFrame;
+        private int mFPS = 50;
+        protected SemaphoreSlim mSemFrame = new SemaphoreSlim(0, 1);
+        protected SemaphoreSlim mSemUIFrame = new SemaphoreSlim(0, 1);
         protected CancellationTokenSource mFinishToken = new CancellationTokenSource();
         private bool disposedValue;
 
         public IMemory[] Memories => mMemories;
         public int TStates => mTStates;
+        public int FPS => mFPS;
 
         public Machine()
         {
@@ -56,9 +57,9 @@ namespace ZXSinclair.Machines
         public virtual void Reset()
         {
             mTStates = 0;
-            mTSatesCounterSync = mTSatesToSync;
+            mTSatesCounterFrame = mTSatesToFrame;
             ResetMemories();
-            mSemSync = new SemaphoreSlim(0, 1);
+            mSemFrame = new SemaphoreSlim(0, 1);
         }
         public virtual byte PeekByte(int argAddress) => MemoryNull.Instance.ReadMemory(argAddress);
 
@@ -75,19 +76,19 @@ namespace ZXSinclair.Machines
 
         public Task Start() => Task.Factory.StartNew(async () => await StartTaskAsync());
 
-        public void SignalSync(float ellapsetime)
+        public void StepFrame()
         {
-            // try { mSemSync.Release(); } catch { }
-            TaskCompletionSource<float> t;
+            while (!mFinishToken.IsCancellationRequested && mTSatesCounterFrame > 0)
+                ExecInstruction();
+            mTSatesCounterFrame += mTSatesToFrame;
+        }
 
-            lock (mLockTaskSync)
-            {
-                t = mTaskSync;
-                if (t == null || t.Task.IsCompletedSuccessfully)
-                    return;
-            }
-
-            t.SetResult(ellapsetime);
+        public async Task SignalFrame()
+        {
+            await mSemFrame.WaitAsync(mFinishToken.Token);
+            if (mFinishToken.IsCancellationRequested)
+                return;
+            mSemUIFrame.Release();
         }
 
         protected virtual IMemory[] CreateMemories() => new[] { MemoryNull.Instance };
@@ -134,72 +135,24 @@ namespace ZXSinclair.Machines
         protected void AddCycles(int argTStates)
         {
             mTStates += argTStates;
-            mTSatesCounterSync -= argTStates;
-        }
-
-        protected void StartTask()
-        {
-            while (!mFinishToken.IsCancellationRequested)
-                Step();
+            mTSatesCounterFrame -= argTStates;
         }
 
         protected async Task StartTaskAsync()
         {
             while (!mFinishToken.IsCancellationRequested)
-                await StepAsync();
-        }
-
-        protected async Task StepAsync()
-        {
-            ExecInstruction();
-            if (mTSatesCounterSync <= 0)
             {
-                // mSemSync.Wait();
-                // mSemSync = new SemaphoreSlim(0, 1);
-                TaskCompletionSource<float> t;
-
-                lock (mLockTaskSync)
-                {
-                    t = mTaskSync;
-                    if (t == null)
-                        mTaskSync = t = new TaskCompletionSource<float>();
-                }
-                await t.Task;
-                lock (mLockTaskSync)
-                {
-                    mTaskSync = null;
-                }
-                Sync();
-                mTSatesCounterSync += mTSatesToSync;
+                StepFrame();
+                if (mFinishToken.IsCancellationRequested)
+                    return;
+                mSemFrame.Release();
+                await mSemUIFrame.WaitAsync(mFinishToken.Token);
+                if (mFinishToken.IsCancellationRequested)
+                    return;
             }
         }
 
-        protected void Step()
-        {
-            ExecInstruction();
-            if (mTSatesCounterSync <= 0)
-            {
-                // mSemSync.Wait();
-                // mSemSync = new SemaphoreSlim(0, 1);
-                TaskCompletionSource<float> t;
-
-                lock (mLockTaskSync)
-                {
-                    t = mTaskSync;
-                    if (t == null)
-                        mTaskSync = t = new TaskCompletionSource<float>();
-                }
-                t.Task.Wait();
-                lock (mLockTaskSync)
-                {
-                    mTaskSync = null;
-                }
-                Sync();
-                mTSatesCounterSync += mTSatesToSync;
-            }
-        }
-
-        protected virtual void Sync() { }
+        protected void Step() => ExecInstruction();
 
         protected virtual void Dispose(bool disposing)
         {

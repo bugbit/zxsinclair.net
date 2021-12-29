@@ -1,4 +1,4 @@
-@page "/performsync"
+@page "/performsyncnotask"
 @using System.Diagnostics;
 @using ZXSinclair.Machines;
 @using ZXSinclair.Machines.Z80;
@@ -58,14 +58,13 @@
 		{
 			mWatchFrame = Stopwatch.StartNew();
 			mWatchFPS = Stopwatch.StartNew();
-			machine.Start();
 			mTimerFrame.Start();
 		}
 	}
 
-	private async void OnTimerFrame_Elapse(object source, System.Timers.ElapsedEventArgs e)
+	private  void OnTimerFrame_Elapse(object source, System.Timers.ElapsedEventArgs e)
 	{
-		await machine.SignalFrame();		
+		 machine.StepFrame();		
 
 		var ellapsetime = mWatchFrame.ElapsedMilliseconds;
 		// 20 -> 50

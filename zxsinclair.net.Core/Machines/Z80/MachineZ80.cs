@@ -41,7 +41,7 @@ namespace ZXSinclair.Machines.Z80
         {
             mTSatesFetchOpCode = 4;
             mTSatesReadMem = mTSatesWriteMem = 3;
-            mTSatesCounterSync = mTSatesToSync = 224 * 312;
+            mTSatesCounterFrame = mTSatesToFrame = 224 * 312;
 
             mOpCodesDD = new Action[256];
             mOpCodesFD = new Action[256];
