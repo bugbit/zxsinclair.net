@@ -486,7 +486,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_A_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -520,7 +520,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_B_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -554,7 +554,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_C_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -588,7 +588,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_D_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -622,7 +622,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_E_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -656,7 +656,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_H_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -690,7 +690,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_L_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IX + d, 205);
+            mMachineTest.Poke(pRegs.IX + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -724,7 +724,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_A_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -758,7 +758,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_B_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -792,7 +792,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_C_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -826,7 +826,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_D_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -860,7 +860,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_E_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -894,7 +894,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_H_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -928,7 +928,7 @@ namespace ZXSinclair.Test
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_L_M_HL_M);
             mMachineTest.Poke(2, d);
-            mMachineTest.Poke(pRegs.IY + d, 205);
+            mMachineTest.Poke(pRegs.IY + (sbyte)d, 205);
             mMachineTest.ExecInstruction();
 
             Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
@@ -1183,7 +1183,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_A);
@@ -1220,7 +1220,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_B);
@@ -1257,7 +1257,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_C);
@@ -1294,7 +1294,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_D);
@@ -1331,7 +1331,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_E);
@@ -1368,7 +1368,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_H);
@@ -1405,7 +1405,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_L);
@@ -1443,7 +1443,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_A);
@@ -1480,7 +1480,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_B);
@@ -1517,7 +1517,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_C);
@@ -1554,7 +1554,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_D);
@@ -1591,7 +1591,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_E);
@@ -1628,7 +1628,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_H);
@@ -1665,7 +1665,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IY = 0x6776;
 
-            var pIY_d = pRegs.IY + d;
+            var pIY_d = pRegs.IY + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_FD);
             mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_L);
@@ -1737,7 +1737,7 @@ namespace ZXSinclair.Test
             pRegs.L = 7;
             pRegs.IX = 0x6776;
 
-            var pIX_d = pRegs.IX + d;
+            var pIX_d = pRegs.IX + (sbyte)d;
 
             mMachineTest.Poke(0, OpCodes.OPCODES_DD);
             mMachineTest.Poke(1, OpCodes.LD_M_IX_D_M_N);
@@ -1755,7 +1755,105 @@ namespace ZXSinclair.Test
             Assert.IsTrue(pRegs.E == 5, "E");
             Assert.IsTrue(pRegs.H == 6, "H");
             Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IX == 0x6776, "IX");
             Assert.IsTrue(mMachineTest.PeekByte(pIX_d) == n, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_M_IY_D_M_N_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+            byte d = 201;
+            byte n = 205;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+            pRegs.IY = 0x6776;
+
+            var pIY_d = pRegs.IY + (sbyte)d;
+
+            mMachineTest.Poke(0, OpCodes.OPCODES_FD);
+            mMachineTest.Poke(1, OpCodes.LD_M_IY_D_M_N);
+            mMachineTest.Poke(2, d);
+            mMachineTest.Poke(3, n);
+            mMachineTest.Poke(pIY_d, 0);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 4 + 3 + 5 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 4, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+            Assert.IsTrue(pRegs.IY == 0x6776, "IY");
+            Assert.IsTrue(mMachineTest.PeekByte(pIY_d) == n, "(IX+d)");
+        }
+        [TestMethod]
+        public void LD_A_M_BC_M_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_A_M_BC_M);
+            mMachineTest.Poke(pRegs.BC, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 1, "PC");
+            Assert.IsTrue(pRegs.A == 205, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
+        [TestMethod]
+        public void LD_A_M_DE_M_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_A_M_DE_M);
+            mMachineTest.Poke(pRegs.DE, 205);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 7, "TState");
+            Assert.IsTrue(pRegs.PC == 1, "PC");
+            Assert.IsTrue(pRegs.A == 205, "A");
+            Assert.IsTrue(pRegs.B == 2, "B");
+            Assert.IsTrue(pRegs.C == 3, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
         }
     }
 }

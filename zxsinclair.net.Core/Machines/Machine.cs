@@ -106,11 +106,12 @@ namespace ZXSinclair.Machines
 
             ExecOpCode(argOpCodes, pOpCode);
         }
+        protected byte ReadMemByteNotTStates(int argAddress) => PeekByte(argAddress);
         protected byte ReadMemByte(int argAddress)
         {
             AddCycles(mTSatesReadMem);
 
-            return PeekByte(argAddress);
+            return ReadMemByteNotTStates(argAddress);
         }
         protected void PokeMemByte(int argAddress, byte argData)
         {

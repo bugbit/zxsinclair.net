@@ -68,6 +68,16 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_m_ix_d_m_n = 0b00110110;
         public const int LD_m_ix_d_m_n_mask = 0b00110110;
 
+        public const int LD_m_iy_d_m_n = 0b00110110;
+        public const int LD_m_iy_d_m_n_mask = 0b00110110;
+
+        public const int LD_a_m_bc_m = 0b00001010;
+        public const int LD_a_m_bc_m_mask = 0b00001010;
+
+        public const int LD_a_m_de_m = 0b00011010;
+        public const int LD_a_m_de_m_mask = 0b00011010;
+
+
         public const int NOP = 0x00;
 
         public const int LD_B_N = 0x06;
@@ -149,6 +159,8 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_M_HL_M_H = 0x74;
         public const int LD_M_HL_M_L = 0x75;
         public const int LD_M_HL_M_N = 0x36;
+        public const int LD_A_M_BC_M = 0x0A;
+        public const int LD_A_M_DE_M = 0x1A;
 
         public const int OPCODES_DD = 0xDD;
 
@@ -184,5 +196,6 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_M_IY_D_M_E = 0x73;
         public const int LD_M_IY_D_M_H = 0x74;
         public const int LD_M_IY_D_M_L = 0x75;
+        public const int LD_M_IY_D_M_N = 0x36;
     }
 }

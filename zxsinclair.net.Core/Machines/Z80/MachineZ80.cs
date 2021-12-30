@@ -30,6 +30,7 @@ namespace ZXSinclair.Machines.Z80
     // http://biblioteca.museo8bits.es/index.php
     // https://trastero.speccy.org/cosas/Libros/Libros.htm
     // https://www.imd.guru/retropedia/desarrollo/z80/opcodes.html
+    // https://wiki.speccy.org/cursos/ensamblador/lenguaje_1
     // https://worldofspectrum.org/faq/reference/48kreference.htm#Contention
 
     public class MachineZ80 : Machine
@@ -64,6 +65,7 @@ namespace ZXSinclair.Machines.Z80
         protected override byte FetchOpCode() => PeekByte(mRegs.GetPCAndInc());
 
         protected byte ReadMemBytePCAndInc() => ReadMemByte(mRegs.GetPCAndInc());
+        protected byte ReadMemByteNotTStatesPCAndInc() => ReadMemByteNotTStates(mRegs.GetPCAndInc());
 
         protected override void ExecOpCode(int argOpCode)
         {
@@ -103,6 +105,8 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_HL_M_H] = LD_M_HL_M_H,
                     [OpCodes.LD_M_HL_M_L] = LD_M_HL_M_L,
                     [OpCodes.LD_M_HL_M_N] = LD_M_HL_M_N,
+                    [OpCodes.LD_A_M_BC_M] = LD_A_M_BC_M,
+                    [OpCodes.LD_A_M_DE_M] = LD_A_M_DE_M,
                     [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
                     [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
                 }
@@ -154,6 +158,7 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_IY_D_M_E] = LD_M_IY_D_M_E,
                     [OpCodes.LD_M_IY_D_M_H] = LD_M_IY_D_M_H,
                     [OpCodes.LD_M_IY_D_M_L] = LD_M_IY_D_M_L,
+                    [OpCodes.LD_M_IY_D_M_N] = LD_M_IY_D_M_N,
                 }
             );
         }
@@ -260,7 +265,7 @@ namespace ZXSinclair.Machines.Z80
         // LD A,(IX+d)
         protected void LD_A_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -272,7 +277,7 @@ namespace ZXSinclair.Machines.Z80
         // LD B,(IX+d)
         protected void LD_B_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -284,7 +289,7 @@ namespace ZXSinclair.Machines.Z80
         // LD C,(IX+d)
         protected void LD_C_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -296,7 +301,7 @@ namespace ZXSinclair.Machines.Z80
         // LD D,(IX+d)
         protected void LD_D_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -308,7 +313,7 @@ namespace ZXSinclair.Machines.Z80
         // LD E,(IX+d)
         protected void LD_E_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -320,7 +325,7 @@ namespace ZXSinclair.Machines.Z80
         // LD H,(IX+d)
         protected void LD_H_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -332,7 +337,7 @@ namespace ZXSinclair.Machines.Z80
         // LD L,(IX+d)
         protected void LD_L_M_IX_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -344,7 +349,7 @@ namespace ZXSinclair.Machines.Z80
         // LD A,(IY+d)
         protected void LD_A_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -356,7 +361,7 @@ namespace ZXSinclair.Machines.Z80
         // LD B,(IY+d)
         protected void LD_B_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -368,7 +373,7 @@ namespace ZXSinclair.Machines.Z80
         // LD C,(IY+d)
         protected void LD_C_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -380,7 +385,7 @@ namespace ZXSinclair.Machines.Z80
         // LD D,(IY+d)
         protected void LD_D_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -392,7 +397,7 @@ namespace ZXSinclair.Machines.Z80
         // LD E,(IY+d)
         protected void LD_E_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -404,7 +409,7 @@ namespace ZXSinclair.Machines.Z80
         // LD H,(IY+d)
         protected void LD_H_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -416,7 +421,7 @@ namespace ZXSinclair.Machines.Z80
         // LD L,(IY+d)
         protected void LD_L_M_IY_D_M()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -449,7 +454,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),A
         protected void LD_M_IX_D_M_A()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -459,7 +464,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),B
         protected void LD_M_IX_D_M_B()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -469,7 +474,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),C
         protected void LD_M_IX_D_M_C()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -479,7 +484,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),D
         protected void LD_M_IX_D_M_D()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -489,7 +494,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),E
         protected void LD_M_IX_D_M_E()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -499,7 +504,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),H
         protected void LD_M_IX_D_M_H()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -509,7 +514,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),L
         protected void LD_M_IX_D_M_L()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -519,7 +524,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),A
         protected void LD_M_IY_D_M_A()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -529,7 +534,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),B
         protected void LD_M_IY_D_M_B()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -539,7 +544,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),C
         protected void LD_M_IY_D_M_C()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -549,7 +554,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),D
         protected void LD_M_IY_D_M_D()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -559,7 +564,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),E
         protected void LD_M_IY_D_M_E()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -569,7 +574,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),H
         protected void LD_M_IY_D_M_H()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -579,7 +584,7 @@ namespace ZXSinclair.Machines.Z80
         // LD (IY+d),L
         protected void LD_M_IY_D_M_L()
         {
-            var d = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
 
             AddCycles(5);
 
@@ -597,12 +602,39 @@ namespace ZXSinclair.Machines.Z80
         // LD (IX+d),N
         protected void LD_M_IX_D_M_N()
         {
-            var d = ReadMemBytePCAndInc();
-            var n = ReadMemBytePCAndInc();
+            var d = (sbyte)ReadMemBytePCAndInc();
+            var n = ReadMemByteNotTStatesPCAndInc();
 
             AddCycles(5);
 
             PokeMemByte(mRegs.IX + d, n);
+        }
+
+        // LD (IY+d),N
+        protected void LD_M_IY_D_M_N()
+        {
+            var d = (sbyte)ReadMemBytePCAndInc();
+            var n = ReadMemByteNotTStatesPCAndInc();
+
+            AddCycles(5);
+
+            PokeMemByte(mRegs.IY + d, n);
+        }
+
+        // LD A,(BC)
+        protected void LD_A_M_BC_M()
+        {
+            var n = ReadMemByte(mRegs.BC);
+
+            mRegs.A = n;
+        }
+
+        // LD A,(BC)
+        protected void LD_A_M_DE_M()
+        {
+            var n = ReadMemByte(mRegs.DE);
+
+            mRegs.A = n;
         }
     }
 }
