@@ -97,7 +97,7 @@ namespace ZXSinclair.Machines
 
         protected virtual byte FetchOpCode() => 0;
         protected virtual void ExecOpCode(int argOpCode) => mOpCodes[argOpCode].Invoke();
-        protected virtual void ExecOpCode(Action[] argOpCodes, int argOpCode) => argOpCodes[argOpCode].Invoke();
+        protected void ExecOpCode(Action[] argOpCodes, int argOpCode) => argOpCodes[argOpCode].Invoke();
         protected void ExecInstruction(Action[] argOpCodes)
         {
             var pOpCode = FetchOpCode();
@@ -106,7 +106,7 @@ namespace ZXSinclair.Machines
 
             ExecOpCode(argOpCodes, pOpCode);
         }
-        protected virtual byte ReadMemByte(int argAddress)
+        protected byte ReadMemByte(int argAddress)
         {
             AddCycles(mTSatesReadMem);
 

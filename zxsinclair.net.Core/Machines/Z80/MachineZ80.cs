@@ -30,6 +30,7 @@ namespace ZXSinclair.Machines.Z80
     // http://biblioteca.museo8bits.es/index.php
     // https://trastero.speccy.org/cosas/Libros/Libros.htm
     // https://www.imd.guru/retropedia/desarrollo/z80/opcodes.html
+    // https://worldofspectrum.org/faq/reference/48kreference.htm#Contention
 
     public class MachineZ80 : Machine
     {
