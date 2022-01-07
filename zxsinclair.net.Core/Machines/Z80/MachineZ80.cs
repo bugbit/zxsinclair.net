@@ -66,6 +66,14 @@ namespace ZXSinclair.Machines.Z80
 
         protected byte ReadMemBytePCAndInc() => ReadMemByte(mRegs.GetPCAndInc());
         protected byte ReadMemByteNotTStatesPCAndInc() => ReadMemByteNotTStates(mRegs.GetPCAndInc());
+        protected int ReadMemWordPCAndINC()
+        {
+            var pWord = (int)ReadMemBytePCAndInc();
+
+            pWord += ReadMemBytePCAndInc() << 8;
+
+            return pWord;
+        }
 
         protected override void ExecOpCode(int argOpCode)
         {
@@ -107,6 +115,10 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_HL_M_N] = LD_M_HL_M_N,
                     [OpCodes.LD_A_M_BC_M] = LD_A_M_BC_M,
                     [OpCodes.LD_A_M_DE_M] = LD_A_M_DE_M,
+                    [OpCodes.LD_A_M_NN_M] = LD_A_M_NN_M,
+                    [OpCodes.LD_M_BC_M_A] = LD_M_BC_M_A,
+                    [OpCodes.LD_M_DE_M_A] = LD_M_DE_M_A,
+                    [OpCodes.LD_M_NN_M_A] = LD_M_NN_M_A,
                     [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
                     [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
                 }
@@ -629,12 +641,35 @@ namespace ZXSinclair.Machines.Z80
             mRegs.A = n;
         }
 
-        // LD A,(BC)
+        // LD A,(DE)
         protected void LD_A_M_DE_M()
         {
             var n = ReadMemByte(mRegs.DE);
 
             mRegs.A = n;
+        }
+
+        // LD A,(NN)
+        protected void LD_A_M_NN_M()
+        {
+            var nn = ReadMemWordPCAndINC();
+            var n = ReadMemByte(nn);
+
+            mRegs.A = n;
+        }
+
+        // LD (BC),A
+        protected void LD_M_BC_M_A() => PokeMemByte(mRegs.BC, mRegs.A);
+
+        // LD (DE),A
+        protected void LD_M_DE_M_A() => PokeMemByte(mRegs.DE, mRegs.A);
+
+        // LD (nn),A
+        protected void LD_M_NN_M_A()
+        {
+            var nn = ReadMemWordPCAndINC();
+
+            PokeMemByte(nn, mRegs.A);
         }
     }
 }
