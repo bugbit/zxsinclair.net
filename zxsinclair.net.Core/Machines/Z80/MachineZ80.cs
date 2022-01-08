@@ -35,9 +35,42 @@ namespace ZXSinclair.Machines.Z80
 
     public class MachineZ80 : Machine
     {
+        protected static readonly byte[] mTablePV;
+        protected static readonly byte[] mTableZS53;
+
         protected Regs mRegs = new Regs();
+        protected bool IFF1;
+        protected bool IFF2;
         protected Action[] mOpCodesDD;
         protected Action[] mOpCodesFD;
+        protected Action[] mOpCodesED;
+
+        static MachineZ80()
+        {
+            mTablePV = CreateTablePV();
+            mTableZS53 = CreateTableZS53();
+        }
+
+        private static byte[] CreateTablePV()
+        {
+            var pTable = new byte[0x100];
+
+            for (var pByte = 0x00; pByte <= 0xFF; pByte++)
+                pTable[(byte)pByte] = Flags.GetParity((byte)pByte);
+
+            return pTable;
+        }
+
+        private static byte[] CreateTableZS53()
+        {
+            var pTable = new byte[0x100];
+
+            for (var pByte = 0x00; pByte <= 0xFF; pByte++)
+                pTable[(byte)pByte] = (byte)(pByte & (uint)(Flags.S | Flags.F3 | Flags.F5));
+            pTable[0] |= Flags.Z;
+
+            return pTable;
+        }
 
         public MachineZ80() : base()
         {
@@ -47,11 +80,14 @@ namespace ZXSinclair.Machines.Z80
 
             mOpCodesDD = new Action[256];
             mOpCodesFD = new Action[256];
+            mOpCodesED = new Action[256];
 
             Parallel.For(0, 256, i => mOpCodesDD[i] = NOP);
             Parallel.For(0, 256, i => mOpCodesFD[i] = NOP);
+            Parallel.For(0, 256, i => mOpCodesED[i] = NOP);
             FillTableOpCodesDD();
             FillTableOpCodesFD();
+            FillTableOpCodesED();
         }
 
         public Regs Regs => mRegs;
@@ -60,6 +96,7 @@ namespace ZXSinclair.Machines.Z80
         {
             base.Reset();
             mRegs.Reset();
+            IFF1 = IFF2 = false;
         }
 
         protected override byte FetchOpCode() => PeekByte(mRegs.GetPCAndInc());
@@ -121,6 +158,7 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_NN_M_A] = LD_M_NN_M_A,
                     [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
                     [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
+                    [OpCodes.OPCODES_ED] = () => ExecInstruction(mOpCodesED),
                 }
             ); ;
         }
@@ -171,6 +209,17 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_IY_D_M_H] = LD_M_IY_D_M_H,
                     [OpCodes.LD_M_IY_D_M_L] = LD_M_IY_D_M_L,
                     [OpCodes.LD_M_IY_D_M_N] = LD_M_IY_D_M_N,
+                }
+            );
+        }
+
+        protected void FillTableOpCodesED()
+        {
+            FillTableOpCodes
+            (
+                mOpCodesED, new Dictionary<byte, Action>
+                {
+                    [OpCodes.LD_A_I] = LD_A_I
                 }
             );
         }
@@ -670,6 +719,29 @@ namespace ZXSinclair.Machines.Z80
             var nn = ReadMemWordPCAndINC();
 
             PokeMemByte(nn, mRegs.A);
+        }
+
+        // LD A,I
+        protected void LD_A_I()
+        {
+            var n = mRegs.I;
+
+            mRegs.A = n;
+
+            /*
+             S is set if the I Register is negative; otherwise, it is reset.
+Z is set if the I Register is 0; otherwise, it is reset.
+H is reset.
+P/V contains contents of IFF2.
+N is reset.
+C is not affected.
+If an interrupt occurs during execution of this instruction, the Parity flag contains a 0.
+             */
+            mRegs.F = (byte)((uint)(mRegs.F & Flags.C) | mTableZS53[n]);
+            if (IFF2)
+                mRegs.F |= Flags.PV;
+
+            AddCycles(1);
         }
     }
 }

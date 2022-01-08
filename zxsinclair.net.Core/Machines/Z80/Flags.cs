@@ -23,54 +23,68 @@ using System.Threading.Tasks;
 
 namespace ZXSinclair.Machines.Z80
 {
-    [Flags]
-    public enum Flags
+    public static class Flags
     {
         /// <summary>
         /// Sign Flag 
         /// [Set if the 2-complement value is negative (copy of MSB)]
         /// </summary>
-        S = 0x80,
+        public const byte S = 0x80;
 
         /// <summary>
         /// Zero Flag 
         /// [Set if the value is zero]
         /// </summary>
-        Z = 0x40,
+        public const byte Z = 0x40;
 
         /// <summary>
         /// Undocumented flag F5
         /// </summary>
-        F5 = 0x20,
+        public const byte F5 = 0x20;
 
         /// <summary>
         /// Half Carry Flag 
         /// [Carry from bit 3 to bit 4]
         /// </summary>
-        H = 0x10,
+        public const byte H = 0x10;
 
         /// <summary>
         /// Undocumented flag F3
         /// </summary>
-        F3 = 0x08,
+        public const byte F3 = 0x08;
 
         /// <summary>
         /// P/V - Parity/Overflow Flag
         /// [Parity set if even number of bits set.
         /// Overflow set if the 2-complement result does not fit in the register]
         /// </summary>
-        P = 0x04,
+        public const byte PV = 0x04;
 
         /// <summary>
         /// Add/Subtract Flag 
         /// [Set if the last operation was a subtraction]
         /// </summary>
-        N = 0x02,
+        public const byte N = 0x02;
 
         /// <summary>
         /// Carry Flag
         /// [Set if the result did not fit in the register]
         /// </summary>
-        C = 0x01
+        public const byte C = 0x01;
+
+        //Parity set if even number of bits set
+        //Paridad si numero par de bits
+        public static byte GetParity(byte value)
+        {
+            var result = Flags.PV;
+
+            while (value > 0)
+            {
+                if ((value & 1) > 0) result ^= Flags.PV;
+                value >>= 1;
+            }
+
+            return result;
+        }
     }
 }
