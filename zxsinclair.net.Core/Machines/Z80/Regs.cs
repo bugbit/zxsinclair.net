@@ -111,6 +111,22 @@ namespace ZXSinclair.Machines.Z80
             }
         }
 
+        public ushort GetIX_d(sbyte d)
+        {
+            unchecked
+            {
+                return (ushort)(IX + d);
+            }
+        }
+
+        public ushort GetIY_d(sbyte d)
+        {
+            unchecked
+            {
+                return (ushort)(IY + d);
+            }
+        }
+
         public Func<byte> CreateGetR(int r) => r switch
         {
             OpCodes.R_A => () => A,

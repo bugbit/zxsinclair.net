@@ -29,7 +29,7 @@ namespace ZXSinclair.Test
     public class FlagsTest
     {
         [TestMethod]
-        public void ParityTest()
+        public void ParityMethod()
         {
             byte[] pBytes =
             {

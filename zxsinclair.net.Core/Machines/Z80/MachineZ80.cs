@@ -33,7 +33,7 @@ namespace ZXSinclair.Machines.Z80
     // https://wiki.speccy.org/cursos/ensamblador/lenguaje_1
     // https://worldofspectrum.org/faq/reference/48kreference.htm#Contention
 
-    public class MachineZ80 : Machine
+    public partial class MachineZ80 : Machine
     {
         protected static readonly byte[] mTablePV;
         protected static readonly byte[] mTableZS53;
@@ -163,67 +163,6 @@ namespace ZXSinclair.Machines.Z80
             ); ;
         }
 
-        protected void FillTableOpCodesDD()
-        {
-            FillTableOpCodes
-            (
-                mOpCodesDD, new Dictionary<byte, Action>
-                {
-                    [OpCodes.LD_A_M_IX_D_M] = LD_A_M_IX_D_M,
-                    [OpCodes.LD_B_M_IX_D_M] = LD_B_M_IX_D_M,
-                    [OpCodes.LD_C_M_IX_D_M] = LD_C_M_IX_D_M,
-                    [OpCodes.LD_D_M_IX_D_M] = LD_D_M_IX_D_M,
-                    [OpCodes.LD_E_M_IX_D_M] = LD_E_M_IX_D_M,
-                    [OpCodes.LD_H_M_IX_D_M] = LD_H_M_IX_D_M,
-                    [OpCodes.LD_L_M_IX_D_M] = LD_L_M_IX_D_M,
-                    [OpCodes.LD_M_IX_D_M_A] = LD_M_IX_D_M_A,
-                    [OpCodes.LD_M_IX_D_M_B] = LD_M_IX_D_M_B,
-                    [OpCodes.LD_M_IX_D_M_C] = LD_M_IX_D_M_C,
-                    [OpCodes.LD_M_IX_D_M_D] = LD_M_IX_D_M_D,
-                    [OpCodes.LD_M_IX_D_M_E] = LD_M_IX_D_M_E,
-                    [OpCodes.LD_M_IX_D_M_H] = LD_M_IX_D_M_H,
-                    [OpCodes.LD_M_IX_D_M_L] = LD_M_IX_D_M_L,
-                    [OpCodes.LD_M_IX_D_M_N] = LD_M_IX_D_M_N,
-                }
-            );
-        }
-
-        protected void FillTableOpCodesFD()
-        {
-            FillTableOpCodes
-            (
-                mOpCodesFD, new Dictionary<byte, Action>
-                {
-                    [OpCodes.LD_A_M_IY_D_M] = LD_A_M_IY_D_M,
-                    [OpCodes.LD_B_M_IY_D_M] = LD_B_M_IY_D_M,
-                    [OpCodes.LD_C_M_IY_D_M] = LD_C_M_IY_D_M,
-                    [OpCodes.LD_D_M_IY_D_M] = LD_D_M_IY_D_M,
-                    [OpCodes.LD_E_M_IY_D_M] = LD_E_M_IY_D_M,
-                    [OpCodes.LD_H_M_IY_D_M] = LD_H_M_IY_D_M,
-                    [OpCodes.LD_L_M_IY_D_M] = LD_L_M_IY_D_M,
-                    [OpCodes.LD_M_IY_D_M_A] = LD_M_IY_D_M_A,
-                    [OpCodes.LD_M_IY_D_M_B] = LD_M_IY_D_M_B,
-                    [OpCodes.LD_M_IY_D_M_C] = LD_M_IY_D_M_C,
-                    [OpCodes.LD_M_IY_D_M_D] = LD_M_IY_D_M_D,
-                    [OpCodes.LD_M_IY_D_M_E] = LD_M_IY_D_M_E,
-                    [OpCodes.LD_M_IY_D_M_H] = LD_M_IY_D_M_H,
-                    [OpCodes.LD_M_IY_D_M_L] = LD_M_IY_D_M_L,
-                    [OpCodes.LD_M_IY_D_M_N] = LD_M_IY_D_M_N,
-                }
-            );
-        }
-
-        protected void FillTableOpCodesED()
-        {
-            FillTableOpCodes
-            (
-                mOpCodesED, new Dictionary<byte, Action>
-                {
-                    [OpCodes.LD_A_I] = LD_A_I
-                }
-            );
-        }
-
         protected void LD_A_N()
         {
             var n = ReadMemBytePCAndInc();
@@ -323,174 +262,6 @@ namespace ZXSinclair.Machines.Z80
             mRegs.L = n;
         }
 
-        // LD A,(IX+d)
-        protected void LD_A_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.A = n;
-        }
-
-        // LD B,(IX+d)
-        protected void LD_B_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.B = n;
-        }
-
-        // LD C,(IX+d)
-        protected void LD_C_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.C = n;
-        }
-
-        // LD D,(IX+d)
-        protected void LD_D_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.D = n;
-        }
-
-        // LD E,(IX+d)
-        protected void LD_E_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.E = n;
-        }
-
-        // LD H,(IX+d)
-        protected void LD_H_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.H = n;
-        }
-
-        // LD L,(IX+d)
-        protected void LD_L_M_IX_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IX + d);
-
-            mRegs.L = n;
-        }
-
-        // LD A,(IY+d)
-        protected void LD_A_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.A = n;
-        }
-
-        // LD B,(IY+d)
-        protected void LD_B_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.B = n;
-        }
-
-        // LD C,(IY+d)
-        protected void LD_C_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.C = n;
-        }
-
-        // LD D,(IY+d)
-        protected void LD_D_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.D = n;
-        }
-
-        // LD E,(IY+d)
-        protected void LD_E_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.E = n;
-        }
-
-        // LD H,(IY+d)
-        protected void LD_H_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.H = n;
-        }
-
-        // LD L,(IY+d)
-        protected void LD_L_M_IY_D_M()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            var n = ReadMemByte(mRegs.IY + d);
-
-            mRegs.L = n;
-        }
-
         // LD (HL),A
         protected void LD_M_HL_M_A() => PokeMemByte(mRegs.HL, mRegs.A);
 
@@ -512,146 +283,6 @@ namespace ZXSinclair.Machines.Z80
         // LD (HL),L
         protected void LD_M_HL_M_L() => PokeMemByte(mRegs.HL, mRegs.L);
 
-        // LD (IX+d),A
-        protected void LD_M_IX_D_M_A()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.A);
-        }
-
-        // LD (IX+d),B
-        protected void LD_M_IX_D_M_B()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.B);
-        }
-
-        // LD (IX+d),C
-        protected void LD_M_IX_D_M_C()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.C);
-        }
-
-        // LD (IX+d),D
-        protected void LD_M_IX_D_M_D()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.D);
-        }
-
-        // LD (IX+d),E
-        protected void LD_M_IX_D_M_E()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.E);
-        }
-
-        // LD (IX+d),H
-        protected void LD_M_IX_D_M_H()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.H);
-        }
-
-        // LD (IX+d),L
-        protected void LD_M_IX_D_M_L()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IX + d, mRegs.L);
-        }
-
-        // LD (IY+d),A
-        protected void LD_M_IY_D_M_A()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.A);
-        }
-
-        // LD (IY+d),B
-        protected void LD_M_IY_D_M_B()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.B);
-        }
-
-        // LD (IY+d),C
-        protected void LD_M_IY_D_M_C()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.C);
-        }
-
-        // LD (IY+d),D
-        protected void LD_M_IY_D_M_D()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.D);
-        }
-
-        // LD (IY+d),E
-        protected void LD_M_IY_D_M_E()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.E);
-        }
-
-        // LD (IY+d),H
-        protected void LD_M_IY_D_M_H()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.H);
-        }
-
-        // LD (IY+d),L
-        protected void LD_M_IY_D_M_L()
-        {
-            var d = (sbyte)ReadMemBytePCAndInc();
-
-            AddCycles(5);
-
-            PokeMemByte(mRegs.IY + d, mRegs.L);
-        }
-
         // LD (HL),N
         protected void LD_M_HL_M_N()
         {
@@ -668,7 +299,7 @@ namespace ZXSinclair.Machines.Z80
 
             AddCycles(5);
 
-            PokeMemByte(mRegs.IX + d, n);
+            PokeMemByte(mRegs.GetIX_d(d), n);
         }
 
         // LD (IY+d),N
@@ -679,7 +310,7 @@ namespace ZXSinclair.Machines.Z80
 
             AddCycles(5);
 
-            PokeMemByte(mRegs.IY + d, n);
+            PokeMemByte(mRegs.GetIY_d(d), n);
         }
 
         // LD A,(BC)
@@ -719,29 +350,6 @@ namespace ZXSinclair.Machines.Z80
             var nn = ReadMemWordPCAndINC();
 
             PokeMemByte(nn, mRegs.A);
-        }
-
-        // LD A,I
-        protected void LD_A_I()
-        {
-            var n = mRegs.I;
-
-            mRegs.A = n;
-
-            /*
-             S is set if the I Register is negative; otherwise, it is reset.
-Z is set if the I Register is 0; otherwise, it is reset.
-H is reset.
-P/V contains contents of IFF2.
-N is reset.
-C is not affected.
-If an interrupt occurs during execution of this instruction, the Parity flag contains a 0.
-             */
-            mRegs.F = (byte)((uint)(mRegs.F & Flags.C) | mTableZS53[n]);
-            if (IFF2)
-                mRegs.F |= Flags.PV;
-
-            AddCycles(1);
         }
     }
 }
