@@ -103,13 +103,13 @@ namespace ZXSinclair.Machines.Z80
 
         protected byte ReadMemBytePCAndInc() => ReadMemByte(mRegs.GetPCAndInc());
         protected byte ReadMemByteNotTStatesPCAndInc() => ReadMemByteNotTStates(mRegs.GetPCAndInc());
-        protected int ReadMemWordPCAndINC()
+        protected ushort ReadMemWordPCAndINC()
         {
             var pWord = (int)ReadMemBytePCAndInc();
 
             pWord += ReadMemBytePCAndInc() << 8;
 
-            return pWord;
+            return (ushort)pWord;
         }
 
         protected override void ExecOpCode(int argOpCode)
@@ -156,6 +156,7 @@ namespace ZXSinclair.Machines.Z80
                     [OpCodes.LD_M_BC_M_A] = LD_M_BC_M_A,
                     [OpCodes.LD_M_DE_M_A] = LD_M_DE_M_A,
                     [OpCodes.LD_M_NN_M_A] = LD_M_NN_M_A,
+                    [OpCodes.LD_BC_NN] = LD_BC_NN,
                     [OpCodes.OPCODES_DD] = () => ExecInstruction(mOpCodesDD),
                     [OpCodes.OPCODES_FD] = () => ExecInstruction(mOpCodesFD),
                     [OpCodes.OPCODES_ED] = () => ExecInstruction(mOpCodesED),
@@ -350,6 +351,14 @@ namespace ZXSinclair.Machines.Z80
             var nn = ReadMemWordPCAndINC();
 
             PokeMemByte(nn, mRegs.A);
+        }
+
+        // LD BC,nn
+        protected void LD_BC_NN()
+        {
+            var nn = ReadMemWordPCAndINC();
+
+            mRegs.BC = nn;
         }
     }
 }

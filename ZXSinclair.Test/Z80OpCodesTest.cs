@@ -2126,5 +2126,36 @@ namespace ZXSinclair.Test
             Assert.IsTrue(pRegs.L == 7, "L");
             Assert.IsTrue(pRegs.R == 1, "I");
         }
+        [TestMethod]
+        public void LD_BC_NN_Method()
+        {
+            var pRegs = mMachineTest.Regs;
+            var pTStates = mMachineTest.TStates;
+
+            // nn=0x1234;
+            pRegs.Reset();
+            pRegs.A = 1;
+            pRegs.B = 2;
+            pRegs.C = 3;
+            pRegs.D = 4;
+            pRegs.E = 5;
+            pRegs.H = 6;
+            pRegs.L = 7;
+
+            mMachineTest.Poke(0, OpCodes.LD_BC_NN);
+            mMachineTest.Poke(1, 0x34);
+            mMachineTest.Poke(2, 0x12);
+            mMachineTest.ExecInstruction();
+
+            Assert.IsTrue(mMachineTest.TStates == pTStates + 4 + 3 + 3, "TState");
+            Assert.IsTrue(pRegs.PC == 3, "PC");
+            Assert.IsTrue(pRegs.A == 1, "A");
+            Assert.IsTrue(pRegs.B == 0x12, "B");
+            Assert.IsTrue(pRegs.C == 0x34, "C");
+            Assert.IsTrue(pRegs.D == 4, "D");
+            Assert.IsTrue(pRegs.E == 5, "E");
+            Assert.IsTrue(pRegs.H == 6, "H");
+            Assert.IsTrue(pRegs.L == 7, "L");
+        }
     }
 }

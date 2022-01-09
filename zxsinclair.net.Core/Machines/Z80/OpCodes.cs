@@ -22,11 +22,12 @@ using System.Text;
 
 namespace ZXSinclair.Machines.Z80
 {
+    /// <summary>
+    /// M_HL_M = (HL)
+    /// M_IX_D_M = (IX+d)
+    /// </summary>
     public partial class OpCodes
     {
-        // M_HL_M = (HL)
-        // M_IX_D_M = (IX+d)
-
         public const int R_A = 0b111;
         public const int R_B = 0b000;
         public const int R_C = 0b001;
@@ -34,6 +35,11 @@ namespace ZXSinclair.Machines.Z80
         public const int R_E = 0b011;
         public const int R_H = 0b100;
         public const int R_L = 0b101;
+
+        public const int DD_BC = 0b00;
+        public const int DD_DE = 0b01;
+        public const int DD_DL = 0b10;
+        public const int DD_SP = 0b11;
 
         public static readonly int[] Rs = { R_A, R_B, R_C, R_D, R_E, R_H, R_L };
         public static readonly char[] Car_Rs = { 'A', 'B', 'C', 'D', 'E', 'H', 'L' };
@@ -101,20 +107,17 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_r_a = 0b01000111;
         public const int LD_r_a_mask = 0b01000111;
 
+        public const int LD_dd_nn = 0b00000001;
+        public const int LD_dd_nn_mask = 0b00000011;
+
         public const int NOP = 0x00;
 
         public const int LD_B_N = 0x06;
-
         public const int LD_C_N = 0x0E;
-
         public const int LD_D_N = 0x16;
-
         public const int LD_E_N = 0x1E;
-
         public const int LD_H_N = 0x26;
-
         public const int LD_L_N = 0x2E;
-
         public const int LD_A_N = 0x3E;
 
         public const int LD_B_B = 0x40;
@@ -165,7 +168,6 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_L_L = 0x6D;
         public const int LD_L_M_HL_M = 0x6E;
         public const int LD_L_A = 0x6F;
-
         public const int LD_A_B = 0x78;
         public const int LD_A_C = 0x79;
         public const int LD_A_D = 0x7A;
@@ -188,6 +190,8 @@ namespace ZXSinclair.Machines.Z80
         public const int LD_M_BC_M_A = 0x2;
         public const int LD_M_DE_M_A = 0x12;
         public const int LD_M_NN_M_A = 0x32;
+
+        public const int LD_BC_NN = 0x1;
 
         public const int OPCODES_DD = 0xDD;
 
