@@ -90,6 +90,9 @@ namespace ZXSinclair.Machines.Z80
         //[FieldOffset(26)]
         //public byte ML;
 
+        public void LD_I_A() => I = A;
+        public void LD_R_A() => R = A;
+
         public void Reset()
         {
             AF = BC = DE = HL = IX = IY = PC = SP = 0;
