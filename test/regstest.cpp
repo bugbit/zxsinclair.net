@@ -15,7 +15,7 @@
 
 #include "pch.h"
 
-int main()
+void endiantest()
 {
-    return 0;
+    
 }

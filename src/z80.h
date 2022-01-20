@@ -13,9 +13,47 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include "pch.h"
+#ifndef __Z80_H__
 
-int main()
+#define __Z80_H__
+
+//8 bits
+typedef unsigned char z80_byte;
+//16 bits
+typedef unsigned short z80_word;
+
+typedef union
 {
-    return 0;
-}
+    // #if BIG_ENDIAN
+    // big endian
+    //  struct { z80_byte h,l; } s;
+    //#else
+    // litle endian
+    struct
+    {
+        z80_byte l, h;
+    } s;
+    //#endif
+    z80_word w;
+} z80_register;
+
+typedef struct
+{
+    z80_register af;
+    z80_register bc;
+    z80_register de;
+    z80_register hl;
+} z80_register_set;
+
+typedef struct
+{
+    z80_register_set main;
+    z80_register_set alternative;
+    z80_register ir;
+    z80_word ix;
+    z80_word iy;
+    z80_word sp;
+    z80_word pc;
+} z80_registers;
+
+#endif

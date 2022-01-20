@@ -15,7 +15,35 @@
 
 #include "pch.h"
 
+void endiantest();
+
+//8 bits
+typedef unsigned char z80_byte;
+//16 bits
+typedef unsigned short z80_int;
+
+typedef union {
+// #if BIG_ENDIAN
+// big endian
+//  struct { z80_byte h,l; } s;
+//#else
+// litle endian
+  struct { z80_byte l,h; } s;
+//#endif
+
+  z80_int x;
+} z80_registro;
+
 int main()
 {
+    endiantest();
+    z80_registro a,b;
+
+    a.x=0x1234;
+    b.s.l=0x34;
+    b.s.h=0x12;
+
+    assert(a.x==b.x);
+
     return 0;
 }
