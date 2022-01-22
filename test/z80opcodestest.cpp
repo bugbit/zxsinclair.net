@@ -14,14 +14,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "pch.h"
+#include "z80.h"
 
-void endiantest();
-void z80opcodestest();
-
-int main()
+void z80opcodestest()
 {
-  endiantest();
-  z80opcodestest();
-
-  return 0;
+    z80_creatememory_default();
+    printf("ld a,a\n");
+    z80_reset();
+    (*z80_freememory_default)();
 }

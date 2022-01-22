@@ -14,14 +14,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "pch.h"
+#include "z80.h"
 
-void endiantest();
-void z80opcodestest();
-
-int main()
+void z80_execopcode(z80_byte data)
 {
-  endiantest();
-  z80opcodestest();
+    switch (data)
+    {
+    case Z80_OPCODES::LD_A_A:
+        ld_r_r1(z80_a, z80_a);
+        break;
 
-  return 0;
+    default:
+        break;
+    }
 }

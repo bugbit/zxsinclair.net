@@ -14,8 +14,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "pch.h"
+#include "z80.h"
 
 void endiantest()
 {
-    
+    z80_bc = 0x1234;
+    z80_e = 0x34;
+    z80_d = 0x12;
+
+    assert(z80_bc == z80_de);
 }
