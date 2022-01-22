@@ -18,9 +18,32 @@
 
 void endiantest()
 {
-    z80_bc = 0x1234;
+    printf("endiantest\n");
+
+    z80_register r;
+
+    r.w = 0x1234;
+
+    assert(r.s.l = 0x34);
+    assert(r.s.h = 0x12);
+
+    z80_a = 0x34;
+    z80_f = 0x12;
+
+    assert(z80_af == r.w);
+
+    z80_c = 0x34;
+    z80_b = 0x12;
+
+    assert(z80_bc == r.w);
+
     z80_e = 0x34;
     z80_d = 0x12;
 
-    assert(z80_bc == z80_de);
+    assert(z80_de == r.w);
+
+    z80_l = 0x34;
+    z80_h = 0x12;
+
+    assert(z80_hl == r.w);
 }
