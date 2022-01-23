@@ -28,44 +28,4 @@
 
 z80_registers z80_regs;
 int z80_tstates;
-void (*z80_freememory)() = z80_freememory_default;
-z80_byte *z80_memory_ptr;
-z80_memory_bank *z80_memory;
-int z80_memory_blank_sll;
-int z80_memory_blank_count;
-int z80_memory_blank_mod;
-;
-
-int z80_creatememory_default()
-{
-    z80_byte *m = new z80_byte[65535];
-
-    if (m == NULL)
-    {
-        perror("not enough memory");
-
-        return -1;
-    }
-
-    z80_memory_bank *b = new z80_memory_bank();
-
-    if (b == NULL)
-    {
-        delete[] m;
-        perror("not enough memory");
-
-        return -1;
-    }
-
-    z80_memory_blank_sll = 0;
-    z80_memory_blank_count = 1;
-    z80_memory_blank_mod = 2;
-    b->memory = m;
-    b->read = z80_readmem_default;
-    b->poke = z80_pokemem_default;
-    b->fetchopcode = z80_readmem_default;
-    z80_memory_ptr = m;
-    z80_memory = b;
-
-    return 0;
-}
+Tz80_memory *z80_memory;

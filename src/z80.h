@@ -35,6 +35,12 @@
 
 #define nop()
 #define ld_r_r1(r, r1) r = r1
+#define ld_r_n(r)              \
+    n = z80_readmempcandinc(); \
+    r = n
+#define ld_r_m_rr_m(r, rr) \
+    n = z80_readmem(rr);   \
+    r = n
 
 enum Z80_OPCODES
 {
@@ -80,7 +86,6 @@ enum Z80_OPCODES
     LD_L_E = 0x6B,
     LD_L_H = 0x6C,
     LD_L_L = 0x6D,
-    LD_L_M_HL_M = 0x6E,
     LD_L_A = 0x6F,
     LD_A_B = 0x78,
     LD_A_C = 0x79,
@@ -88,8 +93,17 @@ enum Z80_OPCODES
     LD_A_E = 0x7B,
     LD_A_H = 0x7C,
     LD_A_L = 0x7D,
-    LD_A_M_HL_M = 0x7E,
     LD_A_A = 0x7F,
+
+    LD_A_N = 0x3E,
+    LD_B_N = 0x06,
+    LD_C_N = 0x0E,
+    LD_D_N = 0x16,
+    LD_E_N = 0x1E,
+    LD_H_N = 0x26,
+    LD_L_N = 0x2E,
+
+    LD_A_M_HL_M = 0x7E,
 };
 
 // 8 bits
@@ -150,37 +164,100 @@ typedef struct
     z80_word pc;
 } z80_registers;
 
-typedef struct
-{
-    z80_byte *memory;
-    z80_byte (*read)(z80_word m);
-    void (*poke)(z80_word m, z80_byte data);
-    z80_byte (*fetchopcode)(z80_word m);
-} z80_memory_bank;
-
 extern z80_registers z80_regs;
 extern int z80_tstates;
-extern z80_byte *z80_memory_ptr;
-extern z80_memory_bank *z80_memory;
-extern int z80_memory_blank_sll;
-extern int z80_memory_blank_count;
-extern int z80_memory_blank_mod;
-extern void (*z80_freememory)();
 
-int z80_creatememory_default();
-
-inline void z80_freememory_default()
+class Tz80_memory
 {
-    if (z80_memory_ptr != NULL)
+public:
+    inline Tz80_memory(z80_word size = 0xFFFF) { this->size = size; }
+    inline virtual ~Tz80_memory() {}
+    inline virtual z80_byte read(z80_word m) const
     {
-        delete z80_memory_ptr;
-        z80_memory_ptr = NULL;
+        z80_tstates += 3;
+
+        return 0;
     }
+    inline virtual z80_byte read_notime(z80_word m) const { return 0; }
+    inline virtual void poke(z80_word m, z80_byte data) { z80_tstates += 3; }
+    inline virtual void poke_notime(z80_word m, z80_byte data) {}
+    inline virtual z80_byte fetchopcode(z80_word m) const
+    {
+        z80_tstates += 4;
+
+        return 0;
+    }
+
+protected:
+    z80_word size;
+};
+
+class Tz80_memory_default : public Tz80_memory
+{
+public:
+    inline Tz80_memory_default(int size = 0xFFFF) : Tz80_memory(size)
+    {
+        memory = new z80_byte[size];
+    }
+    inline virtual ~Tz80_memory_default()
+    {
+        delete[] memory;
+    }
+    inline virtual z80_byte read(z80_word m) const
+    {
+        z80_tstates += 3;
+
+        return memory[m];
+    }
+    inline virtual z80_byte read_notime(z80_word m) const { return memory[m]; }
+    inline virtual void poke(z80_word m, z80_byte data)
+    {
+        z80_tstates += 3;
+
+        memory[m] = data;
+    }
+    inline virtual void poke_notime(z80_word m, z80_byte data) { memory[m] = data; }
+    inline virtual z80_byte fetchopcode(z80_word m) const
+    {
+        z80_tstates += 4;
+
+        return memory[m];
+    }
+
+protected:
+    z80_byte *memory;
+};
+
+extern Tz80_memory *z80_memory;
+
+inline void z80_freememory()
+{
     if (z80_memory != NULL)
     {
-        delete[] z80_memory;
+        delete z80_memory;
         z80_memory = NULL;
     }
+}
+
+inline void z80_setmemory(Tz80_memory *m)
+{
+    z80_freememory();
+    z80_memory = m;
+}
+
+inline int z80_creatememory_default()
+{
+    auto m = new Tz80_memory_default();
+
+    if (m == NULL)
+    {
+        perror("not enough memory");
+
+        return -1;
+    }
+    z80_setmemory(m);
+
+    return 0;
 }
 
 inline void z80_reset()
@@ -189,29 +266,44 @@ inline void z80_reset()
     z80_tstates = 0;
 }
 
-inline z80_byte z80_readmem_default(z80_word m)
-{
-    return z80_memory_ptr[m];
-}
-
-inline void z80_pokemem_default(z80_word m, z80_byte data)
-{
-    z80_memory_ptr[m] = data;
-}
-
 inline z80_byte z80_readmem(z80_word m)
 {
-    return z80_memory[(m >> z80_memory_blank_sll) % z80_memory_blank_mod].read(m);
+    assert(z80_memory);
+
+    return z80_memory->read(m);
+}
+
+inline z80_byte z80_readmem_notime(z80_word m)
+{
+    assert(z80_memory);
+
+    return z80_memory->read_notime(m);
+}
+
+inline z80_byte z80_readmempcandinc()
+{
+    return z80_readmem(z80_pc++);
 }
 
 inline void z80_pokemem(z80_word m, z80_byte data)
 {
-    z80_memory[(m >> z80_memory_blank_sll) % z80_memory_blank_mod].poke(m, data);
+    assert(z80_memory);
+
+    z80_memory->poke(m, data);
+}
+
+inline void z80_pokemem_notime(z80_word m, z80_byte data)
+{
+    assert(z80_memory);
+
+    z80_memory->poke_notime(m, data);
 }
 
 inline z80_byte z80_fetchopcode(z80_word m)
 {
-    return z80_memory[(m >> z80_memory_blank_sll) % z80_memory_blank_mod].fetchopcode(m);
+    assert(z80_memory);
+
+    return z80_memory->fetchopcode(m);
 }
 
 inline void z80_refreshr()
@@ -228,7 +320,6 @@ inline void z80_instrfetch()
 {
     auto data = z80_fetchopcode(z80_regs.pc++);
 
-    z80_tstates += 4;
     /*
     Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
 enabling dynamic memories to be used with the same ease as static memories. Seven bits

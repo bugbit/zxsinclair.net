@@ -46,4 +46,6 @@ void endiantest()
     z80_h = 0x12;
 
     assert(z80_hl == r.w);
+
+    printf("ok\n");
 }
