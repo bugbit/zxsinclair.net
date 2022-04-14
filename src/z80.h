@@ -167,6 +167,19 @@ typedef struct
 extern z80_registers z80_regs;
 extern int z80_tstates;
 
+class Tz80
+{
+public:
+    enum Z80_OPCODES
+    {
+       #include "z80_enum_opcodes.h" 
+    };
+
+protected:
+    z80_registers z80_regs;
+    int z80_tstates;
+};
+
 class Tz80_memory
 {
 public:

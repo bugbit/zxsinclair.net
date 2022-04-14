@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "generateZ80Ops", "generateZ80Ops\generateZ80Ops.csproj", "{33784545-5B8C-4F40-84F8-976EFA868C56}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33784545-5B8C-4F40-84F8-976EFA868C56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33784545-5B8C-4F40-84F8-976EFA868C56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33784545-5B8C-4F40-84F8-976EFA868C56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33784545-5B8C-4F40-84F8-976EFA868C56}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

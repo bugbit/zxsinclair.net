@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="opcodes_base.dat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="opcodes_cb.dat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="opcodes_ddfd.dat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="opcodes_ddfdcb.dat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="opcodes_ed.dat" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
