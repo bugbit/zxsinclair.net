@@ -167,17 +167,19 @@ typedef struct
 extern z80_registers z80_regs;
 extern int z80_tstates;
 
-class Tz80
+class Tz80_tstates
 {
 public:
-    enum Z80_OPCODES
+    inline Tz80_tstates() { reset(); }
+    inline int getTStates() const { return tstates; }
+    inline void reset() { tstates = 0; }
+    inline void addCycles(int cycles)
     {
-       #include "z80_enum_opcodes.h" 
-    };
+        tstates += cycles;
+    }
 
 protected:
-    z80_registers z80_regs;
-    int z80_tstates;
+    int tstates;
 };
 
 class Tz80_memory
@@ -185,6 +187,14 @@ class Tz80_memory
 public:
     inline Tz80_memory(z80_word size = 0xFFFF) { this->size = size; }
     inline virtual ~Tz80_memory() {}
+    inline virtual void contend_read(Tz80_tstates &tstates, z80_word m, int cycles) const
+    {
+        tstates.addCycles(cycles);
+    }
+    inline virtual z80_byte readByte(z80_word m) const
+    {
+        return 0;
+    }
     inline virtual z80_byte read(z80_word m) const
     {
         z80_tstates += 3;
@@ -205,6 +215,63 @@ protected:
     z80_word size;
 };
 
+class Tz80
+{
+public:
+    enum Z80_OPCODES
+    {
+#include "z80_enum_opcodes.h"
+    };
+
+    inline void instrfetch()
+    {
+        memory->contend_read(tstates, regs.pc++, 4);
+
+        auto opcode = memory->readByte(regs.pc++);
+
+        /*
+    Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
+enabling dynamic memories to be used with the same ease as static memories. Seven bits
+of this 8-bit register are automatically incremented after each instruction fetch. The eighth
+bit remains as programmed, resulting from an LD R, A instruction. The data in the refresh
+counter is sent out on the lower portion of the address bus along with a refresh control sig-
+nal while the CPU is decoding and executing the fetched instruction. This mode of refresh
+is transparent to the programmer and does not slow the CPU operation. The programmer
+can load the R register for testing purposes, but this register is normally not used by the
+programmer. During refresh, the contents of the I Register are placed on the upper eight
+bits of the address bus.
+    */
+
+        refreshr();
+
+        execOpCode(opcode);
+    }
+
+protected:
+    z80_registers regs;
+    Tz80_memory *memory;
+    Tz80_tstates tstates;
+
+    inline void refreshr()
+    {
+        int r = z80_r;
+
+        // Seven bits of this 8-bit register are automatically incremented after each instruction fetch.
+        z80_r = (z80_byte)((r + 1) & 0x7F | (r & 0x80));
+    }
+
+    inline void execOpCode(z80_byte opcode)
+    {
+        switch (opcode)
+        {
+#include "z80_opcodes.h"
+        default:
+            // NOP
+            break;
+        }
+    }
+};
+
 class Tz80_memory_default : public Tz80_memory
 {
 public:
@@ -215,6 +282,10 @@ public:
     inline virtual ~Tz80_memory_default()
     {
         delete[] memory;
+    }
+    inline virtual z80_byte readByte(z80_word m) const
+    {
+        return memory[m];
     }
     inline virtual z80_byte read(z80_word m) const
     {
