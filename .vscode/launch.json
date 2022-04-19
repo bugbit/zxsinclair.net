@@ -1,15 +1,26 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "type": "blazorwasm",
-        "name": "Launch and Debug Blazor WebAssembly Application",
-        "request": "launch",
-        //"cwd": "${workspaceFolder}/zxsinclair.net",
-        "cwd": "${workspaceFolder}/ZXSinclair.Perform",
-        "browser": "chrome",
-        //"url": "http://localhost:5270"
-        "url": "http://localhost:5051"
-      }
-    ]
-  }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch generateZ80Ops",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/builderCodes/generateZ80Ops/bin/Debug/net6.0/generateZ80Ops.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/builderCodes/generateZ80Ops",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "type": "blazorwasm",
+      "name": "Launch and Debug Blazor WebAssembly Application",
+      "request": "launch",
+      //"cwd": "${workspaceFolder}/zxsinclair.net",
+      "cwd": "${workspaceFolder}/ZXSinclair.Perform",
+      "browser": "chrome",
+      //"url": "http://localhost:5270"
+      "url": "http://localhost:5051"
+    }
+  ]
+}

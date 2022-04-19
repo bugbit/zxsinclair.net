@@ -42,6 +42,8 @@
     n = z80_readmem(rr);   \
     r = n
 
+#define NOP()    
+
 enum Z80_OPCODES
 {
     NOP = 0x0,
@@ -266,7 +268,7 @@ protected:
         {
 #include "z80_opcodes.h"
         default:
-            // NOP
+            NOP()
             break;
         }
     }
