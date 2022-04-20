@@ -5,6 +5,6 @@
     },
     {
         "name": "Emscripten (w10)",
-        "toolchainFile": "C:\\Users\\oscar.INTRANET.000\\source\\repos\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake"
+        "toolchainFile": "C:\\Programas\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake"
     }
 ]

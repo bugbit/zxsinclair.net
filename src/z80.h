@@ -42,7 +42,18 @@
     n = z80_readmem(rr);   \
     r = n
 
-#define NOP()    
+#define __zA__ regs.main.af.s2.a
+#define __zB__ regs.main.bc.s.h
+#define __zC__ regs.main.bc.s.l
+#define __zD__ regs.main.de.s.h
+#define __zE__ regs.main.de.s.l
+#define __zH__ regs.main.hl.s.h
+#define __zL__ regs.main.hl.s.l
+#define __zPC__ regs.pc
+
+#define __zLD_R_R1__(r,r1) r = r1
+
+#define __zNOP__()
 
 enum Z80_OPCODES
 {
@@ -227,9 +238,9 @@ public:
 
     inline void instrfetch()
     {
-        memory->contend_read(tstates, regs.pc++, 4);
+        memory->contend_read(tstates, __zPC__++, 4);
 
-        auto opcode = memory->readByte(regs.pc++);
+        auto opcode = memory->readByte(__zPC__++);
 
         /*
     Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
@@ -254,6 +265,8 @@ protected:
     Tz80_memory *memory;
     Tz80_tstates tstates;
 
+    //inline z80_byte fetchOpcode(z80_word m)
+
     inline void refreshr()
     {
         int r = z80_r;
@@ -268,7 +281,7 @@ protected:
         {
 #include "z80_opcodes.h"
         default:
-            NOP()
+            __zNOP__()
             break;
         }
     }
