@@ -5,3 +5,5 @@
 #include <stdio.h>
 #include <memory.h>
 #include <endian.h>
+#include <iostream>
+#include <fstream>

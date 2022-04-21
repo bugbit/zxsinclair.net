@@ -51,7 +51,7 @@
 #define __zL__ regs.main.hl.s.l
 #define __zPC__ regs.pc
 
-#define __zLD_R_R1__(r,r1) r = r1
+#define __zLD_R_R1__(r, r1) r = r1
 
 #define __zNOP__()
 
@@ -164,6 +164,13 @@ typedef struct
     z80_register bc;
     z80_register de;
     z80_register hl;
+    inline void reset()
+    {
+        af.w = 0;
+        bc.w = 0;
+        de.w = 0;
+        hl.w = 0;
+    }
 } z80_register_set;
 
 typedef struct
@@ -175,6 +182,13 @@ typedef struct
     z80_word iy;
     z80_word sp;
     z80_word pc;
+    inline void reset()
+    {
+        main.reset();
+        alternative.reset();
+        ir.w = 0;
+        ix = iy = sp = pc = 0;
+    }
 } z80_registers;
 
 extern z80_registers z80_regs;
@@ -236,11 +250,17 @@ public:
 #include "z80_enum_opcodes.h"
     };
 
+    inline void reset()
+    {
+        regs.reset();
+        tstates.reset();
+    }
+
     inline void instrfetch()
     {
         memory->contend_read(tstates, __zPC__++, 4);
 
-        auto opcode = memory->readByte(__zPC__++);
+        auto opcode = fetchOpcode(__zPC__++);
 
         /*
     Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
@@ -265,7 +285,10 @@ protected:
     Tz80_memory *memory;
     Tz80_tstates tstates;
 
-    //inline z80_byte fetchOpcode(z80_word m)
+    inline z80_byte fetchOpcode(z80_word m)
+    {
+        return memory->readByte(m);
+    }
 
     inline void refreshr()
     {
@@ -281,8 +304,7 @@ protected:
         {
 #include "z80_opcodes.h"
         default:
-            __zNOP__()
-            break;
+            __zNOP__() break;
         }
     }
 };

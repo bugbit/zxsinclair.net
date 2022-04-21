@@ -18,6 +18,15 @@
 
 void z80opcodestest()
 {
+    std::ifstream in("tests.in");
+    std::string line;
+
+    in >> line;
+    std::cout << line << std::endl;
+}
+
+void z80opcodestest2()
+{
     z80_creatememory_default();
 
     int tstates;
