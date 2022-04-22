@@ -6,3 +6,4 @@
 #include <memory.h>
 #include <endian.h>
 #include <assert.h>
+#include <algorithm>
