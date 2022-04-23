@@ -7,3 +7,4 @@
 #include <endian.h>
 #include <iostream>
 #include <fstream>
+#include <strstream>

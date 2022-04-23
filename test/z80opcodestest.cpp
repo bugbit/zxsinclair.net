@@ -16,26 +16,66 @@
 #include "pch.h"
 #include "z80.h"
 
+#define TESTEXPECTEDMEMORYMAX 10
+#define TESTEXPECTEDMEMORYDATAMAX 10
+
+struct TEstExpectedMemory
+{
+	z80_word address;
+	z80_byte data[TESTEXPECTEDMEMORYDATAMAX];
+};
+
+struct TestExpected
+{
+	std::string testname;
+	unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc;
+	unsigned i, r, iff1, iff2, im;
+	int halted;
+	unsigned endtstates;
+	struct TEstExpectedMemory memory[TESTEXPECTEDMEMORYMAX];
+};
+
 static std::ifstream testsin;
+static std::ifstream testsexpe;
 static Tz80_memory_default memory, memory_inittest;
 static Tz80 z80(memory);
 static std::string testname;
-static z80_word endtstates;
+struct TestExpected testexpeop;
 
 static bool runTest();
 static bool readTest();
+static bool readTestExpected();
 
 void z80opcodestest()
 {
 	testsin.open("tests.in");
+	testsexpe.open("tests.expected");
 	// std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << 12 << ' ' << 130 << std::endl;
 	// return;
 	while (runTest())
 	{
-		std::cout << testname;
+		bool texpe = readTestExpected();
 
-		return;
+		std::cout << testname << ' ';
+		if (!texpe)
+		{
+			std::cout << "error in read tests.expected, end test" << std::endl;
+
+			return;
+		}
+		if (testname != testexpeop.testname)
+		{
+			std::cout << "tests.expected diferent name (" << testexpeop.testname << ") expected testerror in read tests.expected, end test" << std::endl;
+
+			return;
+		}
+		if (z80.getInstrNotImp())
+			std::cout << "not implement" << std::endl;
+		else
+			std::cout << "?" << std::endl;
 	}
+	testsin.close();
+	testsexpe.close();
 }
 
 static bool runTest()
@@ -53,6 +93,8 @@ static bool runTest()
 	if (!readTest())
 		return false;
 
+	z80.instrfetch();
+
 	return true;
 }
 
@@ -61,6 +103,7 @@ static bool readTest()
 	std::string line;
 	z80_word i, r, iff1, iff2, im;
 	int halted;
+	unsigned endtstates;
 
 	do
 	{
@@ -76,9 +119,9 @@ static bool readTest()
 	testsin >> std::hex >> regs.main.af.w >> regs.main.bc.w >> regs.main.de.w >> regs.main.hl.w >> regs.alternative.af.w >> regs.alternative.bc.w >> regs.alternative.de.w >> regs.alternative.hl.w >> regs.ix >> regs.iy >> regs.sp >> regs.pc;
 	testsin >> std::hex >> i >> r >> iff1 >> iff2 >> im >> halted >> endtstates;
 
-	for (;;) 
+	for (;;)
 	{
-		z80_word address;
+		unsigned address;
 
 		testsin >> address;
 
@@ -94,7 +137,74 @@ static bool readTest()
 			if (byte >= 0x100 || testsin.eof())
 				break;
 
-			memory.pokeByte(address, byte);
+			memory.pokeByte(address++, byte);
+		}
+	}
+
+	return true;
+}
+
+static bool readTestExpected()
+{
+	std::string line;
+	z80_word number;
+	std::string str;
+	unsigned address;
+	unsigned byte;
+
+	do
+	{
+		if (testsexpe.eof())
+			return false;
+
+		testsexpe >> std::hex >> line;
+	} while (line == "\n");
+
+	testexpeop.testname = line;
+	for (;;)
+	{
+		testsexpe >> number >> str;
+		if (testsexpe.eof())
+			return false;
+
+		if (str == "MR" || str == "MR" || str == "MC" || str == "PR" || str == "PW" || str == "PC")
+		{
+			testsexpe >> std::hex >> address >> byte;
+		}
+		else
+		{
+			testexpeop.af = number;
+			std::istrstream(str.c_str()) >> std::hex >> testexpeop.bc;
+			testsexpe >> std::hex >> testexpeop.de >> testexpeop.hl >> testexpeop.af_ >> testexpeop.bc_ >> testexpeop.de_ >> testexpeop.hl_ >> testexpeop.ix >> testexpeop.iy >> testexpeop.sp >> testexpeop.pc;
+			testsexpe >> std::hex >> testexpeop.i >> testexpeop.r >> testexpeop.iff1 >> testexpeop.iff2 >> testexpeop.im >> testexpeop.halted >> testexpeop.endtstates;
+
+			break;
+		}
+	}
+	for (;;)
+	{
+		unsigned address;
+
+		testsin >> str;
+
+		if (str == "")
+			break;
+
+		std::istrstream(str.c_str()) >> std::hex >> address;
+
+		if (address >= 0x10000 || testsin.eof())
+			break;
+
+		for (;;)
+		{
+			unsigned byte;
+
+			testsin >> byte;
+
+			if (byte >= 0x100 || testsin.eof())
+				break;
+
+			// memory.pokeByte(address++, byte);
 		}
 	}
 

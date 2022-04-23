@@ -49,6 +49,8 @@
 #define __zE__ regs.main.de.s.l
 #define __zH__ regs.main.hl.s.h
 #define __zL__ regs.main.hl.s.l
+#define __zI__ regs.ir.s3.i
+#define __zR__ regs.ir.s3.r
 #define __zPC__ regs.pc
 
 #define __zLD_R_R1__(r, r1) r = r1
@@ -260,15 +262,25 @@ public:
 		return regs;
 	}
 
+#ifdef Z80_OPCODES_TEST
+	inline const bool &getInstrNotImp() const
+	{
+		return instrNotImp;
+	}
+#endif
+
 	inline void reset()
 	{
 		regs.reset();
 		tstates.reset();
+#ifdef Z80_OPCODES_TEST
+		instrNotImp = false;
+#endif
 	}
 
 	inline void instrfetch()
 	{
-		memory.contend_read(tstates, __zPC__++, 4);
+		memory.contend_read(tstates, __zPC__, 4);
 
 		auto opcode = fetchOpcode(__zPC__++);
 
@@ -294,6 +306,9 @@ protected:
 	z80_registers regs;
 	Tz80_memory &memory;
 	Tz80_tstates tstates;
+#ifdef Z80_OPCODES_TEST
+	bool instrNotImp;
+#endif
 
 	inline z80_byte fetchOpcode(z80_word m)
 	{
@@ -302,10 +317,10 @@ protected:
 
 	inline void refreshr()
 	{
-		int r = z80_r;
+		int r = __zR__;
 
 		// Seven bits of this 8-bit register are automatically incremented after each instruction fetch.
-		z80_r = (z80_byte)((r + 1) & 0x7F | (r & 0x80));
+		__zR__ = (z80_byte)((r + 1) & 0x7F | (r & 0x80));
 	}
 
 	inline void execOpCode(z80_byte opcode)

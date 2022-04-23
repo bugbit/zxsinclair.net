@@ -8,6 +8,7 @@ include_directories(../src)
 add_executable(test main.cpp regstest.cpp z80opcodestest.cpp
 ../src/z80_core.cpp ../src/z80_opcodes.cpp)
 #add_executable(test ../src/z80_core.cpp)
+add_definitions( -DZ80_OPCODES_TEST )
 if (EMSCRIPTEN)
     set_target_properties(
         test

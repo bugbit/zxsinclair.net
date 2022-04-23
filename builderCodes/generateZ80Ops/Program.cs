@@ -11,7 +11,7 @@ Dictionary<string, string> regsToCPP = regs8Bits.ToDictionary(r => r, r => $"__z
 
 Dictionary<string, Func<generateZ80Ops.OpCodeArgs, List<string>, bool>> opcodesGenerators = new Dictionary<string, Func<generateZ80Ops.OpCodeArgs, List<string>, bool>>
 {
-    [nameof(LD)]=LD
+    [nameof(LD)] = LD
 };
 
 string BuildId(string[] line)
@@ -41,7 +41,7 @@ bool RunOpcode(generateZ80Ops.OpCodeArgs args, List<string> lines)
 
 async Task WriterOpcodes(generateZ80Ops.Opcodes opcodes)
 {
-    var dir = Path.GetDirectoryName(typeof(generateZ80Ops.Opcodes).Assembly.Location);
+    var dir = Path.GetDirectoryName(typeof(generateZ80Ops.Opcodes).Assembly.Location) ?? "";
 
     Console.Write($"reading {opcodes.FileDat} ...");
 
@@ -64,22 +64,25 @@ async Task WriterOpcodes(generateZ80Ops.Opcodes opcodes)
         {
             try
             {
-                ok=RunOpcode(args, lines);
+                ok = RunOpcode(args, lines);
                 if (!ok)
                 {
                     lines.Add("// not implement");
-                    msgerr="not implement";
+                    lines.Add("#ifdef Z80_OPCODES_TEST");
+                    lines.Add("instrNotImp=true;");
+                    lines.Add("#endif");
+                    msgerr = "not implement";
                 }
                 lines.Add("break;");
             }
             catch (Exception ex)
             {
-                msgerr=ex.Message;
-                ok=false;
+                msgerr = ex.Message;
+                ok = false;
             }
         }
         else
-            ok=true;
+            ok = true;
         if (ok)
             Console.Write("ok");
         else
@@ -95,7 +98,7 @@ async Task WriterOpcodes(generateZ80Ops.Opcodes opcodes)
 
     var enuml = enums[enums.Count - 1];
 
-    enums[enums.Count - 1] =enuml.Substring(0, enuml.Length-1);
+    enums[enums.Count - 1] = enuml.Substring(0, enuml.Length - 1);
     Console.Write($"Writing {opcodes.FileZ80EnumH}");
     await File.WriteAllLinesAsync(Path.Combine(dir, opcodes.FileZ80EnumH), enums);
     Console.Write($"\nWriting {opcodes.FileZ80EnumH}");
@@ -105,7 +108,7 @@ async Task WriterOpcodes(generateZ80Ops.Opcodes opcodes)
 
 bool LD(generateZ80Ops.OpCodeArgs args, List<string> lines)
 {
-    if (args.Params.Length==2)
+    if (args.Params.Length == 2)
     {
         if (regsToCPP.TryGetValue(args.Params[0], out var r1cpp) && regsToCPP.TryGetValue(args.Params[1], out var r2cpp))
         {
