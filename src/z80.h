@@ -36,11 +36,11 @@
 #define nop()
 #define ld_r_r1(r, r1) r = r1
 #define ld_r_n(r)              \
-    n = z80_readmempcandinc(); \
-    r = n
+	n = z80_readmempcandinc(); \
+	r = n
 #define ld_r_m_rr_m(r, rr) \
-    n = z80_readmem(rr);   \
-    r = n
+	n = z80_readmem(rr);   \
+	r = n
 
 #define __zA__ regs.main.af.s2.a
 #define __zB__ regs.main.bc.s.h
@@ -122,7 +122,7 @@ enum Z80_OPCODES
 // 8 bits
 typedef unsigned char z80_byte;
 // 16 bits
-typedef unsigned short z80_word;
+typedef unsigned int z80_word;
 
 typedef union
 {
@@ -215,7 +215,7 @@ class Tz80_memory
 public:
 	inline Tz80_memory(z80_word size = 0xFFFF) { this->size = size; }
 	inline virtual ~Tz80_memory() {}
-	inline virtual void contend_read(Tz80_tstates& tstates, z80_word m, int cycles) const
+	inline virtual void contend_read(Tz80_tstates &tstates, z80_word m, int cycles) const
 	{
 		tstates.addCycles(cycles);
 	}
@@ -252,8 +252,13 @@ public:
 #include "z80_enum_opcodes.h"
 	};
 
-	inline Tz80(Tz80_memory& memory) : memory(memory) {}
+	inline Tz80(Tz80_memory &memory) : memory(memory) {}
 	inline ~Tz80() {}
+
+	inline const z80_registers &getRegs() const
+	{
+		return regs;
+	}
 
 	inline void reset()
 	{
@@ -287,7 +292,7 @@ bits of the address bus.
 
 protected:
 	z80_registers regs;
-	Tz80_memory& memory;
+	Tz80_memory &memory;
 	Tz80_tstates tstates;
 
 	inline z80_byte fetchOpcode(z80_word m)
@@ -330,7 +335,7 @@ public:
 		return memory[m];
 	}
 	inline virtual void pokeByte(z80_word m, z80_byte data) { memory[m] = data; }
-	inline virtual void copyTo(Tz80_memory_default& m)
+	inline virtual void copyTo(Tz80_memory_default &m)
 	{
 		memcpy(m.memory, memory, std::min(size, m.size));
 	}
@@ -356,10 +361,10 @@ public:
 	}
 
 protected:
-	z80_byte* memory;
+	z80_byte *memory;
 };
 
-extern Tz80_memory* z80_memory;
+extern Tz80_memory *z80_memory;
 
 inline void z80_freememory()
 {
@@ -370,7 +375,7 @@ inline void z80_freememory()
 	}
 }
 
-inline void z80_setmemory(Tz80_memory* m)
+inline void z80_setmemory(Tz80_memory *m)
 {
 	z80_freememory();
 	z80_memory = m;

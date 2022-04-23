@@ -19,23 +19,29 @@
 static std::ifstream testsin;
 static Tz80_memory_default memory, memory_inittest;
 static Tz80 z80(memory);
+static std::string testname;
+static z80_word endtstates;
 
-static void runTest();
+static bool runTest();
+static bool readTest();
 
 void z80opcodestest()
 {
 	testsin.open("tests.in");
-	// std::ifstream in("tests.in");
-	std::string line;
+	// std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << 12 << ' ' << 130 << std::endl;
+	// return;
+	while (runTest())
+	{
+		std::cout << testname;
 
-	testsin >> line;
-	std::cout << line << std::endl;
+		return;
+	}
 }
 
-static void runTest()
+static bool runTest()
 {
 	z80.reset();
-	for (int i = 0; i < 0x10000; )
+	for (int i = 0; i < 0x10000;)
 	{
 		memory.pokeByte(i++, 0xde);
 		memory.pokeByte(i++, 0xad);
@@ -43,6 +49,56 @@ static void runTest()
 		memory.pokeByte(i++, 0xef);
 	}
 	memory.copyTo(memory_inittest);
+
+	if (!readTest())
+		return false;
+
+	return true;
+}
+
+static bool readTest()
+{
+	std::string line;
+	z80_word i, r, iff1, iff2, im;
+	int halted;
+
+	do
+	{
+		if (testsin.eof())
+			return false;
+
+		testsin >> line;
+	} while (line == "\n");
+	testname = line;
+
+	auto regs = z80.getRegs();
+
+	testsin >> std::hex >> regs.main.af.w >> regs.main.bc.w >> regs.main.de.w >> regs.main.hl.w >> regs.alternative.af.w >> regs.alternative.bc.w >> regs.alternative.de.w >> regs.alternative.hl.w >> regs.ix >> regs.iy >> regs.sp >> regs.pc;
+	testsin >> std::hex >> i >> r >> iff1 >> iff2 >> im >> halted >> endtstates;
+
+	for (;;) 
+	{
+		z80_word address;
+
+		testsin >> address;
+
+		if (address >= 0x10000 || testsin.eof())
+			break;
+
+		for (;;)
+		{
+			unsigned byte;
+
+			testsin >> byte;
+
+			if (byte >= 0x100 || testsin.eof())
+				break;
+
+			memory.pokeByte(address, byte);
+		}
+	}
+
+	return true;
 }
 
 void z80opcodestest2()
