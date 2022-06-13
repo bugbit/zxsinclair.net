@@ -14,7 +14,7 @@ if (EMSCRIPTEN)
         test
         PROPERTIES
         LINK_FLAGS
-        "--preload-file ../../test/assets/@"
+        "-sASYNCIFY --preload-file ../../test/assets/@"
     ) 
 endif(EMSCRIPTEN)
 

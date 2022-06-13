@@ -117,7 +117,8 @@ static bool readTest()
 	auto regs = z80.getRegs();
 
 	testsin >> std::hex >> regs.main.af.w >> regs.main.bc.w >> regs.main.de.w >> regs.main.hl.w >> regs.alternative.af.w >> regs.alternative.bc.w >> regs.alternative.de.w >> regs.alternative.hl.w >> regs.ix >> regs.iy >> regs.sp >> regs.pc;
-	testsin >> std::hex >> i >> r >> iff1 >> iff2 >> im >> halted >> endtstates;
+	testsin >> std::hex >> i >> r;
+	testsin >> iff1 >> iff2 >> im >> halted >> endtstates;
 
 	for (;;)
 	{
@@ -147,8 +148,8 @@ static bool readTest()
 static bool readTestExpected()
 {
 	std::string line;
-	z80_word number;
-	std::string str;
+	// z80_word number;
+	std::string numberstr, str;
 	unsigned address;
 	unsigned byte;
 
@@ -163,17 +164,21 @@ static bool readTestExpected()
 	testexpeop.testname = line;
 	for (;;)
 	{
-		testsexpe >> number >> str;
 		if (testsexpe.eof())
 			return false;
 
-		if (str == "MR" || str == "MR" || str == "MC" || str == "PR" || str == "PW" || str == "PC")
+		testsexpe >> numberstr >> str;
+
+		if (str == "MR" || str == "MW" || str == "MC" || str == "PR" || str == "PW" || str == "PC")
 		{
-			testsexpe >> std::hex >> address >> byte;
+			testsexpe >> std::hex >> address;
+			if (str == "MR" || str == "MW" || str == "PR" || str == "PW")
+				testsexpe >> std::hex >> byte;
 		}
 		else
 		{
-			testexpeop.af = number;
+			// testexpeop.af = number;
+			std::istrstream(numberstr.c_str()) >> std::hex >> testexpeop.af;
 			std::istrstream(str.c_str()) >> std::hex >> testexpeop.bc;
 			testsexpe >> std::hex >> testexpeop.de >> testexpeop.hl >> testexpeop.af_ >> testexpeop.bc_ >> testexpeop.de_ >> testexpeop.hl_ >> testexpeop.ix >> testexpeop.iy >> testexpeop.sp >> testexpeop.pc;
 			testsexpe >> std::hex >> testexpeop.i >> testexpeop.r >> testexpeop.iff1 >> testexpeop.iff2 >> testexpeop.im >> testexpeop.halted >> testexpeop.endtstates;
@@ -181,22 +186,50 @@ static bool readTestExpected()
 			break;
 		}
 	}
+
+	struct TEstExpectedMemory *memoryexp = testexpeop.memory;
+
 	for (;;)
 	{
+		if (testsexpe.eof())
+		{
+			memoryexp->address = 0;
+			*(memoryexp->data) = 0;
+
+			break;
+		}
+
 		unsigned address;
 
 		testsin >> str;
 
 		if (str == "")
+		{
+			memoryexp->address = 0;
+			*(memoryexp->data) = 0;
+
 			break;
+		}
 
 		std::istrstream(str.c_str()) >> std::hex >> address;
 
 		if (address >= 0x10000 || testsin.eof())
+		{
+			memoryexp->address = 0;
+			*(memoryexp->data) = 0;
+
 			break;
+		}
+
+		memoryexp->address = address;
+
+		z80_byte *data = memoryexp->data;
 
 		for (;;)
 		{
+			if (testsexpe.eof())
+				break;
+
 			unsigned byte;
 
 			testsin >> byte;
@@ -204,8 +237,10 @@ static bool readTestExpected()
 			if (byte >= 0x100 || testsin.eof())
 				break;
 
-			// memory.pokeByte(address++, byte);
+			*data++ = byte;
 		}
+
+		memoryexp++;
 	}
 
 	return true;
