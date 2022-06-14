@@ -50,8 +50,20 @@ void z80opcodestest()
 {
 	testsin.open("tests.in");
 	testsexpe.open("tests.expected");
+
+	std::string line;
+	int i = 0;
+
+	while (std::getline(testsexpe, line) && i < 100)
+	{
+		std::cout << line << std::endl;
+
+		i++;
+	}
+
 	// std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << 12 << ' ' << 130 << std::endl;
-	// return;
+	return;
+
 	while (runTest())
 	{
 		bool texpe = readTestExpected();
@@ -199,9 +211,25 @@ static bool readTestExpected()
 			break;
 		}
 
+		std::string line;
+
+		std::getline(testsexpe, line);
+
+		break;
+
+		auto car = testsexpe.peek();
+
+		if (car == '\r' || car == '\n')
+		{
+			memoryexp->address = 0;
+			*(memoryexp->data) = 0;
+
+			break;
+		}
+
 		unsigned address;
 
-		testsin >> str;
+		testsexpe >> str;
 
 		if (str == "")
 		{
@@ -232,7 +260,7 @@ static bool readTestExpected()
 
 			unsigned byte;
 
-			testsin >> byte;
+			testsexpe >> byte;
 
 			if (byte >= 0x100 || testsin.eof())
 				break;
