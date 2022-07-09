@@ -17,6 +17,7 @@
 
 #define __Z80_H__
 
+/*
 #define z80_a z80_regs.main.af.s2.a
 #define z80_b z80_regs.main.bc.s.h
 #define z80_c z80_regs.main.bc.s.l
@@ -41,6 +42,7 @@
 #define ld_r_m_rr_m(r, rr) \
 	n = z80_readmem(rr);   \
 	r = n
+*/
 
 #define __zA__ regs.main.af.s2.a
 #define __zB__ regs.main.bc.s.h
@@ -57,6 +59,7 @@
 
 #define __zNOP__()
 
+/*
 enum Z80_OPCODES
 {
 	NOP = 0x0,
@@ -120,6 +123,8 @@ enum Z80_OPCODES
 
 	LD_A_M_HL_M = 0x7E,
 };
+
+*/
 
 // 8 bits
 typedef unsigned char z80_byte;
@@ -194,8 +199,8 @@ typedef struct
 	}
 } z80_registers;
 
-extern z80_registers z80_regs;
-extern int z80_tstates;
+//extern z80_registers z80_regs;
+//extern int z80_tstates;
 
 class Tz80_tstates
 {
@@ -226,21 +231,21 @@ public:
 		return 0;
 	}
 	inline virtual void pokeByte(z80_word m, z80_byte data) {}
-	inline virtual z80_byte read(z80_word m) const
+	/* inline virtual z80_byte read(z80_word m) const
 	{
 		z80_tstates += 3;
 
 		return 0;
-	}
+	} */
 	inline virtual z80_byte read_notime(z80_word m) const { return 0; }
-	inline virtual void poke(z80_word m, z80_byte data) { z80_tstates += 3; }
+	//inline virtual void poke(z80_word m, z80_byte data) { z80_tstates += 3; }
 	inline virtual void poke_notime(z80_word m, z80_byte data) {}
-	inline virtual z80_byte fetchopcode(z80_word m) const
+	/* inline virtual z80_byte fetchopcode(z80_word m) const
 	{
 		z80_tstates += 4;
 
 		return 0;
-	}
+	} */
 
 protected:
 	z80_word size;
@@ -260,6 +265,11 @@ public:
 	inline const z80_registers &getRegs() const
 	{
 		return regs;
+	}
+
+	inline const Tz80_tstates &getTStates() const
+	{
+		return tstates;
 	}
 
 #ifdef Z80_OPCODES_TEST
@@ -354,30 +364,32 @@ public:
 	{
 		memcpy(m.memory, memory, std::min(size, m.size));
 	}
-	inline virtual z80_byte read(z80_word m) const
+	/* inline virtual z80_byte read(z80_word m) const
 	{
 		z80_tstates += 3;
 
 		return memory[m];
-	}
+	} */
 	inline virtual z80_byte read_notime(z80_word m) const { return memory[m]; }
-	inline virtual void poke(z80_word m, z80_byte data)
+	/* inline virtual void poke(z80_word m, z80_byte data)
 	{
 		z80_tstates += 3;
 
 		memory[m] = data;
-	}
+	} */
 	inline virtual void poke_notime(z80_word m, z80_byte data) { memory[m] = data; }
-	inline virtual z80_byte fetchopcode(z80_word m) const
+	/* inline virtual z80_byte fetchopcode(z80_word m) const
 	{
 		z80_tstates += 4;
 
 		return memory[m];
-	}
+	} */
 
 protected:
 	z80_byte *memory;
 };
+
+/*
 
 extern Tz80_memory *z80_memory;
 
@@ -483,9 +495,11 @@ can load the R register for testing purposes, but this register is normally not 
 programmer. During refresh, the contents of the I Register are placed on the upper eight
 bits of the address bus.
 	*/
+/*
 	z80_refreshr();
 
 	z80_execopcode(data);
 }
 
+*/
 #endif

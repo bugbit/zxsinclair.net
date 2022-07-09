@@ -20,7 +20,7 @@ void z80opcodestest();
 
 int main()
 {
-  endiantest();
+  // endiantest();
   z80opcodestest();
 
   return 0;

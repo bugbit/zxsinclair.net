@@ -16,6 +16,7 @@
 #include "pch.h"
 #include "z80.h"
 
+/*
 #define TESTEXPECTEDMEMORYMAX 10
 #define TESTEXPECTEDMEMORYDATAMAX 10
 
@@ -24,7 +25,6 @@ struct TEstExpectedMemory
 	z80_word address;
 	z80_byte data[TESTEXPECTEDMEMORYDATAMAX];
 };
-
 struct TestExpected
 {
 	std::string testname;
@@ -33,61 +33,59 @@ struct TestExpected
 	int halted;
 	unsigned endtstates;
 	struct TEstExpectedMemory memory[TESTEXPECTEDMEMORYMAX];
-};
+}; */
 
-static std::ifstream testsin;
-static std::ifstream testsexpe;
+static FILE *ftest;
+// static std::ifstream testsexpe;
 static Tz80_memory_default memory, memory_inittest;
 static Tz80 z80(memory);
 static std::string testname;
-struct TestExpected testexpeop;
+// struct TestExpected testexpeop;
 
 static bool runTest();
 static bool readTest();
-static bool readTestExpected();
+static void printTestResult();
+// static bool readTestExpected();
 
 void z80opcodestest()
 {
-	testsin.open("tests.in");
-	testsexpe.open("tests.expected");
+	ftest = fopen("tests.in", "r");
+	// testsexpe.open("tests.expected");
 
-	std::string line;
-	int i = 0;
+	// std::string line;
+	// int i = 0;
 
-	while (std::getline(testsexpe, line) && i < 100)
-	{
-		std::cout << line << std::endl;
+	// while (std::getline(testsexpe, line) && i < 100)
+	// {
+	// 	std::cout << line << std::endl;
 
-		i++;
-	}
+	// 	i++;
+	// }
 
 	// std::cout << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << 12 << ' ' << 130 << std::endl;
-	return;
+	// return;
 
 	while (runTest())
 	{
-		bool texpe = readTestExpected();
+		printTestResult();
+		// bool texpe = readTestExpected();
 
-		std::cout << testname << ' ';
-		if (!texpe)
-		{
-			std::cout << "error in read tests.expected, end test" << std::endl;
+		// std::cout << testname << ' ';
+		// if (!texpe)
+		// {
+		// 	std::cout << "error in read tests.expected, end test" << std::endl;
 
-			return;
-		}
-		if (testname != testexpeop.testname)
-		{
-			std::cout << "tests.expected diferent name (" << testexpeop.testname << ") expected testerror in read tests.expected, end test" << std::endl;
+		// 	return;
+		// }
+		// if (testname != testexpeop.testname)
+		// {
+		// 	std::cout << "tests.expected diferent name (" << testexpeop.testname << ") expected testerror in read tests.expected, end test" << std::endl;
 
-			return;
-		}
-		if (z80.getInstrNotImp())
-			std::cout << "not implement" << std::endl;
-		else
-			std::cout << "?" << std::endl;
+		// 	return;
+		// }
 	}
-	testsin.close();
-	testsexpe.close();
+	fclose(ftest);
+	// testsexpe.close();
 }
 
 static bool runTest()
@@ -112,51 +110,124 @@ static bool runTest()
 
 static bool readTest()
 {
-	std::string line;
-	z80_word i, r, iff1, iff2, im;
-	int halted;
-	unsigned endtstates;
+	unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc;
+	unsigned i, r, iff1, iff2, im;
+	unsigned halted;
+	unsigned end_tstates2;
+	unsigned address;
+	char test_name[80];
 
 	do
 	{
-		if (testsin.eof())
-			return false;
 
-		testsin >> line;
-	} while (line == "\n");
-	testname = line;
+		if (!fgets(test_name, sizeof(test_name), ftest))
+		{
+
+			if (feof(ftest))
+				return false;
+
+			fprintf(stderr, "error reading test description : %s\n",
+					strerror(errno));
+			return false;
+		}
+
+	} while (test_name[0] == '\n');
+
+	testname = test_name;
+
+	/* FIXME: how should we read/write our data types? */
+	if (fscanf(ftest, "%x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
+			   &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc) != 12)
+	{
+		fprintf(stderr, "first registers line corrupt\n");
+		return false;
+	}
 
 	auto regs = z80.getRegs();
 
-	testsin >> std::hex >> regs.main.af.w >> regs.main.bc.w >> regs.main.de.w >> regs.main.hl.w >> regs.alternative.af.w >> regs.alternative.bc.w >> regs.alternative.de.w >> regs.alternative.hl.w >> regs.ix >> regs.iy >> regs.sp >> regs.pc;
-	testsin >> std::hex >> i >> r;
-	testsin >> iff1 >> iff2 >> im >> halted >> endtstates;
+	regs.main.af.w = af;
+	regs.main.bc.w = bc;
+	regs.main.de.w = de;
+	regs.main.hl.w = hl;
+	regs.alternative.af.w = af_;
+	regs.alternative.bc.w = bc_;
+	regs.alternative.de.w = de_;
+	regs.alternative.hl.w = hl_;
+	regs.ix = ix;
+	regs.iy = iy;
+	regs.sp = sp;
+	regs.pc = pc;
 
-	for (;;)
+	if (fscanf(ftest, "%x %x %u %u %u %d %d", &i, &r, &iff1, &iff2, &im,
+			   &halted, &end_tstates2) != 7)
 	{
-		unsigned address;
+		fprintf(stderr, "registers line corrupt\n");
+		return false;
+	}
 
-		testsin >> address;
+	regs.ir.s3.i = i;
+	regs.ir.s3.r = r;
+	/* IFF1 = iff1;
+	IFF2 = iff2;
+	IM = im;
+	*end_tstates = end_tstates2; */
 
-		if (address >= 0x10000 || testsin.eof())
+	while (1)
+	{
+
+		if (fscanf(ftest, "%x", &address) != 1)
+		{
+			fprintf(stderr, "no address found \n");
+
+			return false;
+		}
+
+		if (address >= 0x10000)
 			break;
 
-		for (;;)
+		while (1)
 		{
+
 			unsigned byte;
 
-			testsin >> byte;
+			if (fscanf(ftest, "%x", &byte) != 1)
+			{
+				fprintf(stderr, "no data byte found in \n");
+				return false;
+			}
 
-			if (byte >= 0x100 || testsin.eof())
+			if (byte >= 0x100)
 				break;
 
-			memory.pokeByte(address++, byte);
+			memory.poke_notime(address++, byte);
 		}
 	}
 
 	return true;
 }
 
+static void printTestResult()
+{
+	std::cout << testname << std::endl;
+
+	if (z80.getInstrNotImp())
+		printf("not implement\n");
+	else
+	{
+		auto regs = z80.getRegs();
+		// temporal
+		unsigned iff1 = 0, iff2 = 0, im = 0;
+		int halted = 0;
+
+		printf("%04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+			   regs.main.af.w, regs.main.bc.w, regs.main.de.w, regs.main.hl.w, regs.alternative.af.w, regs.alternative.bc.w, regs.alternative.de.w, regs.alternative.hl.w, regs.ix, regs.iy, regs.sp, regs.pc);
+		printf("%02x %02x %d %d %d %d %d\n", regs.ir.s3.i, regs.ir.s3.r, iff1, iff2, im, halted, z80.getTStates().getTStates());
+	}
+
+	std::cout << std::endl;
+}
+
+/*
 static bool readTestExpected()
 {
 	std::string line;
@@ -273,6 +344,8 @@ static bool readTestExpected()
 
 	return true;
 }
+*/
+/*
 
 void z80opcodestest2()
 {
@@ -1673,3 +1746,5 @@ void z80opcodestest2()
 
 	z80_freememory();
 }
+
+*/

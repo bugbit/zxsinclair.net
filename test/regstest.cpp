@@ -16,6 +16,7 @@
 #include "pch.h"
 #include "z80.h"
 
+/*
 void endiantest()
 {
     printf("endiantest\n");
@@ -49,3 +50,4 @@ void endiantest()
 
     printf("ok\n");
 }
+*/
