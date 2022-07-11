@@ -44,16 +44,16 @@
 	r = n
 */
 
-#define __zA__ regs.main.af.s2.a
-#define __zB__ regs.main.bc.s.h
-#define __zC__ regs.main.bc.s.l
-#define __zD__ regs.main.de.s.h
-#define __zE__ regs.main.de.s.l
-#define __zH__ regs.main.hl.s.h
-#define __zL__ regs.main.hl.s.l
-#define __zI__ regs.ir.s3.i
-#define __zR__ regs.ir.s3.r
-#define __zPC__ regs.pc
+#define __zA__ this->regs.main.af.s2.a
+#define __zB__ this->regs.main.bc.s.h
+#define __zC__ this->regs.main.bc.s.l
+#define __zD__ this->regs.main.de.s.h
+#define __zE__ this->regs.main.de.s.l
+#define __zH__ this->regs.main.hl.s.h
+#define __zL__ this->regs.main.hl.s.l
+#define __zI__ this->regs.ir.s3.i
+#define __zR__ this->regs.ir.s3.r
+#define __zPC__ this->regs.pc
 
 #define __zLD_R_R1__(r, r1) r = r1
 
@@ -199,8 +199,8 @@ typedef struct
 	}
 } z80_registers;
 
-//extern z80_registers z80_regs;
-//extern int z80_tstates;
+// extern z80_registers z80_regs;
+// extern int z80_tstates;
 
 class Tz80_tstates
 {
@@ -238,7 +238,7 @@ public:
 		return 0;
 	} */
 	inline virtual z80_byte read_notime(z80_word m) const { return 0; }
-	//inline virtual void poke(z80_word m, z80_byte data) { z80_tstates += 3; }
+	// inline virtual void poke(z80_word m, z80_byte data) { z80_tstates += 3; }
 	inline virtual void poke_notime(z80_word m, z80_byte data) {}
 	/* inline virtual z80_byte fetchopcode(z80_word m) const
 	{
@@ -262,12 +262,12 @@ public:
 	inline Tz80(Tz80_memory &memory) : memory(memory) {}
 	inline ~Tz80() {}
 
-	inline const z80_registers &getRegs() const
+	inline z80_registers &getRegs()
 	{
 		return regs;
 	}
 
-	inline const Tz80_tstates &getTStates() const
+	inline Tz80_tstates &getTStates()
 	{
 		return tstates;
 	}
@@ -482,9 +482,9 @@ void z80_execopcode(z80_byte data);
 inline void z80_instrfetch()
 {
 	auto data = z80_fetchopcode(z80_regs.pc++);
-
-	/*
-	Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
+*/
+/*
+Memory Refresh (R) Register. The Z80 CPU contains a memory refresh counter,
 enabling dynamic memories to be used with the same ease as static memories. Seven bits
 of this 8-bit register are automatically incremented after each instruction fetch. The eighth
 bit remains as programmed, resulting from an LD R, A instruction. The data in the refresh
@@ -494,7 +494,7 @@ is transparent to the programmer and does not slow the CPU operation. The progra
 can load the R register for testing purposes, but this register is normally not used by the
 programmer. During refresh, the contents of the I Register are placed on the upper eight
 bits of the address bus.
-	*/
+*/
 /*
 	z80_refreshr();
 

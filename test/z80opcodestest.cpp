@@ -143,7 +143,7 @@ static bool readTest()
 		return false;
 	}
 
-	auto regs = z80.getRegs();
+	auto &regs = z80.getRegs();
 
 	regs.main.af.w = af;
 	regs.main.bc.w = bc;
