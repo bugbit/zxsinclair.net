@@ -16,7 +16,6 @@
 #include "pch.h"
 #include "z80.h"
 
-/*
 #define TESTEXPECTEDMEMORYMAX 10
 #define TESTEXPECTEDMEMORYDATAMAX 10
 
@@ -33,7 +32,7 @@ struct TestExpected
 	int halted;
 	unsigned endtstates;
 	struct TEstExpectedMemory memory[TESTEXPECTEDMEMORYMAX];
-}; */
+};
 
 static FILE *ftest;
 // static std::ifstream testsexpe;
@@ -41,7 +40,9 @@ static Tz80_memory_default memory, memory_inittest;
 static Tz80 z80(memory);
 static std::string testname;
 // struct TestExpected testexpeop;
+static std::map<std::string, struct TestExpected *> testsexpes;
 
+static void readTestsExpecteds();
 static bool runTest();
 static bool readTest();
 static void printTestResult();
@@ -49,6 +50,7 @@ static void printTestResult();
 
 void z80opcodestest()
 {
+	readTestsExpecteds();
 	ftest = fopen("tests.in", "r");
 	// testsexpe.open("tests.expected");
 
@@ -86,6 +88,147 @@ void z80opcodestest()
 	}
 	fclose(ftest);
 	// testsexpe.close();
+}
+
+static bool readTestExpected(FILE *f)
+{
+	char test_name[80];
+
+	do
+	{
+		if (!fgets(test_name, sizeof(test_name), f))
+		{
+			if (feof(f))
+				return false;
+
+			fprintf(stderr, "error reading test description : %s\n",
+					strerror(errno));
+			return false;
+		}
+
+	} while (test_name[0] == '\n');
+
+	char line[81];
+	unsigned address, byte;
+
+	for (;;)
+	{
+		if (!fgets(line, sizeof(line), f))
+		{
+			if (feof(f))
+				return false;
+
+			fprintf(stderr, "error reading test description : %s\n",
+					strerror(errno));
+			return false;
+		}
+
+		unsigned time;
+		char type[10];
+		int ret = sscanf(line, "%d %s %04x %02x", &time, type, &address, &byte);
+
+		if (!strcmp(type, "MR") || !strcmp(type, "MW") || !strcmp(type, "MC") || !strcmp(type, "PR") || !strcmp(type, "PW") || !strcmp(type, "PC"))
+		{
+		}
+		else
+			break;
+	}
+
+	unsigned af, bc, de, hl, af_, bc_, de_, hl_, ix, iy, sp, pc;
+	unsigned i, r, iff1, iff2, im;
+	unsigned halted;
+	unsigned end_tstates2;
+
+	/* FIXME: how should we read/write our data types? */
+	if (sscanf(line, "%x %x %x %x %x %x %x %x %x %x %x %x", &af, &bc,
+			   &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc) != 12)
+	{
+		fprintf(stderr, "first registers line corrupt\n");
+		return false;
+	}
+
+	printf("%s\n", line);
+
+	if (fscanf(f, "%x %x %u %u %u %d %d", &i, &r, &iff1, &iff2, &im,
+			   &halted, &end_tstates2) != 7)
+	{
+		fprintf(stderr, "registers line corrupt\n");
+		return false;
+	}
+
+	auto *test = new struct TestExpected();
+	auto *memoryexp = test->memory;
+
+	testsexpes[*new std::string(test_name)] = test;
+
+	test->testname = test_name;
+	test->af = af;
+	test->bc = bc;
+	test->de = de;
+	test->hl = hl;
+	test->af_ = af_;
+	test->bc_ = bc_;
+	test->de_ = de_;
+	test->hl_ = hl_;
+	test->i = i;
+	test->r = r;
+	test->iff1 = iff1;
+	test->iff2 = iff2;
+	test->im = im;
+	test->halted = halted;
+	test->endtstates = end_tstates2;
+
+	while (1)
+	{
+		fgets(line, sizeof(line), f);
+
+		auto len = strlen(line);
+
+		if (len == 0 || *line == '\n')
+			break;
+
+		fseek(f, -len, SEEK_CUR);
+
+		if (fscanf(f, "%x", &address) != 1)
+			break;
+		;
+
+		if (address >= 0x10000)
+			break;
+
+		memoryexp->address = address;
+
+		auto *data = memoryexp->data;
+
+		while (1)
+		{
+			if (fscanf(f, "%x", &byte) != 1)
+			{
+				fprintf(stderr, "no data byte found in \n");
+				return false;
+			}
+
+			if (byte >= 0x100)
+				break;
+
+			*data++ = byte;
+		}
+	}
+
+	memoryexp->address = 0;
+	*(memoryexp->data) = 0;
+
+	return true;
+}
+
+static void readTestsExpecteds()
+{
+	FILE *f = fopen("tests.expected", "r");
+
+	while (readTestExpected(f))
+		;
+
+	fclose(f);
 }
 
 static bool runTest()
