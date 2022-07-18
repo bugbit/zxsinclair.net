@@ -3,13 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "zxsinclair.net", "zxsinclair.net\zxsinclair.net.csproj", "{496E2439-6B2E-49CA-915B-E47A0C9EB12A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net", "ZXSinclair.Net\ZXSinclair.Net.csproj", "{53F83299-6D53-475C-9B42-B60DF9ECC97B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair", "zxsinclair.net.Core\ZXSinclair.csproj", "{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Test", "ZXSinclair.Test\ZXSinclair.Test.csproj", "{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Perform", "ZXSinclair.Perform\ZXSinclair.Perform.csproj", "{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.ZX80_81", "ZXSinclair.Net.ZX80_81\ZXSinclair.Net.ZX80_81.csproj", "{B05575E7-24D7-46FC-B358-B3550F013533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,22 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{496E2439-6B2E-49CA-915B-E47A0C9EB12A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{496E2439-6B2E-49CA-915B-E47A0C9EB12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{496E2439-6B2E-49CA-915B-E47A0C9EB12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{496E2439-6B2E-49CA-915B-E47A0C9EB12A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81E6D06D-D8D1-4B39-8DA6-0348E2AD6833}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DADBE579-B46A-4D5F-8D2E-7D73AE136B2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3953BA95-E9C2-4718-98CC-90DF2E0CAA1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B05575E7-24D7-46FC-B358-B3550F013533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B05575E7-24D7-46FC-B358-B3550F013533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B05575E7-24D7-46FC-B358-B3550F013533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B05575E7-24D7-46FC-B358-B3550F013533}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
