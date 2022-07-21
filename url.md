@@ -1,3 +1,7 @@
+# crt scanline
+
+https://github.com/Kobe46/Shaderlay/blob/master/shaders/crt-pi-curvature-vertical.glsl
+
 # url emscripten workers
 
 https://stackoverflow.com/questions/32291084/minimal-working-example-for-emscripten-webworker
