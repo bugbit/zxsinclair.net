@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="ZXSinclair.Net.Generate.Z80OpCodes" />
+    <Using Include="System.Text" />
+    <Using Include="System.Reflection" />
+    <Using Include="Microsoft.Extensions.FileProviders" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates/z80regs_ld.txt" />
+    <EmbeddedResource Include="templates/z800OpCodes.txt" />
+    <EmbeddedResource Include="templates/z80Cpu.opcodes.txt" />
+    <EmbeddedResource Include="data/opcodes_base.dat" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.7" />
+  </ItemGroup>
+
+</Project>

@@ -18,7 +18,7 @@
 namespace ZXSinclair.Net.Hardware.Z80;
 
 [StructLayout(LayoutKind.Explicit)]
-public class Z80Regs : IReset
+public partial class Z80Regs : IReset
 {
     [FieldOffset(0)]
     public ushort AF = 0;

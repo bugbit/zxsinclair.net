@@ -17,18 +17,8 @@
 
 namespace ZXSinclair.Net.Hardware.Z80;
 
-public partial class Z80Cpu
+public enum Z80OpCodes
 {
-    public override void ExecOpCode(byte opcode)
-    {
-        #region generate code
-        switch (opcode)
-        {
-
-            default:
-                Nop();
-                break;
-        }
-        #endregion
-    }
+    //NOP = 0
+{{CODE}}    
 }
