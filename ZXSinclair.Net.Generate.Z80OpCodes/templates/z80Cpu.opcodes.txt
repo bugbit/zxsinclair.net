@@ -21,7 +21,6 @@ public partial class Z80Cpu
 {
     public override void ExecOpCode(byte opcode)
     {
-        #region generate code
         switch (opcode)
         {
 {{CODE}}
@@ -29,6 +28,5 @@ public partial class Z80Cpu
                 Nop();
                 break;
         }
-        #endregion
     }
 }

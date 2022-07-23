@@ -27,23 +27,21 @@ public abstract class Cpu<D, E, R> : ICpu<D, E, R> where E : Enum where R : IRes
 {
     private bool disposedValue;
 
-    public int ReadCycles { get; } = 3;
-    public int FetchCycles { get; } = 1;
-    public int WriteCycles { get; } = 3;
     public IMemoryBuffer<D>? MemoryBuffer { get; set; }
     public IMemory<D> Memory { get; set; }
     public E Pins { get; set; }
     public R Regs { get; } = new R();
     public ITicks Tick { get; } = new Ticks();
 
-    public Cpu(IMemoryBuffer<D> buffer, int readCycles, int fetchCycles, int writeCycles, IMemory<D>? memory = null)
+    public Cpu(IMemoryBuffer<D> buffer, IMemory<D>? memory = null)
     {
         MemoryBuffer = buffer;
         Memory = memory ?? new MemoryNull<D>(buffer);
-        ReadCycles = readCycles;
-        FetchCycles = fetchCycles;
-        WriteCycles = writeCycles;
     }
+
+    public virtual D ReadOpCode(ushort address) => Memory.ReadOpCode(address);
+
+    public virtual D ReadMemory(ushort address) => Memory.Read(address);
 
     public abstract void Instrfetch();
 

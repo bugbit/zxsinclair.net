@@ -69,12 +69,10 @@ namespace ZXSinclair.Net.Test
 
             while (i < lines.Length)
             {
-                var line = lines[i];
+                var line = lines[i++];
 
                 if (string.IsNullOrWhiteSpace(line))
                     break;
-
-                i++;
 
                 var reghs = line.Split(' ');
                 var j = 0;

@@ -15,6 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
+// Page 75
+
 var assembly = Assembly.GetExecutingAssembly();
 var pathexe = Path.GetDirectoryName(assembly.Location);
 var path = pathexe + "/../../../../ZXSinclair.Net";
@@ -22,6 +24,7 @@ var path = pathexe + "/../../../../ZXSinclair.Net";
 var embeddedProvider = new EmbeddedFileProvider(assembly);
 var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regs16 = new[] { "BC", "DE", "HL" };
+var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
 var regs = regs8.Concat(regs16).ToArray();
 var opcodesBase = new Opcodes()
 {
@@ -34,13 +37,14 @@ var opcodesBase = new Opcodes()
 
 Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = new Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>>
 {
-    [nameof(LD)] = LD
+    [nameof(LD)] = LD,
+    [nameof(shift)] = shift
 };
 
 string BuildId(string[] line)
     => string.Join('_', line.Skip(1)).Replace(" ", "_").Replace(",", "_").Replace("(", "MM_").Replace(")", "_MM").Replace("'", "_");
 
-//await GenerateZ80RegsLd();
+await GenerateZ80RegsLd();
 await WriterOpcodes(opcodesBase);
 
 async Task<string> ReadTxtFileEmb(string key)
@@ -86,6 +90,7 @@ async Task GenerateZ80RegsLd()
         select $"\tpublic void Set{q.r1}_{q.r2}() => {q.r1} = {q.r2};"
     ).ToList();
     query.ForEach(s => str.AppendLine(s));
+    regs8.Select(r => $"public void Set{r}_n(byte n) => {r} = n;").ToList().ForEach(s => str.AppendLine(s));
 
     await WriteCode("Hardware/Z80/Z80Regs.ld.cs", "templates/z80regs_ld.txt", str);
 }
@@ -189,12 +194,50 @@ bool LD(OpCodeArgs args, StringBuilder lines)
     if (p1 == p2)
         return true;
 
-    if (regs8.Contains(p1) && regs8.Contains(p2))
+    if (regs8.Contains(p1))
     {
-        lines.AppendLine($"\t\t\tRegs.Set{p1}_{p2}();");
+        // LD r, r'
+        if (regs8.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_{p2}();");
 
-        return true;
+            return true;
+        }
+
+        //LD r,n
+        if (p2 == "nn")
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_n(ReadMemory(Regs.GetPCAndInc()));");
+
+            return true;
+        }
+
+        //LD r, (HL)
+        //LD A, (BC)
+        //LD A, (DE)
+        if (regs16m.Contains(p2))
+        {
+            var p22 = p2.Replace("(", "").Replace(")", "");
+
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_{p22}_M());");
+
+            return true;
+        }
     }
 
+    return false;
+}
+
+bool shift(OpCodeArgs args, StringBuilder lines)
+{
+    if (args.Params.Length == 1)
+    {
+        if (args.Params[0] == "DD")
+        {
+            lines.AppendLine($"\t\t\tInstrfetchDD();");
+
+            return true;
+        }
+    }
     return false;
 }

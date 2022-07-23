@@ -104,4 +104,49 @@ public partial class Z80Regs : IReset
             return PC++;
         }
     }
+
+    public void SetAF_nn(ushort nn)
+    {
+        AF = nn;
+    }
+
+    public void SetBC_nn(ushort nn)
+    {
+        BC = nn;
+    }
+
+    public void SetDE_nn(ushort nn)
+    {
+        DE = nn;
+    }
+
+    public void SetHL_nn(ushort nn)
+    {
+        HL = nn;
+    }
+
+    public void SetPC_nn(ushort nn)
+    {
+        PC = nn;
+    }
+
+    public void SetSP_nn(ushort nn)
+    {
+        SP = nn;
+    }
+
+    // public void SetA_n(byte n)
+    // {
+    //     A = n;
+    // }
+
+    public void SetI_n(byte n)
+    {
+        I = n;
+    }
+
+    public void SetR_n(byte n)
+    {
+        R = n;
+    }
 }

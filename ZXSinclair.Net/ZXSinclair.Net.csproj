@@ -8,8 +8,13 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);Z80_OPCODES_TEST</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Using Include="System.Collections.Immutable" />
+    <Using Include="System.Diagnostics" />
     <Using Include="System.Runtime.InteropServices" />
   </ItemGroup>
 

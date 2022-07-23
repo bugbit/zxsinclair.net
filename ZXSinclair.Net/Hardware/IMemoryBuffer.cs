@@ -23,6 +23,7 @@ public interface IMemoryBuffer : IDisposable
     int Size { get; }
     IntPtr Buffer { get; }
     MemoryBuffer New(ushort offset, int size);
+    int CopyTo(byte[] b);
 }
 
 /// <summary>

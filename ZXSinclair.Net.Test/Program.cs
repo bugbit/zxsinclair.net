@@ -61,15 +61,20 @@ void endiantest()
 
 async Task z80opcodestest()
 {
+    Console.WriteLine("z80opcodestest");
+
     var testsin = await readTestsIn();
     var testsexpected = await readTestsExpected();
+
+    RunTests(testsin, testsexpected);
 }
 
-async Task<IDictionary<string, clsTestIn>> readTestsIn()
+async Task<List<clsTestIn>> readTestsIn()
 {
     var lines = await ReadLinesTxtFileEmb("data/tests.in");
-    var i = -1;
-    var tests = new Dictionary<string, clsTestIn>();
+    var i = 0;
+    var tests = new List<clsTestIn>();
+    string name;
 
     while (i < lines.Length)
     {
@@ -77,13 +82,12 @@ async Task<IDictionary<string, clsTestIn>> readTestsIn()
         {
             if (i >= lines.Length)
                 return tests;
-            i++;
-        } while (lines[i].Length == 0);
+            name = lines[i++];
+        } while (string.IsNullOrEmpty(name));
 
         var test = new clsTestIn();
-        var name = lines[i++];
 
-        tests.Add(name, test);
+        tests.Add(test);
         test.Base.Name = name;
         test.Base.Line1.read(lines[i++]);
         test.Base.Line2.read(lines[i++]);
@@ -96,8 +100,9 @@ async Task<IDictionary<string, clsTestIn>> readTestsIn()
 async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
 {
     var lines = await ReadLinesTxtFileEmb("data/tests.expected");
-    var i = -1;
+    var i = 0;
     var tests = new Dictionary<string, clsTestExpected>();
+    string name;
 
     while (i < lines.Length)
     {
@@ -105,11 +110,10 @@ async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
         {
             if (i >= lines.Length)
                 return tests;
-            i++;
-        } while (lines[i].Length == 0);
+            name = lines[i++];
+        } while (string.IsNullOrEmpty(name));
 
         var test = new clsTestExpected();
-        var name = lines[i++];
 
         tests.Add(name, test);
         test.Base.Name = name;
@@ -120,4 +124,99 @@ async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
     }
 
     return tests;
+}
+
+unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpected> testsexpected)
+{
+    var mb = new MemoryBuffer8Bit(0x10000);
+    var m0 = new byte[mb.Size];
+    var m = new CpuMemory<byte>(mb);
+    var z80 = new Z80Cpu(mb, m);
+
+    foreach (var t in testsin)
+    {
+        PrepareTestCpu(z80, t);
+        mb.CopyTo(m0);
+        z80.Instrfetch();
+#if Z80_OPCODES_TEST
+        if (z80.instrNotImp)
+            continue;
+#endif
+        Debug.Assert(testsexpected.TryGetValue(t.Base.Name, out var t2));
+        CompareTest(z80, m0, t2);
+    }
+}
+
+void PrepareTestCpu(Z80Cpu cpu, clsTestIn t)
+{
+    var r = cpu.Regs;
+    var m = cpu.MemoryBuffer;
+
+    cpu.Reset();
+    r.SetAF_nn(t.Base.Line1.af);
+    r.SetBC_nn(t.Base.Line1.bc);
+    r.SetDE_nn(t.Base.Line1.de);
+    r.SetHL_nn(t.Base.Line1.hl);
+    r.SetPC_nn(t.Base.Line1.pc);
+    r.SetSP_nn(t.Base.Line1.sp);
+    r.SetI_n((byte)t.Base.Line2.i);
+    r.SetR_n((byte)t.Base.Line2.r);
+
+    for (var i = 0; i < 0x10000;)
+    {
+        m.Write((ushort)i, 0xde);
+        m.Write((ushort)i++, 0xad);
+        m.Write((ushort)i++, 0xbe);
+        m.Write((ushort)i++, 0xef);
+
+    }
+    foreach (var mm in t.Base.Memories)
+    {
+        var a = mm.Address;
+
+        foreach (var d in mm.Data)
+            m.Write(a++, d);
+    }
+}
+
+void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
+{
+    var r = cpu.Regs;
+    var m = cpu.MemoryBuffer;
+    var l1 = t.Base.Line1;
+    var l2 = t.Base.Line2;
+
+    Debug.Assert(r.AF == l1.af);
+    Debug.Assert(r.BC == l1.bc);
+    Debug.Assert(r.DE == l1.de);
+    Debug.Assert(r.HL == l1.hl);
+    Debug.Assert(r.PC == l1.pc);
+    Debug.Assert(r.SP == l1.sp);
+    Debug.Assert(r.I == l2.i);
+    Debug.Assert(r.R == l2.r);
+    Debug.Assert(cpu.Tick.TStates == l2.endtstates);
+
+    var j = 0;
+    var me = t.Base.Memories;
+
+    for (var i = 0; i < 0x10000; i++)
+    {
+        if (m.Read((ushort)i) == m0[i])
+            continue;
+
+        Debug.Assert(j >= me.Length);
+
+        var mm = me[i++];
+
+        Debug.Assert(mm.Address == i);
+
+        foreach (var d in mm.Data)
+        {
+            var d1 = m.Read((ushort)i);
+            var d2 = m0[i++];
+
+            Debug.Assert(d == d2);
+            Debug.Assert(d1 != d2);
+        }
+    }
 }

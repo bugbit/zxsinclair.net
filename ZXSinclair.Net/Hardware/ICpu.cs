@@ -23,13 +23,15 @@ namespace ZXSinclair.Net.Hardware;
 /// R => Register
 /// </summary>
 /// <typeparam name="D"></typeparam>
-public interface ICpu<D, E, R> : IDisposable, IReset, ICpuCycles where E : Enum where R : IReset
+public interface ICpu<D, E, R> : IDisposable, IReset where E : Enum where R : IReset
 {
     IMemoryBuffer<D>? MemoryBuffer { get; set; }
     IMemory<D> Memory { get; set; }
     E Pins { get; set; }
     R Regs { get; }
     ITicks Tick { get; }
+    D ReadOpCode(ushort address);
+    D ReadMemory(ushort address);
     void Instrfetch();
     void ExecOpCode(D opcode);
 }

@@ -21,10 +21,9 @@ namespace ZXSinclair.Net.Hardware;
 /// D => Data
 /// </summary>
 /// <typeparam name="D"></typeparam>
-public class MemoryRom<D> : Memory<D>
+public class MemoryRom<D> : CpuMemory<D>
 {
-    public MemoryRom(IMemoryBuffer<D> buffer, int readCycles, int fetchCycles, int writeCycles) : base(buffer, readCycles, fetchCycles, writeCycles) { }
+    public MemoryRom(IMemoryBuffer<D> buffer) : base(buffer) { }
 
-    public override void Write(ITicks ticks, ushort address, D data) { }
     public override void Write(ushort address, D data) { }
 }

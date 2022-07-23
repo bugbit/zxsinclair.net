@@ -19,20 +19,56 @@ namespace ZXSinclair.Net.Hardware.Z80;
 
 public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
 {
-    public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), 3, 1, 3, memory) { }
+    public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), memory) { }
 
 #if Z80_OPCODES_TEST
-private bool instrNotImp=false;
+    public bool instrNotImp { get; protected set; } = false;
 #endif
+
+    public override void Reset()
+    {
+#if Z80_OPCODES_TEST
+        instrNotImp = false;
+#endif
+        base.Reset();
+    }
+
+    public override byte ReadOpCode(ushort address)
+    {
+        var opcode = base.ReadOpCode(address);
+
+        Tick.AddCycles(4);
+        Regs.RefreshR();
+
+        return opcode;
+    }
+
+    public override byte ReadMemory(ushort address)
+    {
+        var data = base.ReadMemory(address);
+
+        Tick.AddCycles(3);
+
+        return data;
+    }
 
     public override void Instrfetch()
     {
-        var opcode = Memory.ReadOpCode(Tick, Regs.GetPCAndInc());
-
-        Regs.RefreshR();
+        var opcode = ReadOpCode(Regs.GetPCAndInc());
 
         ExecOpCode(opcode);
     }
+
+    public void InstrfetchDD()
+    {
+        var opcode = ReadOpCode(Regs.GetPCAndInc());
+
+        ExecOpCodeDD(opcode);
+    }
+
+    public byte Read_M_BC_M() => ReadMemory(Regs.BC);
+    public byte Read_M_DE_M() => ReadMemory(Regs.DE);
+    public byte Read_M_HL_M() => ReadMemory(Regs.HL);
 
     public void Nop() { }
 

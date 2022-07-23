@@ -17,9 +17,21 @@
 
 namespace ZXSinclair.Net.Hardware;
 
-public interface ICpuCycles
+/// <summary>
+/// D => Data
+/// </summary>
+/// <typeparam name="D"></typeparam>
+public class CpuMemory<D> : IMemory<D>
 {
-    int ReadCycles { get; }
-    int FetchCycles { get; }
-    int WriteCycles { get; }
+    public CpuMemory(IMemoryBuffer<D> buffer)
+    {
+        Buffer = buffer;
+    }
+
+    public IMemoryBuffer<D> Buffer { get; }
+
+    public virtual D Read(ushort address) => Buffer.Read(address);
+    public virtual D ReadOpCode(ushort address) => Read(address);
+
+    public virtual void Write(ushort address, D data) => Buffer.Write(address, data);
 }

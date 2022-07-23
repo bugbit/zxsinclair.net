@@ -62,6 +62,16 @@ namespace ZXSinclair.Net.Hardware
             return new MemoryBuffer(size, BufferPtr + size, offset);
         }
 
+        public int CopyTo(byte[] b)
+        {
+            Debug.Assert(b != null);
+            var l = Math.Min(Size, b.Length);
+
+            Marshal.Copy(Buffer, b, 0, l);
+
+            return l;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

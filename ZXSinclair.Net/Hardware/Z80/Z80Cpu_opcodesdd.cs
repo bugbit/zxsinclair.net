@@ -15,27 +15,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-namespace ZXSinclair.Net.Hardware;
+namespace ZXSinclair.Net.Hardware.Z80;
 
-/// <summary>
-/// D => Data
-/// </summary>
-/// <typeparam name="D"></typeparam>
-public class MemoryBase<D> : IMemory<D>
+public partial class Z80Cpu
 {
-    public MemoryBase(IMemoryBuffer<D> buffer)
+    public void ExecOpCodeDD(byte opcode)
     {
-        Buffer = buffer;
+        switch (opcode)
+        {
+            //{{CODE}}
+            default:
+                Nop();
+                break;
+        }
     }
-
-    public IMemoryBuffer<D> Buffer { get; }
-
-    public virtual D Read(ITicks ticks, ushort address) => Read(address);
-
-    public virtual D Read(ushort address) => Buffer.Read(address);
-    public virtual D ReadOpCode(ITicks ticks, ushort address) => Read(ticks, address);
-
-    public virtual void Write(ITicks ticks, ushort address, D data) => Write(address, data);
-
-    public virtual void Write(ushort address, D data) => Buffer.Write(address, data);
 }
