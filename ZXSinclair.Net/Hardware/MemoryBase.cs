@@ -30,12 +30,12 @@ public class MemoryBase<D> : IMemory<D>
 
     public IMemoryBuffer<D> Buffer { get; }
 
-    public virtual D Read(ITicks ticks, UInt32 address) => Read(address);
+    public virtual D Read(ITicks ticks, ushort address) => Read(address);
 
-    public virtual D Read(UInt32 address) => Buffer.Read(address);
-    public virtual D ReadOpCode(ITicks ticks, UInt32 address) => Read(ticks, address);
+    public virtual D Read(ushort address) => Buffer.Read(address);
+    public virtual D ReadOpCode(ITicks ticks, ushort address) => Read(ticks, address);
 
-    public virtual void Write(ITicks ticks, UInt32 address, D data) => Write(address, data);
+    public virtual void Write(ITicks ticks, ushort address, D data) => Write(address, data);
 
-    public virtual void Write(UInt32 address, D data) => Buffer.Write(address, data);
+    public virtual void Write(ushort address, D data) => Buffer.Write(address, data);
 }

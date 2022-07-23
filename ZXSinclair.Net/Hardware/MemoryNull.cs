@@ -23,27 +23,27 @@ public class MemoryNull<D> : IMemory<D>
 
     public IMemoryBuffer<D> Buffer { get; }
 
-    public D Read(ITicks ticks, uint address)
+    public D Read(ITicks ticks, ushort address)
     {
         throw new NotImplementedException();
     }
 
-    public D Read(uint address)
+    public D Read(ushort address)
     {
         throw new NotImplementedException();
     }
 
-    public D ReadOpCode(ITicks ticks, uint address)
+    public D ReadOpCode(ITicks ticks, ushort address)
     {
         throw new NotImplementedException();
     }
 
-    public void Write(ITicks ticks, uint address, D data)
+    public void Write(ITicks ticks, ushort address, D data)
     {
         throw new NotImplementedException();
     }
 
-    public void Write(uint address, D data)
+    public void Write(ushort address, D data)
     {
         throw new NotImplementedException();
     }

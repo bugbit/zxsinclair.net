@@ -21,8 +21,7 @@ public class Ticks : ITicks
 {
     public int TStates { get; private set; }
 
-    public void AddCycles(int argTStates)
-    {
-        TStates += argTStates;
-    }
+    public void AddCycles(int argTStates) => TStates += argTStates;
+
+    public void Reset() => TStates = 0;
 }

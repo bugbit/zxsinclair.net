@@ -36,21 +36,21 @@ public class Memory<D> : MemoryBase<D>, ICpuCycles
     public int FetchCycles { get; }
     public int WriteCycles { get; }
 
-    public override D Read(ITicks ticks, uint address)
+    public override D Read(ITicks ticks, ushort address)
     {
         ticks.AddCycles(ReadCycles);
 
         return base.Read(ticks, address);
     }
 
-    public override D ReadOpCode(ITicks ticks, uint address)
+    public override D ReadOpCode(ITicks ticks, ushort address)
     {
         ticks.AddCycles(FetchCycles);
 
         return base.ReadOpCode(ticks, address);
     }
 
-    public override void Write(ITicks ticks, uint address, D data)
+    public override void Write(ITicks ticks, ushort address, D data)
     {
         ticks.AddCycles(WriteCycles);
 

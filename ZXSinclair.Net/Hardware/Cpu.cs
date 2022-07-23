@@ -51,6 +51,7 @@ public abstract class Cpu<D, E, R> : ICpu<D, E, R> where E : Enum where R : IRes
 
     public virtual void Reset()
     {
+        Tick.Reset();
         Regs.Reset();
     }
 

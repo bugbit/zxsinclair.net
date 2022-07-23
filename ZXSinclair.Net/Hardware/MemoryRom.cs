@@ -25,6 +25,6 @@ public class MemoryRom<D> : Memory<D>
 {
     public MemoryRom(IMemoryBuffer<D> buffer, int readCycles, int fetchCycles, int writeCycles) : base(buffer, readCycles, fetchCycles, writeCycles) { }
 
-    public override void Write(ITicks ticks, uint address, D data) { }
-    public override void Write(uint address, D data) { }
+    public override void Write(ITicks ticks, ushort address, D data) { }
+    public override void Write(ushort address, D data) { }
 }

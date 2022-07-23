@@ -17,7 +17,7 @@
 
 namespace ZXSinclair.Net.Hardware;
 
-public interface ITicks
+public interface ITicks : IReset
 {
     int TStates { get; }
     void AddCycles(int argTStates);

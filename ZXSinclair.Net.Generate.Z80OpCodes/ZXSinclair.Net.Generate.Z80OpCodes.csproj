@@ -9,9 +9,9 @@
 
   <ItemGroup>
     <Using Include="ZXSinclair.Net.Generate.Z80OpCodes" />
+    <Using Include="Microsoft.Extensions.FileProviders" />
     <Using Include="System.Text" />
     <Using Include="System.Reflection" />
-    <Using Include="Microsoft.Extensions.FileProviders" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="templates/z80regs_ld.txt" />

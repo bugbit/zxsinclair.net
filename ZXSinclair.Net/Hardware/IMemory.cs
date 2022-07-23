@@ -25,9 +25,9 @@ public interface IMemory<D>
 {
     IMemoryBuffer<D> Buffer { get; }
 
-    D Read(ITicks ticks, UInt32 address);
-    D Read(UInt32 address);
-    D ReadOpCode(ITicks ticks, UInt32 address);
-    void Write(ITicks ticks, UInt32 address, D data);
-    void Write(UInt32 address, D data);
+    D Read(ITicks ticks, ushort address);
+    D Read(ushort address);
+    D ReadOpCode(ITicks ticks, ushort address);
+    void Write(ITicks ticks, ushort address, D data);
+    void Write(ushort address, D data);
 }

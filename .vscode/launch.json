@@ -2,7 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET (test)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build (test)",
+            "program": "${workspaceFolder}/ZXSinclair.Net.Test/bin/Debug/net6.0/ZXSinclair.Net.Test.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch (generateZ80Opcodes)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build (generateZ80Opcodes)",
@@ -16,7 +27,7 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-            "name": ".NET Core Launch (console)",
+            "name": "Launch",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -33,6 +44,5 @@
             "type": "coreclr",
             "request": "attach"
         },
-        
     ]
 }

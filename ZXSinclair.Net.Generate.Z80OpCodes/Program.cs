@@ -150,7 +150,7 @@ async Task WriterOpcodes(Opcodes opcodes)
                             lines.AppendLine("\t\t\t#endif");
                             msgerr = "not implement";
                         }
-                        lines.AppendLine("break;");
+                        lines.AppendLine("\t\t\tbreak;");
                     }
                     catch (Exception ex)
                     {
@@ -180,5 +180,21 @@ async Task WriterOpcodes(Opcodes opcodes)
 
 bool LD(OpCodeArgs args, StringBuilder lines)
 {
+    if (args.Params.Length != 2)
+        return false;
+
+    var p1 = args.Params[0];
+    var p2 = args.Params[1];
+
+    if (p1 == p2)
+        return true;
+
+    if (regs8.Contains(p1) && regs8.Contains(p2))
+    {
+        lines.AppendLine($"\t\t\tRegs.Set{p1}_{p2}();");
+
+        return true;
+    }
+
     return false;
 }
