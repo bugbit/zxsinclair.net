@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Using Include="ZXSinclair.Net.Hardware.Z80" />
+    <Using Include="ZXSinclair.Net.Test" />
     <Using Include="Microsoft.Extensions.FileProviders" />
     <Using Include="System.Diagnostics" />
     <Using Include="System.Reflection" />

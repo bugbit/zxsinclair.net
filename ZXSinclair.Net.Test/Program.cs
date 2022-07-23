@@ -61,6 +61,63 @@ void endiantest()
 
 async Task z80opcodestest()
 {
-    var linesin = await ReadLinesTxtFileEmb("data/tests.in");
-    var linesexpected = await ReadLinesTxtFileEmb("data/tests.expected");
+    var testsin = await readTestsIn();
+    var testsexpected = await readTestsExpected();
+}
+
+async Task<IDictionary<string, clsTestIn>> readTestsIn()
+{
+    var lines = await ReadLinesTxtFileEmb("data/tests.in");
+    var i = -1;
+    var tests = new Dictionary<string, clsTestIn>();
+
+    while (i < lines.Length)
+    {
+        do
+        {
+            if (i >= lines.Length)
+                return tests;
+            i++;
+        } while (lines[i].Length == 0);
+
+        var test = new clsTestIn();
+        var name = lines[i++];
+
+        tests.Add(name, test);
+        test.Base.Name = name;
+        test.Base.Line1.read(lines[i++]);
+        test.Base.Line2.read(lines[i++]);
+        test.Base.Memories = clsTestMemory.Read(lines, ref i);
+    }
+
+    return tests;
+}
+
+async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
+{
+    var lines = await ReadLinesTxtFileEmb("data/tests.expected");
+    var i = -1;
+    var tests = new Dictionary<string, clsTestExpected>();
+
+    while (i < lines.Length)
+    {
+        do
+        {
+            if (i >= lines.Length)
+                return tests;
+            i++;
+        } while (lines[i].Length == 0);
+
+        var test = new clsTestExpected();
+        var name = lines[i++];
+
+        tests.Add(name, test);
+        test.Base.Name = name;
+        test.Events = clsTestEvent.ReadEvents(lines, ref i);
+        test.Base.Line1.read(lines[i++]);
+        test.Base.Line2.read(lines[i++]);
+        test.Base.Memories = clsTestMemory.Read(lines, ref i);
+    }
+
+    return tests;
 }
