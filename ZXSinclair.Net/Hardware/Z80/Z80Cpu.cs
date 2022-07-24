@@ -17,6 +17,10 @@
 
 namespace ZXSinclair.Net.Hardware.Z80;
 
+// http://www.zilog.com/docs/z80/um0080.pdf
+// http://www.myquest.nl/z80undocumented/z80-documented-v0.91.pdf
+// http://www.z80.info/zip/z80-documented.pdf
+
 public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
 {
     public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), memory) { }
@@ -64,6 +68,13 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
         var opcode = ReadOpCode(Regs.GetPCAndInc());
 
         ExecOpCodeDD(opcode);
+    }
+
+    public void InstrfetchFD()
+    {
+        var opcode = ReadOpCode(Regs.GetPCAndInc());
+
+        ExecOpCodeFD(opcode);
     }
 
     public byte Read_M_BC_M() => ReadMemory(Regs.BC);

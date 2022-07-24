@@ -17,16 +17,8 @@
 
 namespace ZXSinclair.Net.Hardware.Z80;
 
-public partial class Z80Cpu
+public enum Z80OpCodesDD
 {
-    public void ExecOpCodeDD(byte opcode)
-    {
-        switch (opcode)
-        {
-            //{{CODE}}
-            default:
-                Nop();
-                break;
-        }
-    }
+    //NOP = 0
+{{CODE}}    
 }

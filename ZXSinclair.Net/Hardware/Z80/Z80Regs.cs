@@ -105,6 +105,14 @@ public partial class Z80Regs : IReset
         }
     }
 
+    public ushort GetPCAndDec()
+    {
+        unchecked
+        {
+            return PC--;
+        }
+    }
+
     public void SetAF_nn(ushort nn)
     {
         AF = nn;
@@ -125,14 +133,24 @@ public partial class Z80Regs : IReset
         HL = nn;
     }
 
-    public void SetPC_nn(ushort nn)
+    public void SetIX_nn(ushort nn)
     {
-        PC = nn;
+        IX = nn;
+    }
+
+    public void SetIY_nn(ushort nn)
+    {
+        IY = nn;
     }
 
     public void SetSP_nn(ushort nn)
     {
         SP = nn;
+    }
+
+    public void SetPC_nn(ushort nn)
+    {
+        PC = nn;
     }
 
     // public void SetA_n(byte n)

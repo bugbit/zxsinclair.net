@@ -15,9 +15,14 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="templates/z80regs_ld.txt" />
-    <EmbeddedResource Include="templates/z800OpCodes.txt" />
+    <EmbeddedResource Include="templates/z80OpCodes.txt" />
+    <EmbeddedResource Include="templates/z80OpCodesDD.txt" />
+    <EmbeddedResource Include="templates/z80OpCodesFD.txt" />
     <EmbeddedResource Include="templates/z80Cpu.opcodes.txt" />
+    <EmbeddedResource Include="templates/z80Cpu.opcodesdd.txt" />
+    <EmbeddedResource Include="templates/z80Cpu.opcodesfd.txt" />
     <EmbeddedResource Include="data/opcodes_base.dat" />
+    <EmbeddedResource Include="data/opcodes_ddfd.dat" />
   </ItemGroup>
 
   <ItemGroup>

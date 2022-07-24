@@ -15,14 +15,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-namespace ZXSinclair.Net.Generate.Z80OpCodes;
+namespace ZXSinclair.Net.Hardware.Z80;
 
-public record Opcodes
+public partial class Z80Cpu
 {
-    public string? FileDat { get; init; }
-    public string? FileOpCodesTemplate { get; init; }
-    public string? FileEnumTemplate { get; init; }
-    public string? FileZ80Enum { get; init; }
-    public string? FileZ80Opcodes { get; init; }
-    public string? EnumName { get; init; }
+    public void ExecOpCodeFD(byte opcode)
+    {
+        switch (opcode)
+        {
+            //{{CODE}}
+            default:
+                Nop();
+                break;
+        }
+    }
 }

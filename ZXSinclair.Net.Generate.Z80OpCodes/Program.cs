@@ -30,22 +30,34 @@ var opcodesBase = new Opcodes()
 {
     FileDat = "data/opcodes_base.dat",
     FileOpCodesTemplate = "templates/z80Cpu.opcodes.txt",
-    FileEnumTemplate = "templates/z800OpCodes.txt",
+    FileEnumTemplate = "templates/z80OpCodes.txt",
     FileZ80Enum = "Hardware/Z80/Z80OpCodes.cs",
-    FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodes.cs"
+    FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodes.cs",
+    EnumName = "Z80OpCodes"
+};
+var opcodesDD = new Opcodes()
+{
+    FileDat = "data/opcodes_ddfd.dat",
+    FileOpCodesTemplate = "templates/z80Cpu.opcodesdd.txt",
+    FileEnumTemplate = "templates/z80OpCodesDD.txt",
+    FileZ80Enum = "Hardware/Z80/Z80OpCodesDD.cs",
+    FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesdd.cs",
+    EnumName = "Z80OpCodesDD"
 };
 
 Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = new Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>>
 {
+    [nameof(NOP)] = NOP,
     [nameof(LD)] = LD,
     [nameof(shift)] = shift
 };
 
 string BuildId(string[] line)
-    => string.Join('_', line.Skip(1)).Replace(" ", "_").Replace(",", "_").Replace("(", "MM_").Replace(")", "_MM").Replace("'", "_");
+    => string.Join('_', line.Skip(1)).Replace(" ", "_").Replace(",", "_").Replace("(", "MM_").Replace(")", "_MM").Replace("'", "_").Replace("+", "_PLUS_");
 
 await GenerateZ80RegsLd();
 await WriterOpcodes(opcodesBase);
+await WriterOpcodes(opcodesDD);
 
 async Task<string> ReadTxtFileEmb(string key)
 {
@@ -119,9 +131,9 @@ bool RunOpcode(OpCodeArgs args, StringBuilder lines)
 
 async Task WriterOpcodes(Opcodes opcodes)
 {
-    Console.Write($"reading {opcodes.FileDat} ...");
+    Console.WriteLine($"reading {opcodes.FileDat} ...");
 
-    using (var stream = embeddedProvider.GetFileInfo("data/opcodes_base.dat").CreateReadStream())
+    using (var stream = embeddedProvider.GetFileInfo(opcodes.FileDat).CreateReadStream())
     {
         using (var reader = new StreamReader(stream))
         {
@@ -141,7 +153,7 @@ async Task WriterOpcodes(Opcodes opcodes)
                 Console.Write($"\nGenerate {line} ");
                 enums.AppendLine($"\t{args.Id} = {args.HexCode},");
                 lines.AppendLine($"\t\t\t// {line}");
-                lines.AppendLine($"\t\t\tcase (byte)Z80OpCodes.{args.Id}:");
+                lines.AppendLine($"\t\t\tcase (byte){opcodes.EnumName}.{args.Id}:");
                 if (!string.IsNullOrWhiteSpace(args.OpCode))
                 {
                     try
@@ -181,6 +193,13 @@ async Task WriterOpcodes(Opcodes opcodes)
             await WriteCode(opcodes.FileZ80Opcodes, opcodes.FileOpCodesTemplate, lines);
         }
     }
+}
+
+bool NOP(OpCodeArgs args, StringBuilder lines)
+{
+    lines.AppendLine($"\t\t\tNop();");
+
+    return true;
 }
 
 bool LD(OpCodeArgs args, StringBuilder lines)

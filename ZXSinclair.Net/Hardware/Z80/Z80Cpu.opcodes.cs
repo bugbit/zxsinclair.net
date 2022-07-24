@@ -25,10 +25,7 @@ public partial class Z80Cpu
         {
 			// 0x00 NOP
 			case (byte)Z80OpCodes.NOP:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Nop();
 			break;
 			// 0x01 LD BC,nnnn
 			case (byte)Z80OpCodes.LD_BC_nnnn:

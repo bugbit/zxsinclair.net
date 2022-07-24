@@ -137,7 +137,10 @@ unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpecte
     {
         PrepareTestCpu(z80, t);
         mb.CopyTo(m0);
-        z80.Instrfetch();
+        do
+        {
+            z80.Instrfetch();
+        } while (z80.Tick.TStates < t.Base.Line2.endtstates);
 #if Z80_OPCODES_TEST
         if (z80.instrNotImp)
             continue;
@@ -157,8 +160,10 @@ void PrepareTestCpu(Z80Cpu cpu, clsTestIn t)
     r.SetBC_nn(t.Base.Line1.bc);
     r.SetDE_nn(t.Base.Line1.de);
     r.SetHL_nn(t.Base.Line1.hl);
-    r.SetPC_nn(t.Base.Line1.pc);
+    r.SetIX_nn(t.Base.Line1.ix);
+    r.SetIY_nn(t.Base.Line1.iy);
     r.SetSP_nn(t.Base.Line1.sp);
+    r.SetPC_nn(t.Base.Line1.pc);
     r.SetI_n((byte)t.Base.Line2.i);
     r.SetR_n((byte)t.Base.Line2.r);
 
@@ -190,8 +195,10 @@ void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
     Debug.Assert(r.BC == l1.bc);
     Debug.Assert(r.DE == l1.de);
     Debug.Assert(r.HL == l1.hl);
-    Debug.Assert(r.PC == l1.pc);
+    Debug.Assert(r.IX == l1.ix);
+    Debug.Assert(r.IY == l1.iy);
     Debug.Assert(r.SP == l1.sp);
+    Debug.Assert(r.PC == l1.pc);
     Debug.Assert(r.I == l2.i);
     Debug.Assert(r.R == l2.r);
     Debug.Assert(cpu.Tick.TStates == l2.endtstates);
