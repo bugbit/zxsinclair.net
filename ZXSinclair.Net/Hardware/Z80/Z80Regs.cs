@@ -113,6 +113,22 @@ public partial class Z80Regs : IReset
         }
     }
 
+        public ushort GetIX_d(sbyte d)
+        {
+            unchecked
+            {
+                return (ushort)(IX + d);
+            }
+        }
+
+        public ushort GetIY_d(sbyte d)
+        {
+            unchecked
+            {
+                return (ushort)(IY + d);
+            }
+        }
+
     public void SetAF_nn(ushort nn)
     {
         AF = nn;

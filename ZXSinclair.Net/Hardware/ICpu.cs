@@ -29,7 +29,7 @@ public interface ICpu<D, E, R> : IDisposable, IReset where E : Enum where R : IR
     IMemory<D> Memory { get; set; }
     E Pins { get; set; }
     R Regs { get; }
-    ITicks Tick { get; }
+    ITicks Ticks { get; }
     D ReadOpCode(ushort address);
     D ReadMemory(ushort address);
     void Instrfetch();

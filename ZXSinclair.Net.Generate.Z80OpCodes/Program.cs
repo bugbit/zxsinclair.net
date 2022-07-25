@@ -15,7 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Page 75
+// Page 77
+
+const string cArgsRegisterPlusD = "(REGISTER+dd)";
 
 var assembly = Assembly.GetExecutingAssembly();
 var pathexe = Path.GetDirectoryName(assembly.Location);
@@ -42,7 +44,18 @@ var opcodesDD = new Opcodes()
     FileEnumTemplate = "templates/z80OpCodesDD.txt",
     FileZ80Enum = "Hardware/Z80/Z80OpCodesDD.cs",
     FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesdd.cs",
-    EnumName = "Z80OpCodesDD"
+    EnumName = "Z80OpCodesDD",
+    Register = "IX"
+};
+var opcodesFD = new Opcodes()
+{
+    FileDat = "data/opcodes_ddfd.dat",
+    FileOpCodesTemplate = "templates/z80Cpu.opcodesfd.txt",
+    FileEnumTemplate = "templates/z80OpCodesFD.txt",
+    FileZ80Enum = "Hardware/Z80/Z80OpCodesFD.cs",
+    FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesfd.cs",
+    EnumName = "Z80OpCodesFD",
+    Register = "IY"
 };
 
 Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = new Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>>
@@ -52,12 +65,22 @@ Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = ne
     [nameof(shift)] = shift
 };
 
-string BuildId(string[] line)
-    => string.Join('_', line.Skip(1)).Replace(" ", "_").Replace(",", "_").Replace("(", "MM_").Replace(")", "_MM").Replace("'", "_").Replace("+", "_PLUS_");
+string BuildId(string[] line, Opcodes opcodes)
+{
+    var id =
+        string.Join('_', line.Skip(1)).Replace(" ", "_").Replace(",", "_").Replace("(", "MM_").Replace(")", "_MM").Replace("'", "_")
+        .Replace("+", "_PLUS_");
+
+    if (!string.IsNullOrWhiteSpace(opcodes.Register))
+        id = id.Replace("REGISTER", opcodes.Register);
+
+    return id;
+}
 
 await GenerateZ80RegsLd();
 await WriterOpcodes(opcodesBase);
 await WriterOpcodes(opcodesDD);
+await WriterOpcodes(opcodesFD);
 
 async Task<string> ReadTxtFileEmb(string key)
 {
@@ -107,15 +130,16 @@ async Task GenerateZ80RegsLd()
     await WriteCode("Hardware/Z80/Z80Regs.ld.cs", "templates/z80regs_ld.txt", str);
 }
 
-OpCodeArgs BuildArgs(string line)
+OpCodeArgs BuildArgs(string line, Opcodes opcodes)
 {
     var pSplit = line.Split(' ');
     var pArgs = new OpCodeArgs
     {
-        Id = BuildId(pSplit),
+        Id = BuildId(pSplit, opcodes),
         HexCode = pSplit[0],
         OpCode = (pSplit.Length > 1) ? pSplit[1] : null,
-        Params = (pSplit.Length > 2) ? pSplit[2].Split(',') : new string[0]
+        Params = (pSplit.Length > 2) ? pSplit[2].Split(',') : new string[0],
+        Register = opcodes.Register
     };
 
     return pArgs;
@@ -146,7 +170,7 @@ async Task WriterOpcodes(Opcodes opcodes)
                 if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line))
                     continue;
 
-                var args = BuildArgs(line);
+                var args = BuildArgs(line, opcodes);
                 bool ok = false;
                 string? msgerr = null;
 
@@ -239,6 +263,15 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             var p22 = p2.Replace("(", "").Replace(")", "");
 
             lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_{p22}_M());");
+
+            return true;
+        }
+
+        // LD r, (IX+d)
+        // LD r, (IY+d)
+        if (p2 == cArgsRegisterPlusD)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_{args.Register}_PLUS_D_M());");
 
             return true;
         }

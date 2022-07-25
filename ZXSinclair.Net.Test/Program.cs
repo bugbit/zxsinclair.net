@@ -140,7 +140,7 @@ unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpecte
         do
         {
             z80.Instrfetch();
-        } while (z80.Tick.TStates < t.Base.Line2.endtstates);
+        } while (z80.Ticks.TStates < t.Base.Line2.endtstates);
 #if Z80_OPCODES_TEST
         if (z80.instrNotImp)
             continue;
@@ -201,7 +201,7 @@ void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
     Debug.Assert(r.PC == l1.pc);
     Debug.Assert(r.I == l2.i);
     Debug.Assert(r.R == l2.r);
-    Debug.Assert(cpu.Tick.TStates == l2.endtstates);
+    Debug.Assert(cpu.Ticks.TStates == l2.endtstates);
 
     var j = 0;
     var me = t.Base.Memories;

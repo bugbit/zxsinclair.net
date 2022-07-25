@@ -25,6 +25,7 @@ public partial class Z80Cpu
         {
 {{CODE}}
             default:
+                //Nop();
                 ExecOpCode(opcode);
                 break;
         }

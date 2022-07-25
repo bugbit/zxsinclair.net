@@ -41,7 +41,7 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
     {
         var opcode = base.ReadOpCode(address);
 
-        Tick.AddCycles(4);
+        Ticks.AddCycles(4);
         Regs.RefreshR();
 
         return opcode;
@@ -51,7 +51,7 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
     {
         var data = base.ReadMemory(address);
 
-        Tick.AddCycles(3);
+        Ticks.AddCycles(3);
 
         return data;
     }
@@ -80,6 +80,28 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
     public byte Read_M_BC_M() => ReadMemory(Regs.BC);
     public byte Read_M_DE_M() => ReadMemory(Regs.DE);
     public byte Read_M_HL_M() => ReadMemory(Regs.HL);
+
+    public byte Read_M_IX_PLUS_D_M()
+    {
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var n = ReadMemory(Regs.GetIX_d(d));
+
+        return n;
+    }
+
+    public byte Read_M_IY_PLUS_D_M()
+    {
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var n = ReadMemory(Regs.GetIY_d(d));
+
+        return n;
+    }
 
     public void Nop() { }
 

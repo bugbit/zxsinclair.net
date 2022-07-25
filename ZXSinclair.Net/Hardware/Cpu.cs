@@ -31,7 +31,7 @@ public abstract class Cpu<D, E, R> : ICpu<D, E, R> where E : Enum where R : IRes
     public IMemory<D> Memory { get; set; }
     public E Pins { get; set; }
     public R Regs { get; } = new R();
-    public ITicks Tick { get; } = new Ticks();
+    public ITicks Ticks { get; } = new Ticks();
 
     public Cpu(IMemoryBuffer<D> buffer, IMemory<D>? memory = null)
     {
@@ -49,7 +49,7 @@ public abstract class Cpu<D, E, R> : ICpu<D, E, R> where E : Enum where R : IRes
 
     public virtual void Reset()
     {
-        Tick.Reset();
+        Ticks.Reset();
         Regs.Reset();
     }
 

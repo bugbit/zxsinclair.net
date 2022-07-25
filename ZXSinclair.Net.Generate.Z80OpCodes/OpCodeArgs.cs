@@ -22,4 +22,5 @@ public struct OpCodeArgs
     public string? HexCode { get; init; }
     public string? OpCode { get; init; }
     public string[] Params { get; init; }
+    public string Register { get; init; }
 }
