@@ -19,6 +19,7 @@ namespace ZXSinclair.Net.Hardware.Z80;
 
 public partial class Z80Cpu
 {
+{{BEFORE}}
     public override void ExecOpCode(byte opcode)
     {
         switch (opcode)

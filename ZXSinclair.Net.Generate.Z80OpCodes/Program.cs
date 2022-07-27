@@ -15,7 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Page 77
+// Page 81
+
+using System.Text.RegularExpressions;
 
 const string cArgsRegisterPlusD = "(REGISTER+dd)";
 
@@ -28,6 +30,8 @@ var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regs16 = new[] { "BC", "DE", "HL" };
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
 var regs = regs8.Concat(regs16).ToArray();
+var rgegs16pipe = string.Join('|', regs16);
+var regex = new Regex($@"\(({rgegs16pipe})\)", RegexOptions.Compiled);
 var opcodesBase = new Opcodes()
 {
     FileDat = "data/opcodes_base.dat",
@@ -78,7 +82,11 @@ string BuildId(string[] line, Opcodes opcodes)
 }
 
 await GenerateZ80RegsLd();
-await WriterOpcodes(opcodesBase);
+
+var before = new StringBuilder();
+
+GenerateZ80CpuBefore(before);
+await WriterOpcodes(opcodesBase, before);
 await WriterOpcodes(opcodesDD);
 await WriterOpcodes(opcodesFD);
 
@@ -95,12 +103,16 @@ async Task<string> ReadTxtFileEmb(string key)
     }
 }
 
-async Task WriteCode(string file, string fileTemplate, StringBuilder code)
+async Task WriteCode(string file, string fileTemplate, StringBuilder code, StringBuilder? before = null)
 {
     var x = await ReadTxtFileEmb(fileTemplate);
-    var str2 = x.Replace("{{CODE}}", code.ToString());
 
-    await File.WriteAllTextAsync(Path.Combine(path, file), str2);
+    if (before != null)
+        x = x.Replace("{{BEFORE}}", before.ToString());
+
+    x = x.Replace("{{CODE}}", code.ToString());
+
+    await File.WriteAllTextAsync(Path.Combine(path, file), x);
 }
 
 async Task GenerateZ80RegsLd()
@@ -130,6 +142,22 @@ async Task GenerateZ80RegsLd()
     await WriteCode("Hardware/Z80/Z80Regs.ld.cs", "templates/z80regs_ld.txt", str);
 }
 
+void GenerateZ80CpuBefore(StringBuilder str)
+{
+    (
+        from r16 in regs16
+        from r8 in regs8
+        select
+$@"
+    public void LD_M_{r16}_M_{r8}()
+    {{
+        var r = Regs;
+
+        WriteMemory(r.{r16}, r.{r8});
+    }}"
+    ).ToList().ForEach(s => str.AppendLine(s));
+}
+
 OpCodeArgs BuildArgs(string line, Opcodes opcodes)
 {
     var pSplit = line.Split(' ');
@@ -153,7 +181,7 @@ bool RunOpcode(OpCodeArgs args, StringBuilder lines)
     return generator.Invoke(args, lines);
 }
 
-async Task WriterOpcodes(Opcodes opcodes)
+async Task WriterOpcodes(Opcodes opcodes, StringBuilder? before = null)
 {
     Console.WriteLine($"reading {opcodes.FileDat} ...");
 
@@ -214,7 +242,7 @@ async Task WriterOpcodes(Opcodes opcodes)
             }
 
             await WriteCode(opcodes.FileZ80Enum, opcodes.FileEnumTemplate, enums);
-            await WriteCode(opcodes.FileZ80Opcodes, opcodes.FileOpCodesTemplate, lines);
+            await WriteCode(opcodes.FileZ80Opcodes, opcodes.FileOpCodesTemplate, lines, before);
         }
     }
 }
@@ -233,6 +261,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
 
     var p1 = args.Params[0];
     var p2 = args.Params[1];
+    Match m;
 
     if (p1 == p2)
         return true;
@@ -272,6 +301,16 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         if (p2 == cArgsRegisterPlusD)
         {
             lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_{args.Register}_PLUS_D_M());");
+
+            return true;
+        }
+    }
+    else if ((m = regex.Match(p1)).Success)
+    {
+        // LD (HL), r
+        if (regs8.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tLD_M_{m.Groups[1].Value}_M_{p2}();");
 
             return true;
         }

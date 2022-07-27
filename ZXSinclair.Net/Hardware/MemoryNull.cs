@@ -17,23 +17,23 @@
 
 namespace ZXSinclair.Net.Hardware;
 
-public class MemoryNull<D> : IMemory<D>
+public class MemoryNull<A, D> : IMemory<A, D>
 {
     public MemoryNull(IMemoryBuffer<D> buffer) => Buffer = buffer;
 
     public IMemoryBuffer<D> Buffer { get; }
 
-    public D Read(ushort address)
+    public D Read(A address)
     {
         throw new NotImplementedException();
     }
 
-    public D ReadOpCode(ushort address)
+    public D ReadOpCode(A address)
     {
         throw new NotImplementedException();
     }
 
-    public void Write(ushort address, D data)
+    public void Write(A address, D data)
     {
         throw new NotImplementedException();
     }

@@ -19,6 +19,154 @@ namespace ZXSinclair.Net.Hardware.Z80;
 
 public partial class Z80Cpu
 {
+
+    public void LD_M_BC_M_A()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.A);
+    }
+
+    public void LD_M_BC_M_B()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.B);
+    }
+
+    public void LD_M_BC_M_C()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.C);
+    }
+
+    public void LD_M_BC_M_D()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.D);
+    }
+
+    public void LD_M_BC_M_E()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.E);
+    }
+
+    public void LD_M_BC_M_H()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.H);
+    }
+
+    public void LD_M_BC_M_L()
+    {
+        var r = Regs;
+
+        WriteMemory(r.BC, r.L);
+    }
+
+    public void LD_M_DE_M_A()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.A);
+    }
+
+    public void LD_M_DE_M_B()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.B);
+    }
+
+    public void LD_M_DE_M_C()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.C);
+    }
+
+    public void LD_M_DE_M_D()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.D);
+    }
+
+    public void LD_M_DE_M_E()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.E);
+    }
+
+    public void LD_M_DE_M_H()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.H);
+    }
+
+    public void LD_M_DE_M_L()
+    {
+        var r = Regs;
+
+        WriteMemory(r.DE, r.L);
+    }
+
+    public void LD_M_HL_M_A()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.A);
+    }
+
+    public void LD_M_HL_M_B()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.B);
+    }
+
+    public void LD_M_HL_M_C()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.C);
+    }
+
+    public void LD_M_HL_M_D()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.D);
+    }
+
+    public void LD_M_HL_M_E()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.E);
+    }
+
+    public void LD_M_HL_M_H()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.H);
+    }
+
+    public void LD_M_HL_M_L()
+    {
+        var r = Regs;
+
+        WriteMemory(r.HL, r.L);
+    }
+
     public override void ExecOpCode(byte opcode)
     {
         switch (opcode)
@@ -36,10 +184,7 @@ public partial class Z80Cpu
 			break;
 			// 0x02 LD (BC),A
 			case (byte)Z80OpCodes.LD_MM_BC_MM_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_BC_M_A();
 			break;
 			// 0x03 INC BC
 			case (byte)Z80OpCodes.INC_BC:
@@ -139,10 +284,7 @@ public partial class Z80Cpu
 			break;
 			// 0x12 LD (DE),A
 			case (byte)Z80OpCodes.LD_MM_DE_MM_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_DE_M_A();
 			break;
 			// 0x13 INC DE
 			case (byte)Z80OpCodes.INC_DE:
@@ -629,45 +771,27 @@ public partial class Z80Cpu
 			break;
 			// 0x70 LD (HL),B
 			case (byte)Z80OpCodes.LD_MM_HL_MM_B:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_B();
 			break;
 			// 0x71 LD (HL),C
 			case (byte)Z80OpCodes.LD_MM_HL_MM_C:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_C();
 			break;
 			// 0x72 LD (HL),D
 			case (byte)Z80OpCodes.LD_MM_HL_MM_D:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_D();
 			break;
 			// 0x73 LD (HL),E
 			case (byte)Z80OpCodes.LD_MM_HL_MM_E:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_E();
 			break;
 			// 0x74 LD (HL),H
 			case (byte)Z80OpCodes.LD_MM_HL_MM_H:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_H();
 			break;
 			// 0x75 LD (HL),L
 			case (byte)Z80OpCodes.LD_MM_HL_MM_L:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_L();
 			break;
 			// 0x76 HALT
 			case (byte)Z80OpCodes.HALT:
@@ -678,10 +802,7 @@ public partial class Z80Cpu
 			break;
 			// 0x77 LD (HL),A
 			case (byte)Z80OpCodes.LD_MM_HL_MM_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_HL_M_A();
 			break;
 			// 0x78 LD A,B
 			case (byte)Z80OpCodes.LD_A_B:

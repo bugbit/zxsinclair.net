@@ -21,11 +21,11 @@ namespace ZXSinclair.Net.Hardware;
 /// D => Data
 /// </summary>
 /// <typeparam name="D"></typeparam>
-public interface IMemory<D>
+public interface IMemory<A, D>
 {
     IMemoryBuffer<D> Buffer { get; }
 
-    D Read(ushort address);
-    D ReadOpCode(ushort address);
-    void Write(ushort address, D data);
+    D Read(A address);
+    D ReadOpCode(A address);
+    void Write(A address, D data);
 }

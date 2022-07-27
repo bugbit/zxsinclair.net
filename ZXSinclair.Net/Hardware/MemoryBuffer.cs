@@ -23,7 +23,7 @@ namespace ZXSinclair.Net.Hardware
     {
         private bool disposedValue;
 
-        public MemoryBuffer(int size = 0, byte* ptr = null, ushort offset = 0)
+        public MemoryBuffer(int size = 0, byte* ptr = null, int offset = 0)
         {
             if (size < 0)
                 throw new InvalidOperationException();
@@ -49,12 +49,12 @@ namespace ZXSinclair.Net.Hardware
             }
         }
 
-        public ushort Offset { get; }
+        public int Offset { get; }
         public int Size { get; }
         public IntPtr Buffer { get; private set; }
         public byte* BufferPtr { get; protected set; }
 
-        public MemoryBuffer New(ushort offset, int size)
+        public MemoryBuffer New(int offset, int size)
         {
             if (offset > Size || offset + size > Size)
                 new MemoryBuffer(0);
@@ -114,7 +114,7 @@ namespace ZXSinclair.Net.Hardware
         {
         }
 
-        public byte Read(ushort address)
+        public byte Read(int address)
         {
             if (address >= Size)
                 return 0;
@@ -122,7 +122,7 @@ namespace ZXSinclair.Net.Hardware
             return *(BufferPtr + address);
         }
 
-        public void Write(ushort address, byte data)
+        public void Write(int address, byte data)
         {
             if (address >= Size)
                 return;

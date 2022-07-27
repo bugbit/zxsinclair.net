@@ -23,25 +23,27 @@ namespace ZXSinclair.Net.Hardware;
 /// R => Register
 /// </summary>
 /// <typeparam name="D"></typeparam>
-public abstract class Cpu<D, E, R> : ICpu<D, E, R> where E : Enum where R : IReset, new()
+public abstract class Cpu<A, D, E, R> : ICpu<A, D, E, R> where E : Enum where R : IReset, new()
 {
     private bool disposedValue;
 
     public IMemoryBuffer<D>? MemoryBuffer { get; set; }
-    public IMemory<D> Memory { get; set; }
+    public IMemory<A, D> Memory { get; set; }
     public E Pins { get; set; }
     public R Regs { get; } = new R();
     public ITicks Ticks { get; } = new Ticks();
 
-    public Cpu(IMemoryBuffer<D> buffer, IMemory<D>? memory = null)
+    public Cpu(IMemoryBuffer<D> buffer, IMemory<A, D>? memory = null)
     {
         MemoryBuffer = buffer;
-        Memory = memory ?? new MemoryNull<D>(buffer);
+        Memory = memory ?? new MemoryNull<A, D>(buffer);
     }
 
-    public virtual D ReadOpCode(ushort address) => Memory.ReadOpCode(address);
+    public virtual D ReadOpCode(A address) => Memory.ReadOpCode(address);
 
-    public virtual D ReadMemory(ushort address) => Memory.Read(address);
+    public virtual D ReadMemory(A address) => Memory.Read(address);
+
+    public virtual void WriteMemory(A address, D data) => Memory.Write(address, data);
 
     public abstract void Instrfetch();
 

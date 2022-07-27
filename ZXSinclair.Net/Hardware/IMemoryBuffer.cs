@@ -19,10 +19,10 @@ namespace ZXSinclair.Net.Hardware;
 
 public interface IMemoryBuffer : IDisposable
 {
-    ushort Offset { get; }
+    int Offset { get; }
     int Size { get; }
     IntPtr Buffer { get; }
-    MemoryBuffer New(ushort offset, int size);
+    MemoryBuffer New(int offset, int size);
     int CopyTo(byte[] b);
 }
 
@@ -32,6 +32,6 @@ public interface IMemoryBuffer : IDisposable
 /// <typeparam name="D"></typeparam>
 public interface IMemoryBuffer<D> : IMemoryBuffer
 {
-    D Read(ushort address);
-    void Write(ushort address, D data);
+    D Read(int address);
+    void Write(int address, D data);
 }

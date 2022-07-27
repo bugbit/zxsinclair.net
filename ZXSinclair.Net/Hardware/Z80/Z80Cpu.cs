@@ -21,9 +21,9 @@ namespace ZXSinclair.Net.Hardware.Z80;
 // http://www.myquest.nl/z80undocumented/z80-documented-v0.91.pdf
 // http://www.z80.info/zip/z80-documented.pdf
 
-public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
+public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 {
-    public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), memory) { }
+    public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<ushort, byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), memory) { }
 
 #if Z80_OPCODES_TEST
     public bool instrNotImp { get; protected set; } = false;
@@ -54,6 +54,13 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
         Ticks.AddCycles(3);
 
         return data;
+    }
+
+    public override void WriteMemory(ushort address, byte data)
+    {
+        base.WriteMemory(address, data);
+
+        Ticks.AddCycles(3);
     }
 
     public override void Instrfetch()
@@ -102,6 +109,14 @@ public unsafe partial class Z80Cpu : Cpu<byte, Z80Pins, Z80Regs>
 
         return n;
     }
+
+    // public void Write_M_HL_M(byte data) => WriteMemory(Regs.HL, data);
+    // public void LD_M_HL_M_A()
+    // {
+    //     var r = Regs;
+
+    //     WriteMemory(r.HL, r.A);
+    // }
 
     public void Nop() { }
 

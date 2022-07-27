@@ -21,7 +21,7 @@ namespace ZXSinclair.Net.Hardware;
 /// D => Data
 /// </summary>
 /// <typeparam name="D"></typeparam>
-public class CpuMemory<D> : IMemory<D>
+public abstract class CpuMemory<A,D> : IMemory<A,D>
 {
     public CpuMemory(IMemoryBuffer<D> buffer)
     {
@@ -30,8 +30,8 @@ public class CpuMemory<D> : IMemory<D>
 
     public IMemoryBuffer<D> Buffer { get; }
 
-    public virtual D Read(ushort address) => Buffer.Read(address);
-    public virtual D ReadOpCode(ushort address) => Read(address);
+    public abstract D Read(A address);
+    public abstract D ReadOpCode(A address);
 
-    public virtual void Write(ushort address, D data) => Buffer.Write(address, data);
+    public abstract void Write(A address, D data);
 }

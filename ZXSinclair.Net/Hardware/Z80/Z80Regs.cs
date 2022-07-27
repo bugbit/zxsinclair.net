@@ -169,11 +169,6 @@ public partial class Z80Regs : IReset
         PC = nn;
     }
 
-    // public void SetA_n(byte n)
-    // {
-    //     A = n;
-    // }
-
     public void SetI_n(byte n)
     {
         I = n;

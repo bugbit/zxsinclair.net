@@ -130,7 +130,7 @@ unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpecte
 {
     var mb = new MemoryBuffer8Bit(0x10000);
     var m0 = new byte[mb.Size];
-    var m = new CpuMemory<byte>(mb);
+    var m = new MemoryRam16Bits<byte>(mb);
     var z80 = new Z80Cpu(mb, m);
 
     foreach (var t in testsin)
@@ -211,9 +211,9 @@ void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
         if (m.Read((ushort)i) == m0[i])
             continue;
 
-        Debug.Assert(j >= me.Length);
+        Debug.Assert(j < me.Length);
 
-        var mm = me[i++];
+        var mm = me[j++];
 
         Debug.Assert(mm.Address == i);
 
@@ -222,7 +222,7 @@ void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
             var d1 = m.Read((ushort)i);
             var d2 = m0[i++];
 
-            Debug.Assert(d == d2);
+            Debug.Assert(d == d1);
             Debug.Assert(d1 != d2);
         }
     }
