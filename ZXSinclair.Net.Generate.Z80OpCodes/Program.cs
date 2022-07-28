@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Page 81
+// Page 90 (LD A, (nn))
 
 using System.Text.RegularExpressions;
 
@@ -39,7 +39,8 @@ var opcodesBase = new Opcodes()
     FileEnumTemplate = "templates/z80OpCodes.txt",
     FileZ80Enum = "Hardware/Z80/Z80OpCodes.cs",
     FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodes.cs",
-    EnumName = "Z80OpCodes"
+    EnumName = "Z80OpCodes",
+    BuilderBefore = GenerateZ80CpuBefore
 };
 var opcodesDD = new Opcodes()
 {
@@ -49,7 +50,8 @@ var opcodesDD = new Opcodes()
     FileZ80Enum = "Hardware/Z80/Z80OpCodesDD.cs",
     FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesdd.cs",
     EnumName = "Z80OpCodesDD",
-    Register = "IX"
+    Register = "IX",
+    BuilderBefore = GenerateZ80CpuIXIYBefore
 };
 var opcodesFD = new Opcodes()
 {
@@ -59,7 +61,8 @@ var opcodesFD = new Opcodes()
     FileZ80Enum = "Hardware/Z80/Z80OpCodesFD.cs",
     FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesfd.cs",
     EnumName = "Z80OpCodesFD",
-    Register = "IY"
+    Register = "IY",
+    BuilderBefore = GenerateZ80CpuIXIYBefore
 };
 
 Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = new Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>>
@@ -83,10 +86,7 @@ string BuildId(string[] line, Opcodes opcodes)
 
 await GenerateZ80RegsLd();
 
-var before = new StringBuilder();
-
-GenerateZ80CpuBefore(before);
-await WriterOpcodes(opcodesBase, before);
+await WriterOpcodes(opcodesBase);
 await WriterOpcodes(opcodesDD);
 await WriterOpcodes(opcodesFD);
 
@@ -142,7 +142,7 @@ async Task GenerateZ80RegsLd()
     await WriteCode("Hardware/Z80/Z80Regs.ld.cs", "templates/z80regs_ld.txt", str);
 }
 
-void GenerateZ80CpuBefore(StringBuilder str)
+void GenerateZ80CpuBefore(StringBuilder str, Opcodes opcodes)
 {
     (
         from r16 in regs16
@@ -154,6 +154,26 @@ $@"
         var r = Regs;
 
         WriteMemory(r.{r16}, r.{r8});
+    }}"
+    ).ToList().ForEach(s => str.AppendLine(s));
+}
+
+void GenerateZ80CpuIXIYBefore(StringBuilder str, Opcodes opcodes)
+{
+    (
+        from r8 in regs8
+        select
+$@"
+    public void LD_M_{opcodes.Register}_PLUS_D_M_{r8}()
+    {{
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.Get{opcodes.Register}_d(d);
+
+        WriteMemory(nn, r.{r8});
     }}"
     ).ToList().ForEach(s => str.AppendLine(s));
 }
@@ -181,9 +201,13 @@ bool RunOpcode(OpCodeArgs args, StringBuilder lines)
     return generator.Invoke(args, lines);
 }
 
-async Task WriterOpcodes(Opcodes opcodes, StringBuilder? before = null)
+async Task WriterOpcodes(Opcodes opcodes)
 {
     Console.WriteLine($"reading {opcodes.FileDat} ...");
+
+    var t = opcodes.BuilderBefore != null
+        ? Task<StringBuilder?>.Factory.StartNew(() => { var lines = new StringBuilder(); opcodes.BuilderBefore(lines, opcodes); return lines; })
+        : Task.FromResult<StringBuilder?>(null); //new StringBuilder();    
 
     using (var stream = embeddedProvider.GetFileInfo(opcodes.FileDat).CreateReadStream())
     {
@@ -242,6 +266,9 @@ async Task WriterOpcodes(Opcodes opcodes, StringBuilder? before = null)
             }
 
             await WriteCode(opcodes.FileZ80Enum, opcodes.FileEnumTemplate, enums);
+
+            var before = await t;
+
             await WriteCode(opcodes.FileZ80Opcodes, opcodes.FileOpCodesTemplate, lines, before);
         }
     }
@@ -315,6 +342,17 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
     }
+    else if (p1 == cArgsRegisterPlusD)
+    {
+        // LD (IX+d), n
+        // LD (IY+d), n
+        if (regs8.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tLD_M_{args.Register}_PLUS_D_M_{p2}();");
+
+            return true;
+        }
+    }
 
     return false;
 }
@@ -326,6 +364,12 @@ bool shift(OpCodeArgs args, StringBuilder lines)
         if (args.Params[0] == "DD")
         {
             lines.AppendLine($"\t\t\tInstrfetchDD();");
+
+            return true;
+        }
+        if (args.Params[0] == "FD")
+        {
+            lines.AppendLine($"\t\t\tInstrfetchFD();");
 
             return true;
         }

@@ -19,6 +19,91 @@ namespace ZXSinclair.Net.Hardware.Z80;
 
 public partial class Z80Cpu
 {
+
+    public void LD_M_IX_PLUS_D_M_A()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.A);
+    }
+
+    public void LD_M_IX_PLUS_D_M_B()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.B);
+    }
+
+    public void LD_M_IX_PLUS_D_M_C()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.C);
+    }
+
+    public void LD_M_IX_PLUS_D_M_D()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.D);
+    }
+
+    public void LD_M_IX_PLUS_D_M_E()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.E);
+    }
+
+    public void LD_M_IX_PLUS_D_M_H()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.H);
+    }
+
+    public void LD_M_IX_PLUS_D_M_L()
+    {
+        var r = Regs;
+        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+
+        Ticks.AddCycles(5);
+
+        var nn =r.GetIX_d(d);
+
+        WriteMemory(nn, r.L);
+    }
+
     public void ExecOpCodeDD(byte opcode)
     {
         switch (opcode)
@@ -321,52 +406,31 @@ public partial class Z80Cpu
 			break;
 			// 0x70 LD (REGISTER+dd),B
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_B:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_B();
 			break;
 			// 0x71 LD (REGISTER+dd),C
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_C:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_C();
 			break;
 			// 0x72 LD (REGISTER+dd),D
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_D:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_D();
 			break;
 			// 0x73 LD (REGISTER+dd),E
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_E:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_E();
 			break;
 			// 0x74 LD (REGISTER+dd),H
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_H:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_H();
 			break;
 			// 0x75 LD (REGISTER+dd),L
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_L:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_L();
 			break;
 			// 0x77 LD (REGISTER+dd),A
 			case (byte)Z80OpCodesDD.LD_MM_IX_PLUS_dd_MM_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_M_IX_PLUS_D_M_A();
 			break;
 			// 0x7c LD A,REGISTERH
 			case (byte)Z80OpCodesDD.LD_A_IXH:

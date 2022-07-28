@@ -1709,10 +1709,7 @@ public partial class Z80Cpu
 			break;
 			// 0xfd shift FD
 			case (byte)Z80OpCodes.shift_FD:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			InstrfetchFD();
 			break;
 			// 0xfe CP nn
 			case (byte)Z80OpCodes.CP_nn:

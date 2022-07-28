@@ -26,4 +26,5 @@ public record Opcodes
     public string? FileZ80Opcodes { get; init; }
     public string? EnumName { get; init; }
     public string? Register { get; init; }
+    public Action<StringBuilder, Opcodes>? BuilderBefore { get; set; }
 }
