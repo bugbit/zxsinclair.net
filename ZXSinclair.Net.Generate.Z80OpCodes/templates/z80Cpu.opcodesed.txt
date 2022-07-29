@@ -17,7 +17,17 @@
 
 namespace ZXSinclair.Net.Hardware.Z80;
 
-public enum Z80Pins
+public partial class Z80Cpu
 {
-    IFF2 = 0x1
+//{{BEFORE}}
+    public void ExecOpCodeED(byte opcode)
+    {
+        switch (opcode)
+        {
+{{CODE}}
+            default:
+                Nop();
+                break;
+        }
+    }
 }

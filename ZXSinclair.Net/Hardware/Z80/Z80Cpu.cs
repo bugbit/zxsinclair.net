@@ -23,6 +23,36 @@ namespace ZXSinclair.Net.Hardware.Z80;
 
 public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 {
+    protected static readonly byte[] mTablePV;
+    protected static readonly byte[] mTableZS53;
+
+    static Z80Cpu()
+    {
+        mTablePV = CreateTablePV();
+        mTableZS53 = CreateTableZS53();
+    }
+
+    private static byte[] CreateTablePV()
+    {
+        var pTable = new byte[0x100];
+
+        for (var pByte = 0x00; pByte <= 0xFF; pByte++)
+            pTable[(byte)pByte] = Z80Flags.GetParity((byte)pByte);
+
+        return pTable;
+    }
+
+    private static byte[] CreateTableZS53()
+    {
+        var pTable = new byte[0x100];
+
+        for (var pByte = 0x00; pByte <= 0xFF; pByte++)
+            pTable[(byte)pByte] = (byte)(pByte & (uint)(Z80Flags.S | Z80Flags.F3 | Z80Flags.F5));
+        pTable[0] |= Z80Flags.Z;
+
+        return pTable;
+    }
+
     public Z80Cpu(IMemoryBuffer<byte> buffer, IMemory<ushort, byte>? memory = null) : base(buffer ?? new MemoryBuffer8Bit(), memory) { }
 
 #if Z80_OPCODES_TEST
@@ -96,6 +126,13 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
         ExecOpCodeFD(opcode);
     }
 
+    public void InstrfetchED()
+    {
+        var opcode = ReadOpCode(Regs.GetPCAndInc());
+
+        ExecOpCodeED(opcode);
+    }
+
     public byte Read_M_BC_M() => ReadMemory(Regs.BC);
     public byte Read_M_DE_M() => ReadMemory(Regs.DE);
     public byte Read_M_HL_M() => ReadMemory(Regs.HL);
@@ -139,6 +176,62 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
     // }
 
     public void Nop() { }
+
+    protected void LD_A_I()
+    {
+        var rr = Regs;
+        var n = rr.I;
+
+        rr.SetA_n(n);
+
+        /*
+         S is set if the I Register is negative; otherwise, it is reset.
+Z is set if the I Register is 0; otherwise, it is reset.
+H is reset.
+P/V contains contents of IFF2.
+N is reset.
+C is not affected.
+If an interrupt occurs during execution of this instruction, the Parity flag contains a 0.
+         */
+
+        var f2 = rr.F;
+        var f = (byte)((uint)(f2 & Z80Flags.C) | mTableZS53[n]);
+
+        if (Pins.HasFlag(Z80Pins.IFF2))
+            f |= Z80Flags.PV;
+
+        rr.SetF(f);
+
+        Ticks.AddCycles(1);
+    }
+
+    protected void LD_A_R()
+    {
+        var rr = Regs;
+        var n = rr.R;
+
+        rr.SetA_n(n);
+
+        /*
+         S is set if the I Register is negative; otherwise, it is reset.
+Z is set if the I Register is 0; otherwise, it is reset.
+H is reset.
+P/V contains contents of IFF2.
+N is reset.
+C is not affected.
+If an interrupt occurs during execution of this instruction, the Parity flag contains a 0.
+         */
+
+        var f2 = rr.F;
+        var f = (byte)((uint)(f2 & Z80Flags.C) | mTableZS53[n]);
+
+        if (Pins.HasFlag(Z80Pins.IFF2))
+            f |= Z80Flags.PV;
+
+        rr.SetF(f);
+
+        Ticks.AddCycles(1);
+    }
 
     // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
     ~Z80Cpu()

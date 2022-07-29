@@ -17,7 +17,8 @@
 
 namespace ZXSinclair.Net.Hardware.Z80;
 
-public enum Z80Pins
+public enum Z80OpCodesED
 {
-    IFF2 = 0x1
+    //NOP = 0
+{{CODE}}    
 }

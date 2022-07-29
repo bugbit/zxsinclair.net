@@ -15,7 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Page 93 (LD (nn), A)
+// Page 96
+// LD I,A
 
 using System.Text.RegularExpressions;
 
@@ -27,6 +28,7 @@ var path = pathexe + "/../../../../ZXSinclair.Net";
 //var x = File.ReadAllLines(path + "/Program.cs");
 var embeddedProvider = new EmbeddedFileProvider(assembly);
 var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
+var regir = new[] { "I", "R" };
 var regs16 = new[] { "BC", "DE", "HL" };
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
 var regs_m_nnn_m = "(nnn)";
@@ -65,6 +67,16 @@ var opcodesFD = new Opcodes()
     Register = "IY",
     BuilderBefore = GenerateZ80CpuIXIYBefore
 };
+var opcodesED = new Opcodes()
+{
+    FileDat = "data/opcodes_ed.dat",
+    FileOpCodesTemplate = "templates/z80Cpu.opcodesed.txt",
+    FileEnumTemplate = "templates/z80OpCodesED.txt",
+    FileZ80Enum = "Hardware/Z80/Z80OpCodesED.cs",
+    FileZ80Opcodes = "Hardware/Z80/Z80Cpu.opcodesed.cs",
+    EnumName = "Z80OpCodesED",
+    //BuilderBefore = GenerateZ80CpuIXIYBefore
+};
 
 Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>> opcodesGenerators = new Dictionary<string, Func<OpCodeArgs, StringBuilder, bool>>
 {
@@ -90,6 +102,7 @@ await GenerateZ80RegsLd();
 await WriterOpcodes(opcodesBase);
 await WriterOpcodes(opcodesDD);
 await WriterOpcodes(opcodesFD);
+await WriterOpcodes(opcodesED);
 
 async Task<string> ReadTxtFileEmb(string key)
 {
@@ -228,41 +241,48 @@ async Task WriterOpcodes(Opcodes opcodes)
                 string? msgerr = null;
 
                 Console.Write($"\nGenerate {line} ");
-                enums.AppendLine($"\t{args.Id} = {args.HexCode},");
-                lines.AppendLine($"\t\t\t// {line}");
-                lines.AppendLine($"\t\t\tcase (byte){opcodes.EnumName}.{args.Id}:");
-                if (!string.IsNullOrWhiteSpace(args.OpCode))
+                if (string.IsNullOrWhiteSpace(args.Id))
                 {
-                    try
-                    {
-                        ok = RunOpcode(args, lines);
-                        if (!ok)
-                        {
-                            lines.AppendLine("\t\t\t// not implement");
-                            lines.AppendLine("\t\t\t#if Z80_OPCODES_TEST");
-                            lines.AppendLine("\t\t\tinstrNotImp=true;");
-                            lines.AppendLine("\t\t\t#endif");
-                            msgerr = "not implement";
-                        }
-                        lines.AppendLine("\t\t\tbreak;");
-                    }
-                    catch (Exception ex)
-                    {
-                        msgerr = ex.Message;
-                        ok = false;
-                    }
+                    lines.AppendLine($"\t\t\tcase {args.HexCode}:");
                 }
                 else
-                    ok = true;
-                if (ok)
-                    Console.Write("ok");
-                else
                 {
-                    var color = Console.ForegroundColor;
+                    enums.AppendLine($"\t{args.Id} = {args.HexCode},");
+                    lines.AppendLine($"\t\t\t// {line}");
+                    lines.AppendLine($"\t\t\tcase (byte){opcodes.EnumName}.{args.Id}:");
+                    if (!string.IsNullOrWhiteSpace(args.OpCode))
+                    {
+                        try
+                        {
+                            ok = RunOpcode(args, lines);
+                            if (!ok)
+                            {
+                                lines.AppendLine("\t\t\t// not implement");
+                                lines.AppendLine("\t\t\t#if Z80_OPCODES_TEST");
+                                lines.AppendLine("\t\t\tinstrNotImp=true;");
+                                lines.AppendLine("\t\t\t#endif");
+                                msgerr = "not implement";
+                            }
+                            lines.AppendLine("\t\t\tbreak;");
+                        }
+                        catch (Exception ex)
+                        {
+                            msgerr = ex.Message;
+                            ok = false;
+                        }
+                    }
+                    else
+                        ok = true;
+                    if (ok)
+                        Console.Write("ok");
+                    else
+                    {
+                        var color = Console.ForegroundColor;
 
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write(msgerr);
-                    Console.ForegroundColor = color;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write(msgerr);
+                        Console.ForegroundColor = color;
+                    }
                 }
             }
 
@@ -294,6 +314,17 @@ bool LD(OpCodeArgs args, StringBuilder lines)
     if (p1 == p2)
         return true;
 
+    if (p1 == "A")
+    {
+        // LD A,I
+        // LD A,R
+        if (regir.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tLD_A_{p2}();");
+
+            return true;
+        }
+    }
     if (regs8.Contains(p1))
     {
         // LD r, r'
@@ -391,6 +422,12 @@ bool shift(OpCodeArgs args, StringBuilder lines)
         if (args.Params[0] == "FD")
         {
             lines.AppendLine($"\t\t\tInstrfetchFD();");
+
+            return true;
+        }
+        if (args.Params[0] == "ED")
+        {
+            lines.AppendLine($"\t\t\tInstrfetchED();");
 
             return true;
         }

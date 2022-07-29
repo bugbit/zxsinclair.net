@@ -1597,10 +1597,7 @@ public partial class Z80Cpu
 			break;
 			// 0xed shift ED
 			case (byte)Z80OpCodes.shift_ED:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			InstrfetchED();
 			break;
 			// 0xee XOR A,nn
 			case (byte)Z80OpCodes.XOR_A_nn:
