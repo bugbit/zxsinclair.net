@@ -56,6 +56,18 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
         return data;
     }
 
+    public ushort ReadWordMemoryPCAndINC()
+    {
+        var r = Regs;
+
+        var r2 = new Z80Reg16Bits();
+
+        r2.L = ReadMemory(r.GetPCAndInc());
+        r2.H = ReadMemory(r.GetPCAndInc());
+
+        return r2.W;
+    }
+
     public override void WriteMemory(ushort address, byte data)
     {
         base.WriteMemory(address, data);
@@ -87,6 +99,14 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
     public byte Read_M_BC_M() => ReadMemory(Regs.BC);
     public byte Read_M_DE_M() => ReadMemory(Regs.DE);
     public byte Read_M_HL_M() => ReadMemory(Regs.HL);
+
+    public byte Read_M_nnn_M()
+    {
+        var nnn = ReadWordMemoryPCAndINC();
+        var data = ReadMemory(nnn);
+
+        return data;
+    }
 
     public byte Read_M_IX_PLUS_D_M()
     {

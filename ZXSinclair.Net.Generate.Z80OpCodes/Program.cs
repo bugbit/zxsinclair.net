@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Page 90 (LD A, (nn))
+// Page 93 (LD (nn), A)
 
 using System.Text.RegularExpressions;
 
@@ -29,6 +29,7 @@ var embeddedProvider = new EmbeddedFileProvider(assembly);
 var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regs16 = new[] { "BC", "DE", "HL" };
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
+var regs_m_nnn_m = "(nnn)";
 var regs = regs8.Concat(regs16).ToArray();
 var rgegs16pipe = string.Join('|', regs16);
 var regex = new Regex($@"\(({rgegs16pipe})\)", RegexOptions.Compiled);
@@ -331,10 +332,20 @@ bool LD(OpCodeArgs args, StringBuilder lines)
 
             return true;
         }
+
+        // LD A, (nn)
+        if (p2 == regs_m_nnn_m)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_nnn_M());");
+
+            return true;
+        }
     }
     else if ((m = regex.Match(p1)).Success)
     {
         // LD (HL), r
+        // LD (BC), r
+        // LD (DE), r
         if (regs8.Contains(p2))
         {
             lines.AppendLine($"\t\t\tLD_M_{m.Groups[1].Value}_M_{p2}();");
@@ -349,6 +360,16 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         if (regs8.Contains(p2))
         {
             lines.AppendLine($"\t\t\tLD_M_{args.Register}_PLUS_D_M_{p2}();");
+
+            return true;
+        }
+    }
+    else if (p1 == regs_m_nnn_m)
+    {
+        // LD (nn),A
+        if (regs8.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tWriteMemory(ReadWordMemoryPCAndINC,Regs{p2});");
 
             return true;
         }
