@@ -15,12 +15,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
+// http://www.zilog.com/docs/z80/um0080.pdf
 // Page 96
 // LD I,A
 
 using System.Text.RegularExpressions;
 
 const string cArgsRegisterPlusD = "(REGISTER+dd)";
+const string cArgs_nn = "(nnn)";
+const string cArgs_m_nnn_m = "(nnn)";
 
 var assembly = Assembly.GetExecutingAssembly();
 var pathexe = Path.GetDirectoryName(assembly.Location);
@@ -31,7 +34,6 @@ var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regir = new[] { "I", "R" };
 var regs16 = new[] { "BC", "DE", "HL" };
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
-var regs_m_nnn_m = "(nnn)";
 var regs = regs8.Concat(regs16).ToArray();
 var rgegs16pipe = string.Join('|', regs16);
 var regex = new Regex($@"\(({rgegs16pipe})\)", RegexOptions.Compiled);
@@ -336,7 +338,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         }
 
         //LD r,n
-        if (p2 == "nn")
+        if (p2 == cArgs_nn)
         {
             lines.AppendLine($"\t\t\tRegs.Set{p1}_n(ReadMemory(Regs.GetPCAndInc()));");
 
@@ -365,7 +367,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         }
 
         // LD A, (nn)
-        if (p2 == regs_m_nnn_m)
+        if (p2 == cArgs_m_nnn_m)
         {
             lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_nnn_M());");
 
@@ -395,7 +397,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
     }
-    else if (p1 == regs_m_nnn_m)
+    else if (p1 == cArgs_m_nnn_m)
     {
         // LD (nn),A
         if (regs8.Contains(p2))
