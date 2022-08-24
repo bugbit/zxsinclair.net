@@ -92,10 +92,7 @@ public partial class Z80Cpu
 			break;
 			// 0x47 LD I,A
 			case (byte)Z80OpCodesED.LD_I_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_I_A();
 			break;
 			// 0x48 IN C,(C)
 			case (byte)Z80OpCodesED.IN_C_MM_C_MM:
@@ -127,10 +124,7 @@ public partial class Z80Cpu
 			break;
 			// 0x4f LD R,A
 			case (byte)Z80OpCodesED.LD_R_A:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			LD_R_A();
 			break;
 			// 0x50 IN D,(C)
 			case (byte)Z80OpCodesED.IN_D_MM_C_MM:

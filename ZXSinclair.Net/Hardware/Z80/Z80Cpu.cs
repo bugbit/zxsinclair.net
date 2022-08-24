@@ -233,6 +233,17 @@ If an interrupt occurs during execution of this instruction, the Parity flag con
         Ticks.AddCycles(1);
     }
 
+    public void LD_I_A()
+    {
+        Regs.SetI_A();
+        Ticks.AddCycles(1);
+    }
+    public void LD_R_A()
+    {
+        Regs.SetR_A();
+        Ticks.AddCycles(1);
+    }
+
     // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados
     ~Z80Cpu()
     {

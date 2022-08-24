@@ -180,4 +180,14 @@ public partial class Z80Regs : IReset
     {
         R = n;
     }
+
+    public void SetI_A()
+    {
+        I = A;
+    }
+
+    public void SetR_A()
+    {
+        R = A;
+    }
 }

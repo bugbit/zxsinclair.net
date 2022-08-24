@@ -16,14 +16,14 @@
 #endregion
 
 // http://www.zilog.com/docs/z80/um0080.pdf
-// Page 96
-// LD I,A
+// Page 98
+// 16-Bit Load Group
 
 using System.Text.RegularExpressions;
 
 const string cArgsRegisterPlusD = "(REGISTER+dd)";
 const string cArgs_nn = "(nnn)";
-const string cArgs_m_nnn_m = "(nnn)";
+const string cArgs_m_nnnn_m = "(nnnn)";
 
 var assembly = Assembly.GetExecutingAssembly();
 var pathexe = Path.GetDirectoryName(assembly.Location);
@@ -322,7 +322,18 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         // LD A,R
         if (regir.Contains(p2))
         {
-            lines.AppendLine($"\t\t\tLD_A_{p2}();");
+            lines.AppendLine($"\t\t\tLD_{p1}_{p2}();");
+
+            return true;
+        }
+    }
+    if (regir.Contains(p1))
+    {
+        // LD I,A
+        // LD R,A
+        if (p2 == "A")
+        {
+            lines.AppendLine($"\t\t\tLD_{p1}_{p2}();");
 
             return true;
         }
@@ -366,8 +377,8 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
 
-        // LD A, (nn)
-        if (p2 == cArgs_m_nnn_m)
+        // LD A, (nnnn)
+        if (p2 == cArgs_m_nnnn_m)
         {
             lines.AppendLine($"\t\t\tRegs.Set{p1}_n(Read_M_nnn_M());");
 
@@ -397,12 +408,12 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
     }
-    else if (p1 == cArgs_m_nnn_m)
+    else if (p1 == cArgs_m_nnnn_m)
     {
         // LD (nn),A
         if (regs8.Contains(p2))
         {
-            lines.AppendLine($"\t\t\tWriteMemory(ReadWordMemoryPCAndINC,Regs{p2});");
+            lines.AppendLine($"\t\t\tWriteMemory(ReadWordMemoryPCAndINC(),Regs.{p2});");
 
             return true;
         }
