@@ -134,40 +134,40 @@ public partial class Z80Regs : IReset
         AF = nn;
     }
 
-    public void SetBC_nn(ushort nn)
-    {
-        BC = nn;
-    }
+    // public void SetBC_nn(ushort nn)
+    // {
+    //     BC = nn;
+    // }
 
-    public void SetDE_nn(ushort nn)
-    {
-        DE = nn;
-    }
+    // public void SetDE_nn(ushort nn)
+    // {
+    //     DE = nn;
+    // }
 
-    public void SetHL_nn(ushort nn)
-    {
-        HL = nn;
-    }
+    // public void SetHL_nn(ushort nn)
+    // {
+    //     HL = nn;
+    // }
 
-    public void SetIX_nn(ushort nn)
-    {
-        IX = nn;
-    }
+    // public void SetIX_nn(ushort nn)
+    // {
+    //     IX = nn;
+    // }
 
-    public void SetIY_nn(ushort nn)
-    {
-        IY = nn;
-    }
+    // public void SetIY_nn(ushort nn)
+    // {
+    //     IY = nn;
+    // }
 
-    public void SetSP_nn(ushort nn)
-    {
-        SP = nn;
-    }
+    // public void SetSP_nn(ushort nn)
+    // {
+    //     SP = nn;
+    // }
 
-    public void SetPC_nn(ushort nn)
-    {
-        PC = nn;
-    }
+    // public void SetPC_nn(ushort nn)
+    // {
+    //     PC = nn;
+    // }
 
     public void SetF(byte f) => F = f;
 

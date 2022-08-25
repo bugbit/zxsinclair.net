@@ -177,10 +177,7 @@ public partial class Z80Cpu
 			break;
 			// 0x01 LD BC,nnnn
 			case (byte)Z80OpCodes.LD_BC_nnnn:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetBC_nn(ReadWordMemoryPCAndINC());
 			break;
 			// 0x02 LD (BC),A
 			case (byte)Z80OpCodes.LD_MM_BC_MM_A:
@@ -237,7 +234,10 @@ public partial class Z80Cpu
 			break;
 			// 0x0a LD A,(BC)
 			case (byte)Z80OpCodes.LD_A_MM_BC_MM:
-			Regs.SetA_n(Read_M_BC_M());
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x0b DEC BC
 			case (byte)Z80OpCodes.DEC_BC:
@@ -283,10 +283,7 @@ public partial class Z80Cpu
 			break;
 			// 0x11 LD DE,nnnn
 			case (byte)Z80OpCodes.LD_DE_nnnn:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetDE_nn(ReadWordMemoryPCAndINC());
 			break;
 			// 0x12 LD (DE),A
 			case (byte)Z80OpCodes.LD_MM_DE_MM_A:
@@ -343,7 +340,10 @@ public partial class Z80Cpu
 			break;
 			// 0x1a LD A,(DE)
 			case (byte)Z80OpCodes.LD_A_MM_DE_MM:
-			Regs.SetA_n(Read_M_DE_M());
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x1b DEC DE
 			case (byte)Z80OpCodes.DEC_DE:
@@ -389,10 +389,7 @@ public partial class Z80Cpu
 			break;
 			// 0x21 LD HL,nnnn
 			case (byte)Z80OpCodes.LD_HL_nnnn:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetHL_nn(ReadWordMemoryPCAndINC());
 			break;
 			// 0x22 LD (nnnn),HL
 			case (byte)Z80OpCodes.LD_MM_nnnn_MM_HL:
@@ -561,7 +558,10 @@ public partial class Z80Cpu
 			break;
 			// 0x3a LD A,(nnnn)
 			case (byte)Z80OpCodes.LD_A_MM_nnnn_MM:
-			Regs.SetA_n(Read_M_nnn_M());
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x3b DEC SP
 			case (byte)Z80OpCodes.DEC_SP:
@@ -821,31 +821,52 @@ public partial class Z80Cpu
 			break;
 			// 0x78 LD A,B
 			case (byte)Z80OpCodes.LD_A_B:
-			Regs.SetA_B();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x79 LD A,C
 			case (byte)Z80OpCodes.LD_A_C:
-			Regs.SetA_C();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7a LD A,D
 			case (byte)Z80OpCodes.LD_A_D:
-			Regs.SetA_D();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7b LD A,E
 			case (byte)Z80OpCodes.LD_A_E:
-			Regs.SetA_E();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7c LD A,H
 			case (byte)Z80OpCodes.LD_A_H:
-			Regs.SetA_H();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7d LD A,L
 			case (byte)Z80OpCodes.LD_A_L:
-			Regs.SetA_L();
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7e LD A,(HL)
 			case (byte)Z80OpCodes.LD_A_MM_HL_MM:
-			Regs.SetA_n(Read_M_HL_M());
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x7f LD A,A
 			case (byte)Z80OpCodes.LD_A_A:

@@ -68,12 +68,19 @@ public partial class Z80Regs
 	public void SetDE_HL() => DE = HL;
 	public void SetHL_BC() => HL = BC;
 	public void SetHL_DE() => HL = DE;
-public void SetA_n(byte n) => A = n;
-public void SetB_n(byte n) => B = n;
-public void SetC_n(byte n) => C = n;
-public void SetD_n(byte n) => D = n;
-public void SetE_n(byte n) => E = n;
-public void SetH_n(byte n) => H = n;
-public void SetL_n(byte n) => L = n;
+	public void SetA_n(byte n) => A = n;
+	public void SetB_n(byte n) => B = n;
+	public void SetC_n(byte n) => C = n;
+	public void SetD_n(byte n) => D = n;
+	public void SetE_n(byte n) => E = n;
+	public void SetH_n(byte n) => H = n;
+	public void SetL_n(byte n) => L = n;
+	public void SetBC_nn(ushort n) => BC = n;
+	public void SetDE_nn(ushort n) => DE = n;
+	public void SetHL_nn(ushort n) => HL = n;
+	public void SetSP_nn(ushort n) => SP = n;
+	public void SetIX_nn(ushort n) => IX = n;
+	public void SetIY_nn(ushort n) => IY = n;
+	public void SetPC_nn(ushort n) => PC = n;
 
 }

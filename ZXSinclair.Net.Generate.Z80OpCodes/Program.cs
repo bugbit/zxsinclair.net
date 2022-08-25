@@ -16,14 +16,16 @@
 #endregion
 
 // http://www.zilog.com/docs/z80/um0080.pdf
-// Page 98
-// 16-Bit Load Group
+// Page 103
+// LD dd, (nn)
 
 using System.Text.RegularExpressions;
 
+const string cArgsRegister = "REGISTER";
 const string cArgsRegisterPlusD = "(REGISTER+dd)";
 const string cArgs_nn = "(nnn)";
 const string cArgs_m_nnnn_m = "(nnnn)";
+const string cArgs_nnnn = "nnnn";
 
 var assembly = Assembly.GetExecutingAssembly();
 var pathexe = Path.GetDirectoryName(assembly.Location);
@@ -33,6 +35,7 @@ var embeddedProvider = new EmbeddedFileProvider(assembly);
 var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regir = new[] { "I", "R" };
 var regs16 = new[] { "BC", "DE", "HL" };
+var regs16_spixypc = regs16.Concat(new[] { "SP", "IX", "IY", "PC" }).ToArray();
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
 var regs = regs8.Concat(regs16).ToArray();
 var rgegs16pipe = string.Join('|', regs16);
@@ -153,7 +156,8 @@ async Task GenerateZ80RegsLd()
         select $"\tpublic void Set{q.r1}_{q.r2}() => {q.r1} = {q.r2};"
     ).ToList();
     query.ForEach(s => str.AppendLine(s));
-    regs8.Select(r => $"public void Set{r}_n(byte n) => {r} = n;").ToList().ForEach(s => str.AppendLine(s));
+    regs8.Select(r => $"\tpublic void Set{r}_n(byte n) => {r} = n;").ToList().ForEach(s => str.AppendLine(s));
+    regs16_spixypc.Select(r => $"\tpublic void Set{r}_nn(ushort n) => {r} = n;").ToList().ForEach(s => str.AppendLine(s));
 
     await WriteCode("Hardware/Z80/Z80Regs.ld.cs", "templates/z80regs_ld.txt", str);
 }
@@ -327,7 +331,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
     }
-    if (regir.Contains(p1))
+    else if (regir.Contains(p1))
     {
         // LD I,A
         // LD R,A
@@ -338,7 +342,7 @@ bool LD(OpCodeArgs args, StringBuilder lines)
             return true;
         }
     }
-    if (regs8.Contains(p1))
+    else if (regs8.Contains(p1))
     {
         // LD r, r'
         if (regs8.Contains(p2))
@@ -414,6 +418,24 @@ bool LD(OpCodeArgs args, StringBuilder lines)
         if (regs8.Contains(p2))
         {
             lines.AppendLine($"\t\t\tWriteMemory(ReadWordMemoryPCAndINC(),Regs.{p2});");
+
+            return true;
+        }
+    }
+    else if (regs16.Contains(p1))
+    {
+        if (p2 == cArgs_nnnn)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_nn(ReadWordMemoryPCAndINC());");
+
+            return true;
+        }
+    }
+    else if (p1 ==cArgsRegister)
+    {
+        if (p2 == cArgs_nnnn)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{args.Register}_nn(ReadWordMemoryPCAndINC());");
 
             return true;
         }

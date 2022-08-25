@@ -124,10 +124,7 @@ public partial class Z80Cpu
 			break;
 			// 0x21 LD REGISTER,nnnn
 			case (byte)Z80OpCodesFD.LD_IY_nnnn:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetIY_nn(ReadWordMemoryPCAndINC());
 			break;
 			// 0x22 LD (nnnn),REGISTER
 			case (byte)Z80OpCodesFD.LD_MM_nnnn_MM_IY:
@@ -448,7 +445,10 @@ public partial class Z80Cpu
 			break;
 			// 0x7e LD A,(REGISTER+dd)
 			case (byte)Z80OpCodesFD.LD_A_MM_IY_PLUS_dd_MM:
-			Regs.SetA_n(Read_M_IY_PLUS_D_M());
+			// not implement
+			#if Z80_OPCODES_TEST
+			instrNotImp=true;
+			#endif
 			break;
 			// 0x84 ADD A,REGISTERH
 			case (byte)Z80OpCodesFD.ADD_A_IYH:
