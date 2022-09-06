@@ -393,10 +393,7 @@ public partial class Z80Cpu
 			break;
 			// 0x22 LD (nnnn),HL
 			case (byte)Z80OpCodes.LD_MM_nnnn_MM_HL:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			WriteWordMemory(ReadWordMemoryPCAndINC(),Regs.HL);
 			break;
 			// 0x23 INC HL
 			case (byte)Z80OpCodes.INC_HL:
@@ -449,10 +446,7 @@ public partial class Z80Cpu
 			break;
 			// 0x2a LD HL,(nnnn)
 			case (byte)Z80OpCodes.LD_HL_MM_nnnn_MM:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetHL_nn(ReadWord_M_nnn_M());
 			break;
 			// 0x2b DEC HL
 			case (byte)Z80OpCodes.DEC_HL:
@@ -498,10 +492,7 @@ public partial class Z80Cpu
 			break;
 			// 0x31 LD SP,nnnn
 			case (byte)Z80OpCodes.LD_SP_nnnn:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetSP_nn(ReadWordMemoryPCAndINC());
 			break;
 			// 0x32 LD (nnnn),A
 			case (byte)Z80OpCodes.LD_MM_nnnn_MM_A:

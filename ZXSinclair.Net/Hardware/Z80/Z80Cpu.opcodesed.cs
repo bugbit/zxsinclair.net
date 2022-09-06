@@ -47,10 +47,7 @@ public partial class Z80Cpu
 			break;
 			// 0x43 LD (nnnn),BC
 			case (byte)Z80OpCodesED.LD_MM_nnnn_MM_BC:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			WriteWordMemory(ReadWordMemoryPCAndINC(),Regs.BC);
 			break;
 			case 0x44:
 			case 0x4c:
@@ -117,10 +114,7 @@ public partial class Z80Cpu
 			break;
 			// 0x4b LD BC,(nnnn)
 			case (byte)Z80OpCodesED.LD_BC_MM_nnnn_MM:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetBC_nn(ReadWord_M_nnn_M());
 			break;
 			// 0x4f LD R,A
 			case (byte)Z80OpCodesED.LD_R_A:
@@ -149,10 +143,7 @@ public partial class Z80Cpu
 			break;
 			// 0x53 LD (nnnn),DE
 			case (byte)Z80OpCodesED.LD_MM_nnnn_MM_DE:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			WriteWordMemory(ReadWordMemoryPCAndINC(),Regs.DE);
 			break;
 			case 0x56:
 			// 0x76 IM 1
@@ -189,10 +180,7 @@ public partial class Z80Cpu
 			break;
 			// 0x5b LD DE,(nnnn)
 			case (byte)Z80OpCodesED.LD_DE_MM_nnnn_MM:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetDE_nn(ReadWord_M_nnn_M());
 			break;
 			case 0x5e:
 			// 0x7e IM 2
@@ -229,10 +217,7 @@ public partial class Z80Cpu
 			break;
 			// 0x63 LD (nnnn),HL
 			case (byte)Z80OpCodesED.LD_MM_nnnn_MM_HL:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			WriteWordMemory(ReadWordMemoryPCAndINC(),Regs.HL);
 			break;
 			// 0x67 RRD
 			case (byte)Z80OpCodesED.RRD:
@@ -264,10 +249,7 @@ public partial class Z80Cpu
 			break;
 			// 0x6b LD HL,(nnnn)
 			case (byte)Z80OpCodesED.LD_HL_MM_nnnn_MM:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetHL_nn(ReadWord_M_nnn_M());
 			break;
 			// 0x6f RLD
 			case (byte)Z80OpCodesED.RLD:
@@ -299,10 +281,7 @@ public partial class Z80Cpu
 			break;
 			// 0x73 LD (nnnn),SP
 			case (byte)Z80OpCodesED.LD_MM_nnnn_MM_SP:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			WriteWordMemory(ReadWordMemoryPCAndINC(),Regs.SP);
 			break;
 			// 0x78 IN A,(C)
 			case (byte)Z80OpCodesED.IN_A_MM_C_MM:
@@ -327,10 +306,7 @@ public partial class Z80Cpu
 			break;
 			// 0x7b LD SP,(nnnn)
 			case (byte)Z80OpCodesED.LD_SP_MM_nnnn_MM:
-			// not implement
-			#if Z80_OPCODES_TEST
-			instrNotImp=true;
-			#endif
+			Regs.SetSP_nn(ReadWord_M_nnn_M());
 			break;
 			// 0xa0 LDI
 			case (byte)Z80OpCodesED.LDI:

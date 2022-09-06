@@ -16,8 +16,8 @@
 #endregion
 
 // http://www.zilog.com/docs/z80/um0080.pdf
-// Page 103
-// LD dd, (nn)
+// Page 112
+// LD SP, HL
 
 using System.Text.RegularExpressions;
 
@@ -35,9 +35,12 @@ var embeddedProvider = new EmbeddedFileProvider(assembly);
 var regs8 = new[] { "A", "B", "C", "D", "E", "H", "L" };
 var regir = new[] { "I", "R" };
 var regs16 = new[] { "BC", "DE", "HL" };
+var regs16_sp = regs16.Concat(new[] { "SP" }).ToArray();
 var regs16_spixypc = regs16.Concat(new[] { "SP", "IX", "IY", "PC" }).ToArray();
 var regs16m = new[] { "(BC)", "(DE)", "(HL)" };
 var regs = regs8.Concat(regs16).ToArray();
+var regssp = new[] { "SP" };
+var regshlixiy = new[] { "HL", "IX", "IY" };
 var rgegs16pipe = string.Join('|', regs16);
 var regex = new Regex($@"\(({rgegs16pipe})\)", RegexOptions.Compiled);
 var opcodesBase = new Opcodes()
@@ -147,6 +150,12 @@ async Task GenerateZ80RegsLd()
     (
         from r1 in regs16
         from r2 in regs16
+        where r1 != r2
+        select new { r1, r2 }
+    ).Concat
+    (
+        from r1 in regssp
+        from r2 in regshlixiy
         where r1 != r2
         select new { r1, r2 }
     );
@@ -421,21 +430,67 @@ bool LD(OpCodeArgs args, StringBuilder lines)
 
             return true;
         }
+
+        // LD (nn), HL
+        // LD (nn), BC
+        // LD (nn), DE
+        // LD (nn), SP
+        if (regs16_sp.Contains(p2))
+        {
+            lines.AppendLine($"\t\t\tWriteWordMemory(ReadWordMemoryPCAndINC(),Regs.{p2});");
+
+            return true;
+        }
+
+        // LD (nn), IX
+        // LD (nn), IY
+        if (p2 == cArgsRegister)
+        {
+            lines.AppendLine($"\t\t\tWriteWordMemory(ReadWordMemoryPCAndINC(),Regs.{args.Register});");
+
+            return true;
+        }
     }
-    else if (regs16.Contains(p1))
+    else if (regs16_sp.Contains(p1))
     {
+        // LD HL, nnnn
+        // LD BC, nnnn
+        // LD DE, nnnn
+        // LD SP, nnnn
         if (p2 == cArgs_nnnn)
         {
             lines.AppendLine($"\t\t\tRegs.Set{p1}_nn(ReadWordMemoryPCAndINC());");
 
             return true;
         }
+
+        // LD HL, (nnnn)
+        // LD BC, (nnnn)
+        // LD DE, (nnnn)
+        // LD SP, (nnnn)
+        if (p2 == cArgs_m_nnnn_m)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{p1}_nn(ReadWord_M_nnn_M());");
+
+            return true;
+        }
     }
-    else if (p1 ==cArgsRegister)
+    else if (p1 == cArgsRegister)
     {
+        // LD IX, nnnn
+        // LD IY, nnnn
         if (p2 == cArgs_nnnn)
         {
             lines.AppendLine($"\t\t\tRegs.Set{args.Register}_nn(ReadWordMemoryPCAndINC());");
+
+            return true;
+        }
+
+        // LD IX, (nnnn)
+        // LD IY, (nnnn)
+        if (p2 == cArgs_m_nnnn_m)
+        {
+            lines.AppendLine($"\t\t\tRegs.Set{args.Register}_nn(ReadWord_M_nnn_M());");
 
             return true;
         }

@@ -86,6 +86,16 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
         return data;
     }
 
+    public ushort ReadWordMemory(ushort address)
+    {
+        var r2 = new Z80Reg16Bits();
+
+        r2.L = ReadMemory(address++);
+        r2.H = ReadMemory(address);
+
+        return r2.W;
+    }
+
     public ushort ReadWordMemoryPCAndINC()
     {
         var r = Regs;
@@ -103,6 +113,14 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
         base.WriteMemory(address, data);
 
         Ticks.AddCycles(3);
+    }
+
+    public void WriteWordMemory(ushort address, ushort data)
+    {
+        var r2 = new Z80Reg16Bits { W = data };
+
+        WriteMemory(address++, r2.L);
+        WriteMemory(address, r2.H);
     }
 
     public override void Instrfetch()
@@ -174,6 +192,14 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
     //     WriteMemory(r.HL, r.A);
     // }
+
+    public ushort ReadWord_M_nnn_M()
+    {
+        var nnn = ReadWordMemoryPCAndINC();
+        var data = ReadWordMemory(nnn);
+
+        return data;
+    }
 
     public void Nop() { }
 
