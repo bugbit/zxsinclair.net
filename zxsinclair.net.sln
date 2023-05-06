@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net", "ZXSinclair.Net\ZXSinclair.Net.csproj", "{53F83299-6D53-475C-9B42-B60DF9ECC97B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.Net", "ZXSinclair.Net\ZXSinclair.Net.csproj", "{53F83299-6D53-475C-9B42-B60DF9ECC97B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.Generate.Z80OpCodes", "ZXSinclair.Net.Generate.Z80OpCodes\ZXSinclair.Net.Generate.Z80OpCodes.csproj", "{5E1326AE-9446-4D92-9F41-E633FA6DA5B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.Net.Generate.Z80OpCodes", "ZXSinclair.Net.Generate.Z80OpCodes\ZXSinclair.Net.Generate.Z80OpCodes.csproj", "{5E1326AE-9446-4D92-9F41-E633FA6DA5B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.Test", "ZXSinclair.Net.Test\ZXSinclair.Net.Test.csproj", "{FDE55F26-E086-4B29-97B4-BAF525FC0CB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZXSinclair.Net.Test", "ZXSinclair.Net.Test\ZXSinclair.Net.Test.csproj", "{FDE55F26-E086-4B29-97B4-BAF525FC0CB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZXSinclair.Net.Core", "ZXSinclair.Net.Core\ZXSinclair.Net.Core.csproj", "{B9557ED3-E280-4A33-9D48-181053E44A6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +21,6 @@ Global
 		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F83299-6D53-475C-9B42-B60DF9ECC97B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B05575E7-24D7-46FC-B358-B3550F013533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B05575E7-24D7-46FC-B358-B3550F013533}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B05575E7-24D7-46FC-B358-B3550F013533}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B05575E7-24D7-46FC-B358-B3550F013533}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E1326AE-9446-4D92-9F41-E633FA6DA5B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E1326AE-9446-4D92-9F41-E633FA6DA5B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E1326AE-9446-4D92-9F41-E633FA6DA5B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -31,6 +29,10 @@ Global
 		{FDE55F26-E086-4B29-97B4-BAF525FC0CB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDE55F26-E086-4B29-97B4-BAF525FC0CB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDE55F26-E086-4B29-97B4-BAF525FC0CB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9557ED3-E280-4A33-9D48-181053E44A6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9557ED3-E280-4A33-9D48-181053E44A6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9557ED3-E280-4A33-9D48-181053E44A6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9557ED3-E280-4A33-9D48-181053E44A6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
