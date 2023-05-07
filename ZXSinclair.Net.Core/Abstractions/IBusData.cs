@@ -17,12 +17,10 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
-public interface IMemoryBuffer<TAddress, TData>
+public interface IBusData<TAddress, TData>
+    where TAddress : struct
     where TData : struct
 {
-    TAddress Size { get; }
     TData Read(TAddress address);
     void Write(TAddress address, TData data);
-    void Copy(TAddress addressSrc, TAddress offsetStr, TAddress addressDest, TAddress offsetDest);
-    void CopyTo(TData[] buffer, TAddress address, TAddress offset);
 }

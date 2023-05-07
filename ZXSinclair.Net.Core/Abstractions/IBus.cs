@@ -17,16 +17,9 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
-public interface IBus<TAddress, TData, TPins>
-    where TAddress : struct
-    where TData : struct
-    where TPins : Enum
+public interface IBus
 {
-    TPins Pins { get; set; }
-    bool Reset { get; set; }
     object SyncBus { get; }
 
-    TData ReadBusData(TAddress address);
-    TData ReadOpCode(TAddress address);
-    void WriteBusData(TAddress address, TData data);
+    //TData ReadOpCode(TAddress address);    
 }
