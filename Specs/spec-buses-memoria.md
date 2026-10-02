@@ -7,7 +7,7 @@ Especificación del bus del Z80 y del sistema de memoria del ZX Spectrum 48K, 12
 - `Docs/z80cpu_um.pdf` — Zilog *Z80 CPU User Manual* (UM0080), capítulo "Architectural Overview": pines, ciclos máquina y temporización.
 - World of Spectrum FAQ: [48K reference](https://worldofspectrum.org/faq/reference/48kreference.htm), [128K/+2/+2A/+3 reference](https://worldofspectrum.org/faq/reference/128kreference.htm).
 - Sinclair Wiki: [Contended memory](https://sinclair.wiki.zxnet.co.uk/wiki/Contended_memory), [Floating bus](https://sinclair.wiki.zxnet.co.uk/wiki/Floating_bus), [ZX Spectrum 128](https://sinclair.wiki.zxnet.co.uk/wiki/ZX_Spectrum_128).
-- FUSE (emulador de referencia; los tests de `ZXSinclair.Net.Test/data` vienen de él).
+- FUSE (emulador de referencia; los tests de `ZXSinclair.Net.Fuse/data` vienen de él).
 
 Donde las fuentes discrepan o el dato no está confirmado, se marca **(verificar)**.
 
@@ -274,8 +274,8 @@ Decisiones:
 
 ### 9.5 Validación
 
-- Los tests FUSE (`tests.expected`) ya incluyen los eventos de bus `MC` (contención de memoria), `MR`, `MW`, `PC`, `PR`, `PW` con su T-state. El runner los compara en Debug además de registros, memoria y T-states, respetando longitud, orden, tiempo, tipo, dirección y dato. Informa del primer fallo de cada test y continúa; al terminar muestra pasados, fallidos y omitidos y devuelve un código distinto de cero si hay fallos. `--no-events` desactiva el registro y la comparación de eventos. Los opcodes sin implementar se omiten.
-- Los ciclos internos de instrucciones usan `InternalCycles(dirección, n)`, nunca una llamada directa a `Ticks.AddCycles`. El registro existe solo bajo `Z80_OPCODES_TEST`, sin lista ni registro en Release. En `LD I,A` y `LD R,A`, el ciclo interno usa `IR` antes de modificar el registro.
+- Los tests FUSE (`tests.expected`) ya incluyen los eventos de bus `MC` (contención de memoria), `MR`, `MW`, `PC`, `PR`, `PW` con su T-state. El runner los compara además de registros, memoria y T-states, respetando longitud, orden, tiempo, tipo, dirección y dato (`FuseComparison` en `ZXSinclair.Net.Fuse`).
+- Los ciclos internos de las instrucciones pasan siempre por `IZ80Bus.Internal(dirección, n)`. En `LD I,A` y `LD R,A`, el ciclo interno usa `IR` antes de modificar el registro. El registro de eventos lo hace un bus de pruebas (`FuseTestBus`, ver `Specs/spec-cpu-z80.md`, sección 8.1), no la CPU.
 - Pruebas de máquina con programas de test de contención y bus flotante (p. ej. los de FUSE/ZX test suites) una vez exista la ULA.
 
 ## 10. Pendiente de verificar

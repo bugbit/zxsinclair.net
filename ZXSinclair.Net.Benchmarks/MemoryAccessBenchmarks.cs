@@ -15,8 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Hardware;
-
 namespace ZXSinclair.Net.Benchmarks;
 
 /// <summary>
@@ -25,7 +23,7 @@ namespace ZXSinclair.Net.Benchmarks;
 /// Results are per memory operation (one read + one write).
 /// </summary>
 [MemoryDiagnoser]
-public unsafe class MemoryAccessBenchmarks
+public class MemoryAccessBenchmarks
 {
     private const int Operations = 0x10000;
 
@@ -38,7 +36,6 @@ public unsafe class MemoryAccessBenchmarks
     private PagedArrayMemory paged = null!;
     private PageTableMemory pageTable1K = null!;
     private PageTableMemory pageTable16K = null!;
-    private IMemoryBuffer<byte> currentMemoryBuffer = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -64,7 +61,6 @@ public unsafe class MemoryAccessBenchmarks
         paged = new PagedArrayMemory();
         pageTable1K = new PageTableMemory(10);
         pageTable16K = new PageTableMemory(14);
-        currentMemoryBuffer = new MemoryBuffer8Bit(0x10000);
     }
 
     [GlobalCleanup]
@@ -72,7 +68,6 @@ public unsafe class MemoryAccessBenchmarks
     {
         allocHGlobal.Dispose();
         nativeMemory.Dispose();
-        currentMemoryBuffer.Dispose();
     }
 
     [Benchmark(Baseline = true, OperationsPerInvoke = Operations)]
@@ -190,26 +185,6 @@ public unsafe class MemoryAccessBenchmarks
         {
             sum += m.Read(a);
             m.Write((ushort)(a ^ 0x8000), (byte)sum);
-        }
-
-        return sum;
-    }
-
-    /// <summary>The existing <see cref="MemoryBuffer8Bit"/> used through its interface, as Cpu does today.</summary>
-    [Benchmark(OperationsPerInvoke = Operations)]
-    public int CurrentMemoryBufferInterface()
-    {
-        var m = currentMemoryBuffer;
-        var sum = 0;
-
-        foreach (var a in addresses)
-        {
-            sum += m.Read(a);
-
-            var w = (ushort)(a ^ 0x8000);
-
-            if (w >= 0x4000)
-                m.Write(w, (byte)sum);
         }
 
         return sum;

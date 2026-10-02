@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,33 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="templates\z80Cpu.opcodesed.txt" />
-    <None Remove="templates\z80OpCodesED.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="ZXSinclair.Net.Generate.Z80OpCodes" />
-    <Using Include="Microsoft.Extensions.FileProviders" />
-    <Using Include="System.Text" />
-    <Using Include="System.Reflection" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="templates/z80regs_ld.txt" />
-    <EmbeddedResource Include="templates/z80OpCodes.txt" />
-    <EmbeddedResource Include="templates/z80OpCodesDD.txt" />
-    <EmbeddedResource Include="templates/z80OpCodesFD.txt" />
-    <EmbeddedResource Include="templates/z80OpCodesED.txt" />
-    <EmbeddedResource Include="templates/z80Cpu.opcodes.txt" />
-    <EmbeddedResource Include="templates/z80Cpu.opcodesdd.txt" />
-    <EmbeddedResource Include="templates/z80Cpu.opcodesfd.txt" />
-    <EmbeddedResource Include="templates/z80Cpu.opcodesed.txt" />
     <EmbeddedResource Include="data/opcodes_base.dat" />
     <EmbeddedResource Include="data/opcodes_ddfd.dat" />
     <EmbeddedResource Include="data/opcodes_ed.dat" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.12" />
+    <ProjectReference Include="..\ZXSinclair.Net.Core\ZXSinclair.Net.Core.csproj" />
   </ItemGroup>
 
 </Project>
