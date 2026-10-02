@@ -81,8 +81,8 @@ Mismas secciones que `spec-instr-nop.md`:
 | 3 | Saltos y llamadas | `spec-instr-saltos.md` | Implementado | 79 (280 acumulados, 0 fallos; eventos activados) |
 | 4 | ALU de 8 bits | `spec-instr-alu-8.md` | Implementado | 148 más el caso `10` de DJNZ (429 acumulados, 0 fallos; eventos activados) |
 | 5 | Aritmética general y control | `spec-instr-control.md` | Implementado | 27 (456 acumulados, 0 fallos; eventos activados) |
-| 6 | ALU de 16 bits | — | Pendiente | — |
-| 7 | Rotaciones y desplazamientos | — | Pendiente | — |
+| 6 | ALU de 16 bits | `spec-instr-alu-16.md` | Implementado | 32 (488 acumulados, 0 fallos; eventos activados) |
+| 7 | Rotaciones y desplazamientos | `spec-instr-rotaciones.md` | Implementado | 198 (686 acumulados, 0 fallos; eventos activados) |
 | 8 | Bits | — | Pendiente | — |
 | 9 | Intercambio y bloques | — | Pendiente | — |
 | 10 | Entrada/salida | — | Pendiente | — |

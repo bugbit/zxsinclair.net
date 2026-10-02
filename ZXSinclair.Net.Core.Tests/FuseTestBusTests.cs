@@ -66,12 +66,14 @@ public class FuseTestBusTests
     public void IndexedPrefixCyclesMatchRealFuseEvents()
     {
         var expected = Fixture("ddcb00");
-        expected.Events = expected.Events.Take(10).ToArray();
+        var input = FuseTestFile.LoadInputs().Single(t => t.Base.Name == "ddcb00");
         var state = new FuseTestBusState { Events = new() };
-        new byte[] { 0xDD, 0xCB, 0x0D, 0 }.CopyTo(state.Memory, 0);
+        foreach (var block in input.Base.Memories)
+            block.Data.CopyTo(state.Memory, block.Address);
         var cpu = new Z80Cpu<FuseTestBus>(new(state));
+        cpu.Registers = FuseCpuState.Load(input.Base);
         cpu.Step();
-        Assert.Equal(16, state.Cycles);
+        Assert.Equal(23, state.Cycles);
         Assert.Null(FuseComparison.CompareEvents(expected, state.Events!));
     }
 

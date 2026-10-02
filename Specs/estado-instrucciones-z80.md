@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **88 de 150 entradas completadas; 62 pendientes**.
+Estado (2026-10-02): **115 de 150 entradas completadas; 35 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado (2026-10-02): **88 de 150 entradas completadas; 62 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. Las 11 entradas restantes de aritmética general y control también están completadas, incluidas HALT e IM 0/1/2.
+NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. Las 11 entradas restantes de aritmética general y control también están completadas, incluidas HALT e IM 0/1/2. Las 11 entradas de aritmética de 16 bits también están completadas. Las 16 entradas de rotaciones y desplazamientos están completadas; SLL y las copias DDCB/FDCB también están implementadas y quedan fuera del recuento del manual.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -142,36 +142,36 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Aritmética de 16 bits
 
-- [ ] `ADD HL, ss` — p. 188.
-- [ ] `ADC HL, ss` — p. 190.
-- [ ] `SBC HL, ss` — p. 192.
-- [ ] `ADD IX, pp` — p. 194.
-- [ ] `ADD IY, rr` — p. 196.
-- [ ] `INC ss` — p. 198.
-- [ ] `INC IX` — p. 199.
-- [ ] `INC IY` — p. 200.
-- [ ] `DEC ss` — p. 201.
-- [ ] `DEC IX` — p. 202.
-- [ ] `DEC IY` — p. 203.
+- [x] `ADD HL, ss` — p. 188. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `ADC HL, ss` — p. 190. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `SBC HL, ss` — p. 192. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `ADD IX, pp` — p. 194. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `ADD IY, rr` — p. 196. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `INC ss` — p. 198. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `INC IX` — p. 199. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `INC IY` — p. 200. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `DEC ss` — p. 201. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `DEC IX` — p. 202. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
+- [x] `DEC IY` — p. 203. [Spec](spec-instr-alu-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu16Tests.cs).
 
 ### Rotaciones y desplazamientos
 
-- [ ] `RLCA` — p. 205.
-- [ ] `RLA` — p. 207.
-- [ ] `RRCA` — p. 209.
-- [ ] `RRA` — p. 211.
-- [ ] `RLC r` — p. 213.
-- [ ] `RLC (HL)` — p. 215.
-- [ ] `RLC (IX+d)` — p. 217.
-- [ ] `RLC (IY+d)` — p. 219.
-- [ ] `RL m` — p. 221.
-- [ ] `RRC m` — p. 224.
-- [ ] `RR m` — p. 227.
-- [ ] `SLA m` — p. 230.
-- [ ] `SRA m` — p. 233.
-- [ ] `SRL m` — p. 236.
-- [ ] `RLD` — p. 238.
-- [ ] `RRD` — p. 240.
+- [x] `RLCA` — p. 205. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLA` — p. 207. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RRCA` — p. 209. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RRA` — p. 211. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLC r` — p. 213. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLC (HL)` — p. 215. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLC (IX+d)` — p. 217. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLC (IY+d)` — p. 219. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RL m` — p. 221. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RRC m` — p. 224. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RR m` — p. 227. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `SLA m` — p. 230. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `SRA m` — p. 233. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `SRL m` — p. 236. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RLD` — p. 238. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
+- [x] `RRD` — p. 240. [Spec](spec-instr-rotaciones.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RotateTests.cs).
 
 ### Bits
 

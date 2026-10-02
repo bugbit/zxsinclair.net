@@ -52,15 +52,15 @@ public class Z80CpuTests
 
     [Theory]
     [InlineData(new byte[] { 0xD3 }, 4, 1)]
-    [InlineData(new byte[] { 0xCB, 0x12 }, 8, 2)]
+    [InlineData(new byte[] { 0xCB, 0x80 }, 8, 2)]
     [InlineData(new byte[] { 0xED, 0x12 }, 8, 2)]
     [InlineData(new byte[] { 0xDD, 0xD3 }, 8, 2)]
     [InlineData(new byte[] { 0xFD, 0xD3 }, 8, 2)]
     [InlineData(new byte[] { 0xDD, 0xFD, 0xD3 }, 12, 3)]
     [InlineData(new byte[] { 0xFD, 0xDD, 0xD3 }, 12, 3)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xCB, 0xFE, 0x12 }, 16, 2)]
-    [InlineData(new byte[] { 0xDD, 0xCB, 0x80, 0x12 }, 16, 2)]
+    [InlineData(new byte[] { 0xFD, 0xCB, 0xFE, 0x86 }, 16, 2)]
+    [InlineData(new byte[] { 0xDD, 0xCB, 0x80, 0x86 }, 16, 2)]
     public void UnimplementedDispatchCountsFetches(byte[] program, int cycles, byte refresh)
     {
         var (cpu, state) = Create(program);
@@ -96,12 +96,25 @@ public class Z80CpuTests
         state.Memory[0xFFFE] = 0xDD;
         state.Memory[0xFFFF] = 0xFD;
         cpu.Registers.PC = 0xFFFE;
+        cpu.Registers.IY = 0x4002;
+        cpu.Registers.F = 1;
+        state.Memory[0x4000] = 0x80;
         cpu.Step();
-        Assert.Equal(20, state.Cycles);
+        Assert.Equal(27, state.Cycles);
         Assert.Equal((ushort)3, cpu.Registers.PC);
         Assert.Equal((byte)3, cpu.Registers.R);
-        Assert.Equal(new ushort[] { 0xFFFE, 0xFFFF, 0, 1, 2, 2 },
-            state.Accesses.Select(a => a.Address).ToArray());
+        Assert.Equal((byte)1, cpu.Registers.D);
+        Assert.Equal((byte)1, state.Memory[0x4000]);
+        Assert.Equal((byte)1, cpu.Registers.F);
+        Assert.Equal(cpu.Registers.F, cpu.Registers.Q);
+        Assert.Equal((ushort)0x4000, cpu.Registers.WZ);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
+        Assert.Equal(new (string Kind, ushort Address, int Value)[]
+        {
+            ("M1", 0xFFFE, 0xDD), ("M1", 0xFFFF, 0xFD), ("M1", 0, 0xCB),
+            ("Read", 1, 0xFE), ("Read", 2, 0x12), ("Internal", 2, 2),
+            ("Read", 0x4000, 0x80), ("Internal", 0x4000, 1), ("Write", 0x4000, 1),
+        }, state.Accesses);
     }
 
     [Fact]

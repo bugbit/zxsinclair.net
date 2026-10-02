@@ -61,7 +61,15 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new HaltPattern(),
         new DisableInterruptsPattern(),
         new EnableInterruptsPattern(),
-        new InterruptModePattern());
+        new InterruptModePattern(),
+        new Add16Pattern(),
+        new AdcSbc16Pattern(),
+        new IncDec16Pattern(),
+        new RotateAccumulatorPattern(),
+        new RotateRegisterPattern(),
+        new RotateMemoryPattern(),
+        new RotateMemoryCopyPattern(),
+        new RotateDigitPattern());
 
     public IPattern? Resolve(Opcode opcode)
     {

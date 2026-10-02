@@ -41,6 +41,13 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x03: // INC BC
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.BC++;
+                Registers.Q = 0;
+                break;
+            }
             case 0x04: // INC B
             {
                 Registers.B = Inc8(Registers.B);
@@ -59,10 +66,29 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x07: // RLCA
+            {
+                Rlca();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x09: // ADD REGISTER,BC
+            {
+                TIndex.Pair(ref Registers) = Add16(TIndex.Pair(ref Registers), Registers.BC);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x0a: // LD A,(BC)
             {
                 Registers.A = bus.Read(Registers.BC);
                 Registers.WZ = (ushort)(Registers.BC + 1);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x0b: // DEC BC
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.BC--;
                 Registers.Q = 0;
                 break;
             }
@@ -84,6 +110,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x0f: // RRCA
+            {
+                Rrca();
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x10: // DJNZ offset
             {
                 DecrementJumpNonZero();
@@ -100,6 +132,13 @@ public sealed partial class Z80Cpu<TBus>
             {
                 bus.Write(Registers.DE, Registers.A);
                 Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.DE + 1) & 0xFF));
+                Registers.Q = 0;
+                break;
+            }
+            case 0x13: // INC DE
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.DE++;
                 Registers.Q = 0;
                 break;
             }
@@ -121,16 +160,35 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x17: // RLA
+            {
+                Rla();
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x18: // JR offset
             {
                 JumpRelative(true);
                 Registers.Q = 0;
                 break;
             }
+            case 0x19: // ADD REGISTER,DE
+            {
+                TIndex.Pair(ref Registers) = Add16(TIndex.Pair(ref Registers), Registers.DE);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x1a: // LD A,(DE)
             {
                 Registers.A = bus.Read(Registers.DE);
                 Registers.WZ = (ushort)(Registers.DE + 1);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x1b: // DEC DE
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.DE--;
                 Registers.Q = 0;
                 break;
             }
@@ -152,6 +210,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x1f: // RRA
+            {
+                Rra();
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x20: // JR NZ,offset
             {
                 JumpRelative((Registers.F & Z80Flags.Z) == 0);
@@ -167,6 +231,13 @@ public sealed partial class Z80Cpu<TBus>
             case 0x22: // LD (nnnn),REGISTER
             {
                 StoreWordAbsolute(TIndex.Pair(ref Registers));
+                Registers.Q = 0;
+                break;
+            }
+            case 0x23: // INC REGISTER
+            {
+                bus.Internal(Registers.IR, 2);
+                TIndex.Pair(ref Registers)++;
                 Registers.Q = 0;
                 break;
             }
@@ -200,9 +271,22 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x29: // ADD REGISTER,REGISTER
+            {
+                TIndex.Pair(ref Registers) = Add16(TIndex.Pair(ref Registers), TIndex.Pair(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x2a: // LD REGISTER,(nnnn)
             {
                 TIndex.Pair(ref Registers) = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x2b: // DEC REGISTER
+            {
+                bus.Internal(Registers.IR, 2);
+                TIndex.Pair(ref Registers)--;
                 Registers.Q = 0;
                 break;
             }
@@ -250,6 +334,13 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x33: // INC SP
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.SP++;
+                Registers.Q = 0;
+                break;
+            }
             case 0x34: // INC (REGISTER+dd)
             {
                 IncMemory(IndexedAddress<TIndex>());
@@ -280,11 +371,24 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x39: // ADD REGISTER,SP
+            {
+                TIndex.Pair(ref Registers) = Add16(TIndex.Pair(ref Registers), Registers.SP);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x3a: // LD A,(nnnn)
             {
                 var address = ReadPc16();
                 Registers.A = bus.Read(address);
                 Registers.WZ = (ushort)(address + 1);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x3b: // DEC SP
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.SP--;
                 Registers.Q = 0;
                 break;
             }

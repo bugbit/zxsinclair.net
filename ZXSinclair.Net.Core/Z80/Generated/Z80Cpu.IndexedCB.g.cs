@@ -27,6 +27,638 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x00: // LD B,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x01: // LD C,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x02: // LD D,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x03: // LD E,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x04: // LD H,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x05: // LD L,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x06: // RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x07: // LD A,RLC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rlc(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x08: // LD B,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x09: // LD C,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0a: // LD D,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0b: // LD E,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0c: // LD H,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0d: // LD L,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0e: // RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0f: // LD A,RRC (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rrc(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x10: // LD B,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x11: // LD C,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x12: // LD D,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x13: // LD E,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x14: // LD H,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x15: // LD L,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x16: // RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x17: // LD A,RL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rl(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x18: // LD B,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x19: // LD C,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1a: // LD D,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1b: // LD E,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1c: // LD H,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1d: // LD L,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1e: // RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1f: // LD A,RR (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Rr(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x20: // LD B,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x21: // LD C,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x22: // LD D,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x23: // LD E,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x24: // LD H,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x25: // LD L,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x26: // SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x27: // LD A,SLA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sla(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x28: // LD B,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x29: // LD C,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2a: // LD D,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2b: // LD E,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2c: // LD H,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2d: // LD L,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2e: // SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2f: // LD A,SRA (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sra(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x30: // LD B,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x31: // LD C,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x32: // LD D,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x33: // LD E,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x34: // LD H,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x35: // LD L,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x36: // SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x37: // LD A,SLL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Sll(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x38: // LD B,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.B = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x39: // LD C,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.C = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3a: // LD D,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.D = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3b: // LD E,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.E = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3c: // LD H,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.H = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3d: // LD L,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.L = value;
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3e: // SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3f: // LD A,SRL (REGISTER+dd)
+            {
+                var value = bus.Read(address);
+                bus.Internal(address, 1);
+                value = Srl(value);
+                bus.Write(address, value);
+                Registers.A = value;
+                Registers.Q = Registers.F;
+                break;
+            }
             default: Unimplemented(); break;
         }
     }

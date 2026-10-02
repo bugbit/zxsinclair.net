@@ -114,7 +114,9 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
             var opcodeAddress = Registers.PC;
             var indexedOpcode = ReadPc();
             bus.Internal(opcodeAddress, 2);
-            ExecuteIndexedCB<TIndex>(unchecked((ushort)(TIndex.Pair(ref Registers) + displacement)), indexedOpcode);
+            var address = unchecked((ushort)(TIndex.Pair(ref Registers) + displacement));
+            Registers.WZ = address;
+            ExecuteIndexedCB<TIndex>(address, indexedOpcode);
         }
         else
             ExecuteIndexedOpcode<TIndex>(opcode);

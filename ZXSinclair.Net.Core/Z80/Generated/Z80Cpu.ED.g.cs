@@ -27,6 +27,12 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x42: // SBC HL,BC
+            {
+                Sbc16(Registers.BC);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x43: // LD (nnnn),BC
             {
                 StoreWordAbsolute(Registers.BC);
@@ -75,6 +81,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x4a: // ADC HL,BC
+            {
+                Adc16(Registers.BC);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x4b: // LD BC,(nnnn)
             {
                 Registers.BC = LoadWordAbsolute();
@@ -86,6 +98,12 @@ public sealed partial class Z80Cpu<TBus>
                 bus.Internal(Registers.IR, 1);
                 Registers.R = Registers.A;
                 Registers.Q = 0;
+                break;
+            }
+            case 0x52: // SBC HL,DE
+            {
+                Sbc16(Registers.DE);
+                Registers.Q = Registers.F;
                 break;
             }
             case 0x53: // LD (nnnn),DE
@@ -104,6 +122,12 @@ public sealed partial class Z80Cpu<TBus>
             case 0x57: // LD A,I
             {
                 LoadAFromSpecial(Registers.I);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x5a: // ADC HL,DE
+            {
+                Adc16(Registers.DE);
                 Registers.Q = Registers.F;
                 break;
             }
@@ -126,10 +150,28 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0x62: // SBC HL,HL
+            {
+                Sbc16(Registers.HL);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x63: // LD (nnnn),HL
             {
                 StoreWordAbsolute(Registers.HL);
                 Registers.Q = 0;
+                break;
+            }
+            case 0x67: // RRD
+            {
+                Rrd();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x6a: // ADC HL,HL
+            {
+                Adc16(Registers.HL);
+                Registers.Q = Registers.F;
                 break;
             }
             case 0x6b: // LD HL,(nnnn)
@@ -138,10 +180,28 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x6f: // RLD
+            {
+                Rld();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x72: // SBC HL,SP
+            {
+                Sbc16(Registers.SP);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x73: // LD (nnnn),SP
             {
                 StoreWordAbsolute(Registers.SP);
                 Registers.Q = 0;
+                break;
+            }
+            case 0x7a: // ADC HL,SP
+            {
+                Adc16(Registers.SP);
+                Registers.Q = Registers.F;
                 break;
             }
             case 0x7b: // LD SP,(nnnn)
