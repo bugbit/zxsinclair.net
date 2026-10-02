@@ -73,7 +73,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | # | Grupo | Spec | Estado | Casos FUSE pasados |
 |---|---|---|---|---|
 | — | Piloto `NOP` | `spec-instr-nop.md` | Implementado | 3 (`00`, `dd00`, `ddfd00`) |
-| 0 | Generador | — | Pendiente | — |
+| 0 | Generador | `spec-generador-z80.md` | Especificado | — |
 | 1 | Carga de 8 bits | — | Pendiente | — |
 | 2 | Carga de 16 bits | — | Pendiente | — |
 | 3 | Saltos y llamadas | — | Pendiente | — |
