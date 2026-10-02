@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **60 de 150 entradas completadas; 90 pendientes**.
+Estado (2026-10-02): **77 de 150 entradas completadas; 73 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado (2026-10-02): **60 de 150 entradas completadas; 90 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila y las 18 de saltos, llamadas y retornos están completadas. DJNZ tiene pruebas propias; el caso FUSE `10` sigue omitido porque también ejecuta `INC C`, pendiente del grupo 4. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT ni IM.
+NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT ni IM.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -107,23 +107,23 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Aritmética y lógica de 8 bits
 
-- [ ] `ADD A, r` — p. 145.
-- [ ] `ADD A, n` — p. 147.
-- [ ] `ADD A, (HL)` — p. 148.
-- [ ] `ADD A, (IX+d)` — p. 149.
-- [ ] `ADD A, (IY+d)` — p. 150.
-- [ ] `ADC A, s` — p. 151.
-- [ ] `SUB s` — p. 153.
-- [ ] `SBC A, s` — p. 155.
-- [ ] `AND s` — p. 157.
-- [ ] `OR s` — p. 159.
-- [ ] `XOR s` — p. 161.
-- [ ] `CP s` — p. 163.
-- [ ] `INC r` — p. 165.
-- [ ] `INC (HL)` — p. 167.
-- [ ] `INC (IX+d)` — p. 168.
-- [ ] `INC (IY+d)` — p. 169.
-- [ ] `DEC m` — p. 170.
+- [x] `ADD A, r` — p. 145. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `ADD A, n` — p. 147. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `ADD A, (HL)` — p. 148. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `ADD A, (IX+d)` — p. 149. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `ADD A, (IY+d)` — p. 150. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `ADC A, s` — p. 151. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `SUB s` — p. 153. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `SBC A, s` — p. 155. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `AND s` — p. 157. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `OR s` — p. 159. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `XOR s` — p. 161. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `CP s` — p. 163. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `INC r` — p. 165. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `INC (HL)` — p. 167. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `INC (IX+d)` — p. 168. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `INC (IY+d)` — p. 169. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
+- [x] `DEC m` — p. 170. [Spec](spec-instr-alu-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Alu8Tests.cs).
 
 ### Control de CPU y operaciones generales de AF
 

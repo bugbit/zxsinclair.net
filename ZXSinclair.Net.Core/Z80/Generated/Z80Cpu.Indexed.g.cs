@@ -35,6 +35,8 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.BC + 1) & 0xFF));
                 break;
             }
+            case 0x04: Registers.B = Inc8(Registers.B); break; // INC B
+            case 0x05: Registers.B = Dec8(Registers.B); break; // DEC B
             case 0x06: Registers.B = ReadPc(); break; // LD B,nn
             case 0x0a: // LD A,(BC)
             {
@@ -42,6 +44,8 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)(Registers.BC + 1);
                 break;
             }
+            case 0x0c: Registers.C = Inc8(Registers.C); break; // INC C
+            case 0x0d: Registers.C = Dec8(Registers.C); break; // DEC C
             case 0x0e: Registers.C = ReadPc(); break; // LD C,nn
             case 0x10: DecrementJumpNonZero(); break; // DJNZ offset
             case 0x11: Registers.DE = ReadPc16(); break; // LD DE,nnnn
@@ -51,6 +55,8 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.DE + 1) & 0xFF));
                 break;
             }
+            case 0x14: Registers.D = Inc8(Registers.D); break; // INC D
+            case 0x15: Registers.D = Dec8(Registers.D); break; // DEC D
             case 0x16: Registers.D = ReadPc(); break; // LD D,nn
             case 0x18: JumpRelative(true); break; // JR offset
             case 0x1a: // LD A,(DE)
@@ -59,13 +65,19 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)(Registers.DE + 1);
                 break;
             }
+            case 0x1c: Registers.E = Inc8(Registers.E); break; // INC E
+            case 0x1d: Registers.E = Dec8(Registers.E); break; // DEC E
             case 0x1e: Registers.E = ReadPc(); break; // LD E,nn
             case 0x20: JumpRelative((Registers.F & Z80Flags.Z) == 0); break; // JR NZ,offset
             case 0x21: TIndex.Pair(ref Registers) = ReadPc16(); break; // LD REGISTER,nnnn
             case 0x22: StoreWordAbsolute(TIndex.Pair(ref Registers)); break; // LD (nnnn),REGISTER
+            case 0x24: TIndex.High(ref Registers) = Inc8(TIndex.High(ref Registers)); break; // INC REGISTERH
+            case 0x25: TIndex.High(ref Registers) = Dec8(TIndex.High(ref Registers)); break; // DEC REGISTERH
             case 0x26: TIndex.High(ref Registers) = ReadPc(); break; // LD REGISTERH,nn
             case 0x28: JumpRelative((Registers.F & Z80Flags.Z) != 0); break; // JR Z,offset
             case 0x2a: TIndex.Pair(ref Registers) = LoadWordAbsolute(); break; // LD REGISTER,(nnnn)
+            case 0x2c: TIndex.Low(ref Registers) = Inc8(TIndex.Low(ref Registers)); break; // INC REGISTERL
+            case 0x2d: TIndex.Low(ref Registers) = Dec8(TIndex.Low(ref Registers)); break; // DEC REGISTERL
             case 0x2e: TIndex.Low(ref Registers) = ReadPc(); break; // LD REGISTERL,nn
             case 0x30: JumpRelative((Registers.F & Z80Flags.C) == 0); break; // JR NC,offset
             case 0x31: Registers.SP = ReadPc16(); break; // LD SP,nnnn
@@ -76,6 +88,8 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)((Registers.A << 8) | ((address + 1) & 0xFF));
                 break;
             }
+            case 0x34: IncMemory(IndexedAddress<TIndex>()); break; // INC (REGISTER+dd)
+            case 0x35: DecMemory(IndexedAddress<TIndex>()); break; // DEC (REGISTER+dd)
             case 0x36: StoreIndexedImmediate<TIndex>(); break; // LD (REGISTER+dd),nn
             case 0x38: JumpRelative((Registers.F & Z80Flags.C) != 0); break; // JR C,offset
             case 0x3a: // LD A,(nnnn)
@@ -85,6 +99,8 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.WZ = (ushort)(address + 1);
                 break;
             }
+            case 0x3c: Registers.A = Inc8(Registers.A); break; // INC A
+            case 0x3d: Registers.A = Dec8(Registers.A); break; // DEC A
             case 0x3e: Registers.A = ReadPc(); break; // LD A,nn
             case 0x40: break; // LD B,B
             case 0x41: Registers.B = Registers.C; break; // LD B,C
@@ -219,45 +235,116 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x7f: break; // LD A,A
+            case 0x80: Add8(Registers.B); break; // ADD A,B
+            case 0x81: Add8(Registers.C); break; // ADD A,C
+            case 0x82: Add8(Registers.D); break; // ADD A,D
+            case 0x83: Add8(Registers.E); break; // ADD A,E
+            case 0x84: Add8(TIndex.High(ref Registers)); break; // ADD A,REGISTERH
+            case 0x85: Add8(TIndex.Low(ref Registers)); break; // ADD A,REGISTERL
+            case 0x86: Add8(bus.Read(IndexedAddress<TIndex>())); break; // ADD A,(REGISTER+dd)
+            case 0x87: Add8(Registers.A); break; // ADD A,A
+            case 0x88: Adc8(Registers.B); break; // ADC A,B
+            case 0x89: Adc8(Registers.C); break; // ADC A,C
+            case 0x8a: Adc8(Registers.D); break; // ADC A,D
+            case 0x8b: Adc8(Registers.E); break; // ADC A,E
+            case 0x8c: Adc8(TIndex.High(ref Registers)); break; // ADC A,REGISTERH
+            case 0x8d: Adc8(TIndex.Low(ref Registers)); break; // ADC A,REGISTERL
+            case 0x8e: Adc8(bus.Read(IndexedAddress<TIndex>())); break; // ADC A,(REGISTER+dd)
+            case 0x8f: Adc8(Registers.A); break; // ADC A,A
+            case 0x90: Sub8(Registers.B); break; // SUB A,B
+            case 0x91: Sub8(Registers.C); break; // SUB A,C
+            case 0x92: Sub8(Registers.D); break; // SUB A,D
+            case 0x93: Sub8(Registers.E); break; // SUB A,E
+            case 0x94: Sub8(TIndex.High(ref Registers)); break; // SUB A,REGISTERH
+            case 0x95: Sub8(TIndex.Low(ref Registers)); break; // SUB A,REGISTERL
+            case 0x96: Sub8(bus.Read(IndexedAddress<TIndex>())); break; // SUB A,(REGISTER+dd)
+            case 0x97: Sub8(Registers.A); break; // SUB A,A
+            case 0x98: Sbc8(Registers.B); break; // SBC A,B
+            case 0x99: Sbc8(Registers.C); break; // SBC A,C
+            case 0x9a: Sbc8(Registers.D); break; // SBC A,D
+            case 0x9b: Sbc8(Registers.E); break; // SBC A,E
+            case 0x9c: Sbc8(TIndex.High(ref Registers)); break; // SBC A,REGISTERH
+            case 0x9d: Sbc8(TIndex.Low(ref Registers)); break; // SBC A,REGISTERL
+            case 0x9e: Sbc8(bus.Read(IndexedAddress<TIndex>())); break; // SBC A,(REGISTER+dd)
+            case 0x9f: Sbc8(Registers.A); break; // SBC A,A
+            case 0xa0: And8(Registers.B); break; // AND A,B
+            case 0xa1: And8(Registers.C); break; // AND A,C
+            case 0xa2: And8(Registers.D); break; // AND A,D
+            case 0xa3: And8(Registers.E); break; // AND A,E
+            case 0xa4: And8(TIndex.High(ref Registers)); break; // AND A,REGISTERH
+            case 0xa5: And8(TIndex.Low(ref Registers)); break; // AND A,REGISTERL
+            case 0xa6: And8(bus.Read(IndexedAddress<TIndex>())); break; // AND A,(REGISTER+dd)
+            case 0xa7: And8(Registers.A); break; // AND A,A
+            case 0xa8: Xor8(Registers.B); break; // XOR A,B
+            case 0xa9: Xor8(Registers.C); break; // XOR A,C
+            case 0xaa: Xor8(Registers.D); break; // XOR A,D
+            case 0xab: Xor8(Registers.E); break; // XOR A,E
+            case 0xac: Xor8(TIndex.High(ref Registers)); break; // XOR A,REGISTERH
+            case 0xad: Xor8(TIndex.Low(ref Registers)); break; // XOR A,REGISTERL
+            case 0xae: Xor8(bus.Read(IndexedAddress<TIndex>())); break; // XOR A,(REGISTER+dd)
+            case 0xaf: Xor8(Registers.A); break; // XOR A,A
+            case 0xb0: Or8(Registers.B); break; // OR A,B
+            case 0xb1: Or8(Registers.C); break; // OR A,C
+            case 0xb2: Or8(Registers.D); break; // OR A,D
+            case 0xb3: Or8(Registers.E); break; // OR A,E
+            case 0xb4: Or8(TIndex.High(ref Registers)); break; // OR A,REGISTERH
+            case 0xb5: Or8(TIndex.Low(ref Registers)); break; // OR A,REGISTERL
+            case 0xb6: Or8(bus.Read(IndexedAddress<TIndex>())); break; // OR A,(REGISTER+dd)
+            case 0xb7: Or8(Registers.A); break; // OR A,A
+            case 0xb8: Cp8(Registers.B); break; // CP B
+            case 0xb9: Cp8(Registers.C); break; // CP C
+            case 0xba: Cp8(Registers.D); break; // CP D
+            case 0xbb: Cp8(Registers.E); break; // CP E
+            case 0xbc: Cp8(TIndex.High(ref Registers)); break; // CP A,REGISTERH
+            case 0xbd: Cp8(TIndex.Low(ref Registers)); break; // CP A,REGISTERL
+            case 0xbe: Cp8(bus.Read(IndexedAddress<TIndex>())); break; // CP A,(REGISTER+dd)
+            case 0xbf: Cp8(Registers.A); break; // CP A
             case 0xc0: ReturnConditional((Registers.F & Z80Flags.Z) == 0); break; // RET NZ
             case 0xc1: Registers.BC = Pop(); break; // POP BC
             case 0xc2: JumpAbsolute((Registers.F & Z80Flags.Z) == 0); break; // JP NZ,nnnn
             case 0xc3: JumpAbsolute(true); break; // JP nnnn
             case 0xc4: CallAbsolute((Registers.F & Z80Flags.Z) == 0); break; // CALL NZ,nnnn
             case 0xc5: PushWithDelay(Registers.BC); break; // PUSH BC
+            case 0xc6: Add8(ReadPc()); break; // ADD A,nn
             case 0xc7: Restart(0x00); break; // RST 00
             case 0xc8: ReturnConditional((Registers.F & Z80Flags.Z) != 0); break; // RET Z
             case 0xc9: Return(); break; // RET
             case 0xca: JumpAbsolute((Registers.F & Z80Flags.Z) != 0); break; // JP Z,nnnn
             case 0xcc: CallAbsolute((Registers.F & Z80Flags.Z) != 0); break; // CALL Z,nnnn
             case 0xcd: CallAbsolute(true); break; // CALL nnnn
+            case 0xce: Adc8(ReadPc()); break; // ADC A,nn
             case 0xcf: Restart(0x08); break; // RST 8
             case 0xd0: ReturnConditional((Registers.F & Z80Flags.C) == 0); break; // RET NC
             case 0xd1: Registers.DE = Pop(); break; // POP DE
             case 0xd2: JumpAbsolute((Registers.F & Z80Flags.C) == 0); break; // JP NC,nnnn
             case 0xd4: CallAbsolute((Registers.F & Z80Flags.C) == 0); break; // CALL NC,nnnn
             case 0xd5: PushWithDelay(Registers.DE); break; // PUSH DE
+            case 0xd6: Sub8(ReadPc()); break; // SUB nn
             case 0xd7: Restart(0x10); break; // RST 10
             case 0xd8: ReturnConditional((Registers.F & Z80Flags.C) != 0); break; // RET C
             case 0xda: JumpAbsolute((Registers.F & Z80Flags.C) != 0); break; // JP C,nnnn
             case 0xdc: CallAbsolute((Registers.F & Z80Flags.C) != 0); break; // CALL C,nnnn
+            case 0xde: Sbc8(ReadPc()); break; // SBC A,nn
             case 0xdf: Restart(0x18); break; // RST 18
             case 0xe0: ReturnConditional((Registers.F & Z80Flags.PV) == 0); break; // RET PO
             case 0xe1: TIndex.Pair(ref Registers) = Pop(); break; // POP REGISTER
             case 0xe2: JumpAbsolute((Registers.F & Z80Flags.PV) == 0); break; // JP PO,nnnn
             case 0xe4: CallAbsolute((Registers.F & Z80Flags.PV) == 0); break; // CALL PO,nnnn
             case 0xe5: PushWithDelay(TIndex.Pair(ref Registers)); break; // PUSH REGISTER
+            case 0xe6: And8(ReadPc()); break; // AND nn
             case 0xe7: Restart(0x20); break; // RST 20
             case 0xe8: ReturnConditional((Registers.F & Z80Flags.PV) != 0); break; // RET PE
             case 0xe9: Registers.PC = TIndex.Pair(ref Registers); break; // JP REGISTER
             case 0xea: JumpAbsolute((Registers.F & Z80Flags.PV) != 0); break; // JP PE,nnnn
             case 0xec: CallAbsolute((Registers.F & Z80Flags.PV) != 0); break; // CALL PE,nnnn
+            case 0xee: Xor8(ReadPc()); break; // XOR A,nn
             case 0xef: Restart(0x28); break; // RST 28
             case 0xf0: ReturnConditional((Registers.F & Z80Flags.S) == 0); break; // RET P
             case 0xf1: Registers.AF = Pop(); break; // POP AF
             case 0xf2: JumpAbsolute((Registers.F & Z80Flags.S) == 0); break; // JP P,nnnn
             case 0xf4: CallAbsolute((Registers.F & Z80Flags.S) == 0); break; // CALL P,nnnn
             case 0xf5: PushWithDelay(Registers.AF); break; // PUSH AF
+            case 0xf6: Or8(ReadPc()); break; // OR nn
             case 0xf7: Restart(0x30); break; // RST 30
             case 0xf8: ReturnConditional((Registers.F & Z80Flags.S) != 0); break; // RET M
             case 0xf9: // LD SP,REGISTER
@@ -268,6 +355,7 @@ public sealed partial class Z80Cpu<TBus>
             }
             case 0xfa: JumpAbsolute((Registers.F & Z80Flags.S) != 0); break; // JP M,nnnn
             case 0xfc: CallAbsolute((Registers.F & Z80Flags.S) != 0); break; // CALL M,nnnn
+            case 0xfe: Cp8(ReadPc()); break; // CP nn
             case 0xff: Restart(0x38); break; // RST 38
             default: Unimplemented(); break;
         }

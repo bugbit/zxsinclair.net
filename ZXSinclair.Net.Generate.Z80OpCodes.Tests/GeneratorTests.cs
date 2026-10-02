@@ -320,7 +320,7 @@ public class GeneratorTests
         {
             var expected = dispatch.Table switch
             {
-                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 135,
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 223,
                 OpcodeTableKind.ED => 20,
                 _ => 0,
             };
@@ -443,7 +443,7 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("135 implemented / 117 pending / 4 prefixes", text);
+        Assert.Contains("223 implemented / 29 pending / 4 prefixes", text);
         Assert.Contains("20 implemented / 58 pending", text);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
@@ -502,4 +502,30 @@ public class GeneratorTests
         var error = Assert.Throws<GeneratorException>(() => GeneratorApplication.FindRoot(Path.GetPathRoot(AppContext.BaseDirectory)!));
         Assert.Contains("zxsinclair.net.slnx", error.Message);
     }
+
+    [Theory]
+    [InlineData(0, 0x80, "Add8(Registers.B);")]
+    [InlineData(0, 0xD6, "Sub8(ReadPc());")]
+    [InlineData(0, 0xB8, "Cp8(Registers.B);")]
+    [InlineData(3, 0xBC, "Cp8(TIndex.High(ref Registers));")]
+    [InlineData(3, 0xAE, "Xor8(bus.Read(IndexedAddress<TIndex>()));")]
+    [InlineData(0, 0x34, "IncMemory(Registers.HL);")]
+    [InlineData(3, 0x2D, "TIndex.Low(ref Registers) = Dec8(TIndex.Low(ref Registers));")]
+    public void Alu8Patterns_EmitExpectedBodies(int table, int value, string expected)
+    {
+        var opcode = Tables()[(OpcodeTableKind)table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new EmitContext(opcode.Table)));
+    }
+
+    [Theory]
+    [InlineData(0, 0x09)]
+    [InlineData(2, 0x4A)]
+    [InlineData(2, 0x42)]
+    [InlineData(0, 0x03)]
+    [InlineData(2, 0x44)]
+    public void Alu8Patterns_RejectOtherGroups(int table, int value) =>
+        Assert.Null(new PatternCatalog(new Alu8Pattern(), new IncDec8Register(), new IncDec8Memory())
+            .Resolve(Tables()[(OpcodeTableKind)table][value]));
 }

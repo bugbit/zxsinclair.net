@@ -49,7 +49,10 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new ReturnPattern(),
         new ReturnConditionalPattern(),
         new ReturnFromInterruptPattern(),
-        new RestartPattern());
+        new RestartPattern(),
+        new Alu8Pattern(),
+        new IncDec8Register(),
+        new IncDec8Memory());
 
     public IPattern? Resolve(Opcode opcode)
     {

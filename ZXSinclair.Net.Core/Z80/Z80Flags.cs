@@ -26,6 +26,8 @@ public static class Z80Flags
     public static readonly byte[] SZ53 = new byte[256];
     public static readonly byte[] SZ53P = new byte[256];
     public static readonly byte[] Parity = new byte[256];
+    public static readonly byte[] Inc = new byte[256];
+    public static readonly byte[] Dec = new byte[256];
 
     static Z80Flags()
     {
@@ -34,6 +36,8 @@ public static class Z80Flags
             SZ53[value] = (byte)((value & (S | F5 | F3)) | (value == 0 ? Z : 0));
             Parity[value] = (byte)((BitOperations.PopCount((uint)value) & 1) == 0 ? PV : 0);
             SZ53P[value] = (byte)(SZ53[value] | Parity[value]);
+            Inc[value] = (byte)(SZ53[value] | ((value & 0x0F) == 0 ? H : 0) | (value == 0x80 ? PV : 0));
+            Dec[value] = (byte)(SZ53[value] | N | ((value & 0x0F) == 0x0F ? H : 0) | (value == 0x7F ? PV : 0));
         }
     }
 }
