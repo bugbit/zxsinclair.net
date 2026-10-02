@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ZXSinclair.Net\ZXSinclair.Net.csproj" />
+    <ProjectReference Include="..\ZXSinclair.Net.Core\ZXSinclair.Net.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

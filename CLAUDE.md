@@ -14,7 +14,7 @@ The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXS
 
 ## Specifications
 
-Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the 48K/128K/+2 memory (contention, paging) for the `ZXSinclair.Net.Core` rewrite.
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the Spectrum 16K/48K/128K/+2 and ZX81 memory (maps, contention, paging) for the `ZXSinclair.Net.Core` rewrite.
 
 ## Required C# License Header
 
@@ -63,7 +63,12 @@ dotnet run --project ZXSinclair.Net.Test
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 ```
 
-- **Tests are a console FUSE runner, not xUnit/NUnit.** Run in Debug. It compares registers, memory, T-states, and the complete ordered bus-event sequence. It reports the first mismatch per failed test, continues, and prints passed/failed/skipped counts; failures return a nonzero exit code. Parser assertions remain Debug-only, and Release execution is rejected. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. There is no CLI filter for a single fixture.
+```bash
+dotnet test ZXSinclair.Net.Core.Tests
+```
+
+- **`ZXSinclair.Net.Core.Tests`** is an xUnit project for the Core (memory maps, paging, contention, bus, floating bus). Run a single test with `dotnet test ZXSinclair.Net.Core.Tests --filter "FullyQualifiedName~SpectrumBusTests.In_FollowsTheIoContentionTable"`.
+- **The legacy CPU tests are a console FUSE runner, not xUnit/NUnit.** Run in Debug. It compares registers, memory, T-states, and the complete ordered bus-event sequence. It reports the first mismatch per failed test, continues, and prints passed/failed/skipped counts; failures return a nonzero exit code. Parser assertions remain Debug-only, and Release execution is rejected. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. There is no CLI filter for a single fixture.
 - VS Code launch/tasks configs exist for the three runnable projects (`.vscode/launch.json`, `.vscode/tasks.json`).
 - If git reports "dubious ownership" for this directory, the user needs to add a `safe.directory` exception. Don't change global git config without asking.
 
@@ -71,9 +76,19 @@ dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 
 ### Projects
 - **ZXSinclair.Net** is the obsolete emulator implementation (currently an Exe with a placeholder `Program.cs`). Legacy hardware lives in `Hardware/`, and the Z80 is in `Hardware/Z80/`.
-- **ZXSinclair.Net.Core** is the destination for the emulator rewrite and all new emulator functionality. It currently holds abstractions (`IBus`, `IBusData`, `IMemory`, `IMemoryBuffer`). No other project references it yet, and its interfaces are distinct from the similarly named ones in legacy `ZXSinclair.Net/Hardware`.
+- **ZXSinclair.Net.Core** is the destination for the emulator rewrite and all new emulator functionality (see "Core architecture" below). Its interfaces are distinct from the similarly named ones in legacy `ZXSinclair.Net/Hardware`.
+- **ZXSinclair.Net.Core.Tests** is the xUnit test project for the Core.
+- **ZXSinclair.Net.Benchmarks** holds BenchmarkDotNet benchmarks (memory strategies, Core bus). Run with `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Bus*'`.
 - **ZXSinclair.Net.Generate.Z80OpCodes** is a code generator that produces the Z80 opcode dispatch code. See below.
 - **ZXSinclair.Net.Test** is the Z80 opcode conformance runner, using the FUSE emulator's test format.
+
+### Core architecture (`ZXSinclair.Net.Core`)
+Implements `Specs/spec-buses-memoria.md`. There is no CPU in the Core yet.
+- `Abstractions/`: generic contracts for any CPU/machine — `IBus` (clock + reset), `IBusData<TAddress, TData>` (timed bus access), `IBusIo<TPort, TData>` (I/O space), `IMemory<TAddress, TData>` (raw access), `IMemoryBuffer<TAddress, TData>` (block load/save). `Z80/IZ80Bus` combines them with the Z80 cycles (`FetchOpcode`, `Internal`, INT).
+- **Buses are structs used only as generic arguments** (`where TBus : struct, IZ80Bus`): the JIT specialises generics only for struct type arguments, so a class or an interface-typed variable brings back interface dispatch. `SpectrumBus` is a `readonly struct` holding one reference to a `sealed` `SpectrumMachine` (T-state counter, memory, tables, ports); the future CPU must be `Z80Cpu<TBus>`.
+- `Memory/`: `MemoryLayout` describes any 64K map (page size as a power of two, ROM/RAM regions of any size, mirrors, unmapped pages); `PagedMemory` builds it into one pinned array with separate read/write offset tables per page (ROM and unmapped writes go to a sink page, unmapped reads to a 0xFF page), so accesses never branch. `Machines/Layouts.cs` has presets for Spectrum 16K/48K/128K(+2) and ZX81 1K/16K.
+- `Timing/`: `MachineTiming` presets, and precomputed per-T-state `ContentionTable` and `FloatingBusTable` (one table read per access). The machine must call `EndFrame()` before T-states exceed the frame by `ContentionTable.Margin`.
+- `Machines/Spectrum/`: `SpectrumMachine` (16K, 48K, 128K, grey +2), `SpectrumBus` (memory/IO contention, ULA port 0xFE, floating bus, INT), `Spectrum128Paging` (port 0x7FFD: paging only rewrites page table entries and contention flags).
 
 ### CPU model
 - `Cpu<A, D, E, R>` (A = address type, D = data type, E = pins enum, R = register set) is the generic base. It owns an `IMemoryBuffer<D>` (raw storage), an `IMemory<A, D>` (the access layer over the buffer: RAM/ROM/Null), a register object, and `ITicks` (T-state counter).

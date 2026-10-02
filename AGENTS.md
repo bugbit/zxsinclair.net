@@ -7,7 +7,13 @@ This C# ZX Spectrum emulator targets .NET 10. The planned Blazor front end does 
 The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXSinclair.Net.Core`; implement new emulator functionality there. Use `ZXSinclair.Net` as a reference for the legacy implementation.
 
 - `ZXSinclair.Net/Hardware/`: obsolete CPU, memory, and timing implementations; legacy Z80 code lives in `Hardware/Z80/`.
-- `ZXSinclair.Net.Core/`: destination for the emulator rewrite, with bus and memory interfaces in `Abstractions/`. This project is currently unreferenced; keep its interfaces distinct from those in legacy `Hardware/`.
+- `ZXSinclair.Net.Core/`: destination for the emulator rewrite; implements `Specs/spec-buses-memoria.md`. Keep its interfaces distinct from those in legacy `Hardware/`.
+  - `Abstractions/`: generic contracts for any CPU/machine (`IBus`, `IBusData<TAddress, TData>`, `IBusIo<TPort, TData>`, `IMemory<TAddress, TData>`, `IMemoryBuffer<TAddress, TData>`); `Z80/IZ80Bus` adds the Z80 cycles.
+  - `Memory/`: `MemoryLayout` (any 64K map: page size, ROM/RAM regions, mirrors) and `PagedMemory` (one pinned array, separate read/write page tables, branch-free access). Presets in `Machines/Layouts.cs`: Spectrum 16K/48K/128K(+2), ZX81 1K/16K.
+  - `Timing/`: timing presets and precomputed contention and floating-bus tables.
+  - `Machines/Spectrum/`: `SpectrumMachine`, `SpectrumBus` (a `readonly struct` used only as a generic argument, `where TBus : struct, IZ80Bus`, so the JIT specialises and inlines it), `Spectrum128Paging` (port 0x7FFD).
+- `ZXSinclair.Net.Core.Tests/`: xUnit tests for the Core.
+- `ZXSinclair.Net.Benchmarks/`: BenchmarkDotNet benchmarks (memory strategies, Core bus).
 - `ZXSinclair.Net.Generate.Z80OpCodes/`: generator, opcode tables in `data/`, and templates in `templates/`.
 - `ZXSinclair.Net.Test/`: console test runner and embedded FUSE-format fixtures in `data/`.
 - `.vscode/`: build tasks and debugger configurations.
@@ -18,7 +24,7 @@ The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXS
 
 ## Specifications
 
-Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the 48K/128K/+2 memory (contention, paging) for the `ZXSinclair.Net.Core` rewrite.
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the Spectrum 16K/48K/128K/+2 and ZX81 memory (maps, contention, paging) for the `ZXSinclair.Net.Core` rewrite.
 
 ## Performance Is the Top Priority
 
@@ -35,11 +41,13 @@ Run from the repository root with an SDK supporting `net10.0` and the .NET 10 ru
 
 ```sh
 dotnet build zxsinclair.net.slnx -c Debug -m:1
+dotnet test ZXSinclair.Net.Core.Tests
 dotnet run --project ZXSinclair.Net.Test -c Debug
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -c Debug
+dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Bus*'
 ```
 
-These build the solution, execute conformance checks, and regenerate opcode sources, respectively. The main executable currently prints `Hello, World!`.
+These build the solution, run the Core xUnit tests, execute the legacy CPU conformance checks, regenerate opcode sources, and run benchmarks, respectively. The main executable currently prints `Hello, World!`.
 
 ## Required C# License Header
 
@@ -76,7 +84,9 @@ Edit generator tables, templates, or instruction handlers before regenerating `Z
 
 ## Testing Guidelines
 
-Run the console FUSE runner in Debug; `dotnet test` does not execute it. It compares registers, memory, exact T-state counts, and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`). Failures report the test name and first mismatch, then continue. The summary lists passed, failed, and skipped cases; failures return a nonzero exit code. Unimplemented opcodes are skipped. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. Parser assertions still require Debug; Release execution is rejected. Add matching, identically named cases to `tests.in` and `tests.expected`. No coverage threshold is configured.
+Core code is tested with xUnit in `ZXSinclair.Net.Core.Tests` (`dotnet test`, Debug or Release); add a test for each rule of the spec you implement.
+
+Run the legacy console FUSE runner in Debug; `dotnet test` does not execute it. It compares registers, memory, exact T-state counts, and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`). Failures report the test name and first mismatch, then continue. The summary lists passed, failed, and skipped cases; failures return a nonzero exit code. Unimplemented opcodes are skipped. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. Parser assertions still require Debug; Release execution is rejected. Add matching, identically named cases to `tests.in` and `tests.expected`. No coverage threshold is configured.
 
 Internal instruction cycles must use `InternalCycles(address, tstates)`, rather than calling `Ticks.AddCycles` directly. Recording is compiled only under `Z80_OPCODES_TEST` and is optional when `BusEvents` is null. The legacy CPU is instrumented solely to validate existing instructions pending the Core rewrite.
 

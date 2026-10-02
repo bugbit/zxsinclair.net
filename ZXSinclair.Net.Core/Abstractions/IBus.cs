@@ -1,4 +1,4 @@
-﻿#region LICENSE
+#region LICENSE
 /*
     ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
     Copyright (C) 2016 Oscar Hernandez Bano
@@ -17,9 +17,15 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
+/// <summary>
+/// Root of any clocked system bus, whatever the CPU.
+/// Buses are implemented as structs and used as generic constraints (<c>where TBus : struct, ...</c>),
+/// never through an interface-typed variable in the emulation hot path.
+/// </summary>
 public interface IBus
 {
-    object SyncBus { get; }
+    /// <summary>Clock cycles (T-states on the Z80) elapsed in the current frame.</summary>
+    int Cycles { get; }
 
-    //TData ReadOpCode(TAddress address);    
+    void Reset();
 }

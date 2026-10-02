@@ -1,4 +1,4 @@
-﻿#region LICENSE
+#region LICENSE
 /*
     ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
     Copyright (C) 2016 Oscar Hernandez Bano
@@ -17,12 +17,20 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
+/// <summary>
+/// Block access to a memory address space, for loading and saving (ROMs, snapshots).
+/// Not used in the emulation hot path.
+/// </summary>
 public interface IMemoryBuffer<TAddress, TData>
+    where TAddress : struct
     where TData : struct
 {
-    TAddress Size { get; }
-    TData Read(TAddress address);
-    void Write(TAddress address, TData data);
-    void Copy(TAddress addressSrc, TAddress offsetStr, TAddress addressDest, TAddress offsetDest);
-    void CopyTo(TData[] buffer, TAddress address, TAddress offset);
+    /// <summary>Size of the address space.</summary>
+    int Size { get; }
+
+    /// <summary>Writes <paramref name="data"/> starting at <paramref name="address"/>, following the memory map (read-only areas are not modified).</summary>
+    void CopyFrom(TAddress address, ReadOnlySpan<TData> data);
+
+    /// <summary>Reads the address space starting at <paramref name="address"/> into <paramref name="destination"/>.</summary>
+    void CopyTo(TAddress address, Span<TData> destination);
 }

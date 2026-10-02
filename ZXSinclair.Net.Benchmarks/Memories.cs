@@ -160,3 +160,53 @@ public sealed class PagedArrayMemory
         Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mem), offset + (address & 0x3FFF)) = data;
     }
 }
+
+/// <summary>
+/// Generic page table memory: configurable page size (shift), separate read and write offset tables.
+/// Writes to ROM or unmapped pages go to a sink page, so neither read nor write branches.
+/// Layout used here: 48K-like (ROM page(s) at 0000-3FFF, RAM above).
+/// </summary>
+public sealed class PageTableMemory
+{
+    private readonly byte[] mem;
+    private readonly int[] readOffsets;
+    private readonly int[] writeOffsets;
+    private readonly int shift;
+    private readonly int mask;
+
+    public PageTableMemory(int pageShift)
+    {
+        var pageSize = 1 << pageShift;
+        var pages = 0x10000 >> pageShift;
+        var sink = 0x10000;
+
+        shift = pageShift;
+        mask = pageSize - 1;
+        mem = GC.AllocateUninitializedArray<byte>(0x10000 + pageSize, pinned: true);
+        readOffsets = new int[pages];
+        writeOffsets = new int[pages];
+        for (var p = 0; p < pages; p++)
+        {
+            var offset = p << pageShift;
+
+            readOffsets[p] = offset;
+            writeOffsets[p] = offset < 0x4000 ? sink : offset;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Read(ushort address)
+    {
+        var offset = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(readOffsets), address >> shift);
+
+        return Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mem), offset + (address & mask));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Write(ushort address, byte data)
+    {
+        var offset = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(writeOffsets), address >> shift);
+
+        Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mem), offset + (address & mask)) = data;
+    }
+}

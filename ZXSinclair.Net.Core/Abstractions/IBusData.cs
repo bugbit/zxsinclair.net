@@ -1,4 +1,4 @@
-﻿#region LICENSE
+#region LICENSE
 /*
     ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
     Copyright (C) 2016 Oscar Hernandez Bano
@@ -17,6 +17,10 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
+/// <summary>
+/// Memory access through a bus: unlike <see cref="IMemory{TAddress, TData}"/>, each access
+/// takes bus time (cycles, contention, wait states).
+/// </summary>
 public interface IBusData<TAddress, TData>
     where TAddress : struct
     where TData : struct

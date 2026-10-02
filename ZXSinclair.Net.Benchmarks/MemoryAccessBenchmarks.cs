@@ -36,6 +36,8 @@ public unsafe class MemoryAccessBenchmarks
     private AllocHGlobalMemory allocHGlobal = null!;
     private NativeMemoryMemory nativeMemory = null!;
     private PagedArrayMemory paged = null!;
+    private PageTableMemory pageTable1K = null!;
+    private PageTableMemory pageTable16K = null!;
     private IMemoryBuffer<byte> currentMemoryBuffer = null!;
 
     [GlobalSetup]
@@ -60,6 +62,8 @@ public unsafe class MemoryAccessBenchmarks
         allocHGlobal = new AllocHGlobalMemory();
         nativeMemory = new NativeMemoryMemory();
         paged = new PagedArrayMemory();
+        pageTable1K = new PageTableMemory(10);
+        pageTable16K = new PageTableMemory(14);
         currentMemoryBuffer = new MemoryBuffer8Bit(0x10000);
     }
 
@@ -150,6 +154,36 @@ public unsafe class MemoryAccessBenchmarks
     public int PagedArray128K()
     {
         var m = paged;
+        var sum = 0;
+
+        foreach (var a in addresses)
+        {
+            sum += m.Read(a);
+            m.Write((ushort)(a ^ 0x8000), (byte)sum);
+        }
+
+        return sum;
+    }
+
+    [Benchmark(OperationsPerInvoke = Operations)]
+    public int PageTable1K()
+    {
+        var m = pageTable1K;
+        var sum = 0;
+
+        foreach (var a in addresses)
+        {
+            sum += m.Read(a);
+            m.Write((ushort)(a ^ 0x8000), (byte)sum);
+        }
+
+        return sum;
+    }
+
+    [Benchmark(OperationsPerInvoke = Operations)]
+    public int PageTable16K()
+    {
+        var m = pageTable16K;
         var sum = 0;
 
         foreach (var a in addresses)

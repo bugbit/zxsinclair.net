@@ -17,11 +17,11 @@
 
 namespace ZXSinclair.Net.Core.Abstractions;
 
-/// <summary>Raw memory access: no timing, no contention.</summary>
-public interface IMemory<TAddress, TData>
-    where TAddress : struct
+/// <summary>Separate I/O space of a bus (IN/OUT on the Z80).</summary>
+public interface IBusIo<TPort, TData>
+    where TPort : struct
     where TData : struct
 {
-    TData Read(TAddress address);
-    void Write(TAddress address, TData data);
+    TData In(TPort port);
+    void Out(TPort port, TData data);
 }

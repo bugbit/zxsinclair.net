@@ -77,7 +77,9 @@ El **+2 gris** es, a efectos de memoria, paginación y temporización, idéntico
 | 0x4000–0x57FF | Pantalla: bitmap (6144 bytes) — **contenido** |
 | 0x5800–0x5AFF | Atributos (768 bytes) — **contenido** |
 | 0x5B00–0x7FFF | RAM — **contenido** |
-| 0x8000–0xFFFF | RAM (en el 16K no existe: lectura de bus flotante, 0xFF) |
+| 0x8000–0xFFFF | RAM en el 48K. En el 16K no hay memoria: las escrituras se pierden y la lectura devuelve el bus flotante de la ULA (0xFF salvo cuando la ULA lee pantalla) |
+
+En el 16K la implementación inicial devuelve 0xFF en 0x8000–0xFFFF; devolver el bus flotante real queda **(verificar)**, porque exige que el bus distinga páginas ausentes en cada lectura.
 
 ### 4.2 128K / +2
 
@@ -112,6 +114,22 @@ Los bancos 5 y 2 también pueden aparecer en la ranura 3: es la misma memoria vi
 
 - 0x7FFD: decodifica A15 = 0, A14 = 1, A1 = 0; el bit 4 pasa a ser el bit bajo de la selección de ROM.
 - 0x1FFD: decodifica A15 = A14 = A13 = 0, A12 = 1, A1 = 0. Bit 0 = modo especial (4 configuraciones de RAM en las 4 ranuras, sin ROM), bit 2 = bit alto de la ROM, bit 3 = motor de disco, bit 4 = strobe de impresora.
+
+### 4.5 ZX81 (1K y 16K)
+
+El ZX81 decodifica la memoria de forma parcial, así que ROM y RAM aparecen repetidas (espejos). Fuentes: [Nocash ZX specs](https://problemkaputt.de/zxdocs.htm), [Tynemouth Software](http://blog.tynemouthsoftware.co.uk/2019/10/how-the-zx80-works.html).
+
+| Rango | 1K (interna) | 16K (RAM pack) |
+|---|---|---|
+| 0x0000–0x1FFF | ROM 8K | ROM 8K |
+| 0x2000–0x3FFF | Espejo de la ROM | Espejo de la ROM |
+| 0x4000–0x7FFF | RAM 1K repetida 16 veces (0x4000–0x43FF y espejos) | RAM 16K (la interna queda desactivada) |
+| 0x8000–0xBFFF | Espejo de 0x0000–0x3FFF | Espejo de 0x0000–0x3FFF |
+| 0xC000–0xFFFF | Espejo de 0x4000–0x7FFF | Espejo de 0x4000–0x7FFF |
+
+- La ROM es de solo lectura en todos sus espejos.
+- El espejo de la RAM en 0xC000–0xFFFF es el que usa el ZX81 para generar el vídeo (ejecución "M1 por encima de 32K"). Su temporización y el vídeo pertenecen a otra especificación; aquí solo cuenta el mapa.
+- Hay variantes de RAM pack y modificaciones (8K en 0x2000, etc.) **(verificar)**: el modelo de memoria por páginas (9.4) debe permitir describirlas sin código nuevo.
 
 ## 5. Memoria contenida
 
@@ -233,7 +251,26 @@ Operaciones mínimas que la CPU necesita (nombres orientativos):
 - Tablas separadas de desplazamientos **de lectura** y **de escritura** por ranura. Las escrituras en ROM apuntan a un bloque de 16K "sumidero" que nunca se lee: elimina la comprobación de ROM en cada escritura.
 - Paginar = recalcular 4 desplazamientos + 4 flags de contención; nunca copiar memoria.
 - La versión paginada medida (2.17×) es demasiado lenta: hay que probar alternativas (por ejemplo, una implementación plana específica para el 48K y, para 128K, desplazamientos guardados en campos en vez de en array, o arrays de 16K por ranura) y elegir la más rápida antes de cerrar el diseño.
+- **Memoria por páginas configurable**: la memoria no asume 48K/128K. Un `MemoryLayout` describe el tamaño de página (potencia de 2: 1K para el ZX81, 16K para el Spectrum), las regiones (ROM/RAM de cualquier tamaño) y qué región ve cada página; los espejos son varias páginas apuntando a la misma región. Las páginas sin memoria leen de una página llena de 0xFF y escriben en el sumidero. La paginación del 128K solo reescribe entradas de la tabla.
 - La ULA lee la pantalla del banco 5 o 7 directamente por desplazamiento, sin pasar por el bus.
+
+### 9.4.1 Implementación y mediciones (2026-10-02)
+
+Implementado en `ZXSinclair.Net.Core` (`Abstractions/`, `Memory/`, `Timing/`, `Machines/`). Medido con BenchmarkDotNet (i7-14700, .NET 10, x64), una lectura + una escritura por operación sobre un flujo de direcciones tipo emulador:
+
+| Variante | ns/op |
+|---|---:|
+| Array plano con `Unsafe.Add` (referencia) | 0.95 – 1.03 |
+| `PagedMemory` (tabla de páginas 1K o 16K, lectura/escritura sin ramas) | 1.17 |
+| Paginada anterior (tabla de ranuras + comprobación de ROM) | 1.47 |
+| `SpectrumBus` 48K / 128K (T-states + contención + páginas) | 3.4 |
+
+Decisiones:
+- **Una sola memoria por páginas para todos los modelos** (16K, 48K, 128K/+2, ZX81). Cuesta ~0.2 ns/op más que el array plano; no se añade una memoria plana específica para 48K por ahora. Revisarlo cuando exista la CPU y se pueda medir una instrucción completa.
+- **Contención sin ramas**: los flags de contención por página son máscaras 0x00/0xFF y el retraso se aplica como `t += table[t] & mask`. Con la rama `if (contended)`, el benchmark daba entre 3.8 y 5 ns con mucha variación por fallos de predicción.
+- **Contador de T-states leído y escrito una vez por ciclo** (en una variable local). El coste restante del bus (~3.4 ns frente a ~1 ns) viene sobre todo de la cadena de dependencia del contador a través de memoria; reducirlo exigiría que la CPU mantenga el contador en un registro y lo pase al bus, decisión a tomar al diseñar `Z80Cpu<TBus>`.
+- La tabla de contención y la de bus flotante tienen `ContentionTable.Margin` (256) entradas tras el frame; la máquina debe llamar a `EndFrame()` antes de agotarlas (comprobado con `Debug.Assert`).
+- Valores tomados de FUSE y pendientes de verificar, aislados en constantes: INT de 36 T en 128K (`MachineTiming.Spectrum128`), reconocimiento de interrupción de 7 T con vector 0xFF (`SpectrumMachine.InterruptAcknowledgeTStates`), lectura de 0x7FFD = bus flotante, contención de E/S según la página del byte alto (incluida la ranura 3 en 128K).
 
 ### 9.5 Validación
 
@@ -247,3 +284,5 @@ Operaciones mínimas que la CPU necesita (nombres orientativos):
 - Efecto real de leer 0x7FFD en 128K/+2 (bus flotante frente a escritura espuria).
 - Contención de E/S en 128K cuando el byte alto cae en la ranura 3 con banco impar.
 - Patrón y tabla exactos del +2A/+3.
+- Lectura de 0x8000–0xFFFF en el 16K: hoy devuelve 0xFF; en el hardware real es el bus flotante.
+- Variantes de memoria del ZX81 (RAM packs, 8K en 0x2000) y bus/temporización del ZX81.
