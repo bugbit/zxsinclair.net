@@ -15,6 +15,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+using ZXSinclair.Net.Generate.Z80OpCodes.Model;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
+
+internal readonly record struct EmitContext(OpcodeTableKind Table)
+{
+    public bool IndexedCB => Table == OpcodeTableKind.DDFDCB;
+}
+
+internal interface IPattern
+{
+    bool Matches(Opcode opcode);
+    string EmitBody(Opcode opcode, EmitContext context);
+}

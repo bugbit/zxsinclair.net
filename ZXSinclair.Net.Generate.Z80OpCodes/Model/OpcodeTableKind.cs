@@ -15,6 +15,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+namespace ZXSinclair.Net.Generate.Z80OpCodes.Model;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+internal enum OpcodeTableKind
+{
+    Base, CB, ED, DDFD, DDFDCB,
+}
+
+internal enum OpcodeKind
+{
+    Instruction, Alias, Prefix, Hole, Absent,
+}

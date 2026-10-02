@@ -15,6 +15,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+namespace ZXSinclair.Net.Generate.Z80OpCodes.Model;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+internal sealed record SourceLocation(string File, int Line)
+{
+    public override string ToString() => $"{File}:{Line}";
+}
+
+internal sealed record Instruction(string Mnemonic, Operand[] Operands);
+
+internal sealed record Opcode(OpcodeTableKind Table, byte Byte, string Mnemonic,
+    Operand[] Operands, OpcodeKind Kind, SourceLocation Source,
+    Operand? CopyTo = null, Instruction? InnerInstruction = null)
+{
+    public string Comment => InnerInstruction is null
+        ? Mnemonic + (Operands.Length == 0 ? "" : " " + string.Join(",", Operands.Select(o => o.Text)))
+        : $"LD {CopyTo!.Text},{InnerInstruction.Mnemonic} {string.Join(",", InnerInstruction.Operands.Select(o => o.Text))}";
+}

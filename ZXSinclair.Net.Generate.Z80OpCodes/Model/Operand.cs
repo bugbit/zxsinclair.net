@@ -15,6 +15,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+namespace ZXSinclair.Net.Generate.Z80OpCodes.Model;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+internal enum OperandKind
+{
+    Register8, SpecialRegister, Register16, IndexPair, IndexHigh, IndexLow,
+    MemoryPair, IndexedMemory, Immediate8, Immediate16, AbsoluteMemory,
+    RelativeOffset, Condition, PortC, PortImmediate, Bit, RestartAddress,
+    InterruptMode, Constant, PrefixTable,
+}
+
+internal sealed record Operand(OperandKind Kind, string Text, int? Value = null);

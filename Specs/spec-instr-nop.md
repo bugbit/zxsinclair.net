@@ -60,7 +60,7 @@ Requisitos:
 
 - Entrada: `0x00 NOP` en `opcodes_base.dat`. El generador emite el `case` en `ExecuteMain` y, por la regla de 4.1, en `ExecuteIndexedOpcode<TIndex>`.
 - La salida lleva la cabecera GPL y no se edita a mano (spec CPU 5).
-- Mientras el generador no exista, se puede añadir `case 0x00: break;` a mano en el fichero provisional `Z80Cpu.Instructions.cs` para validar la tubería de tests; el generador lo sustituirá con salida idéntica.
+- El generador ya emite `case 0x00: break;` desde `NopPattern` en `Generated/Z80Cpu.Main.g.cs` y `Generated/Z80Cpu.Indexed.g.cs`. La salida no se edita a mano.
 
 ## 5. Pruebas
 
@@ -100,7 +100,7 @@ Al implementar `NOP`, el opcode `00` deja de ser "no implementado" y estos tests
 
 | Test | Cambio |
 |---|---|
-| `UnimplementedDispatchCountsFetches` | Los casos `00`, `DD 00`, `FD 00`, `DD FD 00` y `FD DD 00` pasan a `NopTests` (5.2) y aquí se sustituyen por otro opcode aún no implementado (p. ej. `01`), para seguir probando el despacho provisional. |
+| `UnimplementedDispatchCountsFetches` | Los casos `00`, `DD 00`, `FD 00`, `DD FD 00` y `FD DD 00` pasan a `NopTests` (5.2) y aquí se sustituyen por otro opcode aún no implementado (p. ej. `01`), para seguir probando el despacho de instrucciones pendientes. |
 | `LongAlternatingPrefixChainUsesConstantStackSpace` | El último byte (`0xFFFF`) es `00`: espera `UnimplementedOpcodes == 0`, o se pone ahí un opcode no implementado para conservar la aserción actual. |
 | `SpectrumIntegrationRunsAFrameAndAppliesFetchContention` | Con memoria a cero espera `UnimplementedOpcodes == 0` en vez de 17472; PC y T-states no cambian. |
 

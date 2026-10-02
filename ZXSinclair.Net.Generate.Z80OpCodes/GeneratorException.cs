@@ -15,6 +15,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+namespace ZXSinclair.Net.Generate.Z80OpCodes;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+internal sealed class GeneratorException : Exception
+{
+    public GeneratorException(string message) : base(message) { }
+    public GeneratorException(Model.SourceLocation source, string message) : base($"{source}: {message}") { }
+}

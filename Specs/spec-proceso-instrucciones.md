@@ -16,7 +16,7 @@ Por dependencias y por casos FUSE que desbloquea cada paso.
 
 | # | Spec | Contenido | Motivo del orden |
 |---|---|---|---|
-| 0 | `spec-generador-z80.md` | Cómo cada entrada de `opcodes_*.dat` se convierte en patrón y plantilla; regla 4.1 de `spec-instr-nop.md` (opcodes que no están en `opcodes_ddfd.dat`); cabecera GPL; sustitución de `Z80Cpu.Instructions.cs`. Piloto: `NOP` generado con salida idéntica a la actual. | Sin el generador, todo lo demás se escribiría a mano y habría que rehacerlo. |
+| 0 | `spec-generador-z80.md` | Cómo cada entrada de `opcodes_*.dat` se convierte en patrón y plantilla; regla 4.1 de `spec-instr-nop.md` (opcodes que no están en `opcodes_ddfd.dat`); cabecera GPL; despachos en `ZXSinclair.Net.Core/Z80/Generated/`. Piloto: `NOP` generado con salida idéntica a la actual. | Sin el generador, todo lo demás se escribiría a mano y habría que rehacerlo. |
 | 1 | `spec-instr-carga-8.md` | Carga de 8 bits. | La usan casi todos los tests; desbloquea muchos casos FUSE. |
 | 2 | `spec-instr-carga-16.md` | Carga de 16 bits, `PUSH`/`POP`. | Base de las llamadas. |
 | 3 | `spec-instr-saltos.md` | Saltos, llamadas, retornos, `RST`, `DJNZ`. | Necesario para ejecutar código real (ROM, z80test). |
@@ -38,6 +38,7 @@ Por dependencias y por casos FUSE que desbloquea cada paso.
 3. **Implementación** según el plan: plantillas del generador y métodos auxiliares escritos a mano (`[AggressiveInlining]`, spec CPU 5). La salida generada no se edita a mano.
 4. **Verificación**:
    - `dotnet build zxsinclair.net.slnx` sin warnings nuevos.
+   - `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -- --check` y `dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests` en verde.
    - `dotnet test ZXSinclair.Net.Core.Tests` en verde, incluidos los tests propios del grupo (spec CPU 8.3).
    - Runner FUSE (`dotnet run --project ZXSinclair.Net.Test`) con eventos: suben los casos pasados y **0 fallos**.
 5. **Documentación**: actualizar la tabla de seguimiento (sección 6), spec CPU 8.1 (cifras del runner) y `CLAUDE.md`/`AGENTS.md` si cambia algo que describan.
@@ -73,7 +74,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | # | Grupo | Spec | Estado | Casos FUSE pasados |
 |---|---|---|---|---|
 | — | Piloto `NOP` | `spec-instr-nop.md` | Implementado | 3 (`00`, `dd00`, `ddfd00`) |
-| 0 | Generador | `spec-generador-z80.md` | Especificado | — |
+| 0 | Generador | `spec-generador-z80.md` | Implementado | 3 (piloto NOP) |
 | 1 | Carga de 8 bits | — | Pendiente | — |
 | 2 | Carga de 16 bits | — | Pendiente | — |
 | 3 | Saltos y llamadas | — | Pendiente | — |

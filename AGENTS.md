@@ -8,13 +8,14 @@ The emulator is being rewritten in `ZXSinclair.Net.Core`; all emulator code goes
 
 - `ZXSinclair.Net.Core/`: destination for the emulator rewrite; implements `Specs/spec-buses-memoria.md` and the base CPU in `Specs/spec-cpu-z80.md`, with NOP as the first implemented instruction.
   - `Abstractions/`: generic contracts for any CPU/machine (`IBus`, `IBusData<TAddress, TData>`, `IBusIo<TPort, TData>`, `IMemory<TAddress, TData>`, `IMemoryBuffer<TAddress, TData>`); `Z80/IZ80Bus` adds the Z80 cycles.
-  - `Abstractions/ICpu`, `Z80/Z80Cpu<TBus>`: CPU contract, registers, flag tables, prefix loop, interrupts, HALT state and reset. The bus field is mutable to avoid defensive struct copies. `Z80Cpu.Instructions.cs` contains provisional dispatches, to be replaced by the future generator; NOP is implemented; other opcodes increment `UnimplementedOpcodes`.
+  - `Abstractions/ICpu`, `Z80/Z80Cpu<TBus>`: CPU contract, registers, flag tables, prefix loop, interrupts, HALT state and reset. The bus field is mutable to avoid defensive struct copies. The five dispatches in `Z80/Generated/` are emitted by the generator; NOP is implemented and other opcodes increment `UnimplementedOpcodes`.
   - `Memory/`: `MemoryLayout` (any 64K map: page size, ROM/RAM regions, mirrors) and `PagedMemory` (one pinned array, separate read/write page tables, branch-free access). Presets in `Machines/Layouts.cs`: Spectrum 16K/48K/128K(+2), ZX81 1K/16K.
   - `Timing/`: timing presets and precomputed contention and floating-bus tables.
   - `Machines/Spectrum/`: `SpectrumMachine`, `SpectrumBus` (a `readonly struct` used only as a generic argument, `where TBus : struct, IZ80Bus`, so the JIT specialises and inlines it), `Spectrum128Paging` (port 0x7FFD).
 - `ZXSinclair.Net.Core.Tests/`: xUnit tests for the Core.
+- `ZXSinclair.Net.Generate.Z80OpCodes.Tests/`: xUnit tests for the generator (parser, operands, aliases, patterns, deterministic output and CLI checks); no Core reference.
 - `ZXSinclair.Net.Benchmarks/`: BenchmarkDotNet benchmarks (memory strategies, Core bus).
-- `ZXSinclair.Net.Generate.Z80OpCodes/`: future Z80 instruction generator; only the FUSE opcode tables in `data/` remain. The new generator follows `Specs/spec-cpu-z80.md` section 5 and the indexed-opcode rule in `Specs/spec-instr-nop.md` section 4.1.
+- `ZXSinclair.Net.Generate.Z80OpCodes/`: Z80 instruction generator; reads five embedded FUSE tables in `data/` and emits five dispatch files in `ZXSinclair.Net.Core/Z80/Generated/`, using a pattern catalog with NOP as the pilot. It does not reference the Core and follows `Specs/spec-cpu-z80.md` section 5 and the indexed-opcode rule in `Specs/spec-instr-nop.md` section 4.1.
 - `ZXSinclair.Net.Fuse/`: library shared by the FUSE runner and the Core tests: embedded FUSE fixtures in `data/`, their parser (`FuseTestFile`), the recording `FuseTestBus`, `FuseCpuState` and `FuseComparison`.
 - `ZXSinclair.Net.Test/`: FUSE console runner (references the Core and `ZXSinclair.Net.Fuse`).
 - `.vscode/`: build tasks and debugger configurations.
@@ -25,7 +26,7 @@ The emulator is being rewritten in `ZXSinclair.Net.Core`; all emulator code goes
 
 ## Specifications
 
-Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the Spectrum 16K/48K/128K/+2 and ZX81 memory (maps, contention, paging) for the `ZXSinclair.Net.Core` rewrite. `Specs/spec-cpu-z80.md` specifies the CPU contract (`ICpu`) and the Z80 CPU (`Z80Cpu<TBus>`) with NOP as the first implemented instruction. `Specs/spec-instr-nop.md` specifies `NOP`, the pilot instruction (including the rule that opcodes absent from `opcodes_ddfd.dat` are generated in `ExecuteIndexedOpcode` with the same body as in `ExecuteMain`). `Specs/spec-proceso-instrucciones.md` is the process guide for instructions: one spec and plan per Zilog manual group, implemented by generator patterns, in a fixed order starting with the generator spec, plus a progress table. `Specs/spec-generador-z80.md` specifies the generator (FUSE tables, including `opcodes_cb.dat`/`opcodes_ddfdcb.dat` to restore from git history, aliases, pattern catalog per group, five generated files in `ZXSinclair.Net.Core/Z80/Generated/`, `--check`, and its own test project).
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the Spectrum 16K/48K/128K/+2 and ZX81 memory (maps, contention, paging) for the `ZXSinclair.Net.Core` rewrite. `Specs/spec-cpu-z80.md` specifies the CPU contract (`ICpu`) and the Z80 CPU (`Z80Cpu<TBus>`) with NOP as the first implemented instruction. `Specs/spec-instr-nop.md` specifies `NOP`, the pilot instruction (including the rule that opcodes absent from `opcodes_ddfd.dat` are generated in `ExecuteIndexedOpcode` with the same body as in `ExecuteMain`). `Specs/spec-proceso-instrucciones.md` is the process guide for instructions: one spec and plan per Zilog manual group, implemented by generator patterns, in a fixed order starting with the generator spec, plus a progress table. `Specs/spec-generador-z80.md` specifies the generator (FUSE tables, including `opcodes_cb.dat`/`opcodes_ddfdcb.dat` restored from git history, aliases, pattern catalog per group, five generated files in `ZXSinclair.Net.Core/Z80/Generated/`, `--check`, and its own test project).
 
 ## Performance Is the Top Priority
 
@@ -45,10 +46,12 @@ dotnet build zxsinclair.net.slnx -c Debug -m:1
 dotnet test ZXSinclair.Net.Core.Tests
 dotnet run --project ZXSinclair.Net.Test
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -c Debug
+dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -- --check
+dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests
 dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Bus*'
 ```
 
-These build the solution, run the Core xUnit tests, execute the FUSE runner (currently 3 passed cases, 0 failures and 1332 skipped cases), run the generator placeholder, and run bus benchmarks, respectively. CPU benchmark: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*'`. It measures NOP including fetch, dispatch and interrupt checks: 2.113 ns/opcode, 0 B allocated (2026-10-02, spec section 8.4).
+These commands build the solution, run Core and generator tests, execute the FUSE runner (currently 3 passed cases, 0 failures and 1332 skipped cases), generate and check dispatches, and run bus benchmarks. Generator options: `--output <dir>`, `--check`, `--verbose` (after `--`); exit codes: 0 success, 1 differences, 2 generator/argument/I/O error. CPU benchmark: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*'`. It measures NOP including fetch, dispatch and interrupt checks: 3.782 ns/opcode, 0 B allocated, versus 3.783 ns for the previous dispatch in the current control (2026-10-02, spec section 8.4).
 
 ## Required C# License Header
 
@@ -81,7 +84,7 @@ Nullable reference types and implicit usings are enabled. No repository formatte
 
 ## Generated Code
 
-The previous generator and its generated files were removed. The new generator will produce `partial` files of `Z80Cpu<TBus>` (`Specs/spec-cpu-z80.md`, section 5) from `data/opcodes_*.dat`; generated files must not be edited by hand. Register new embedded tables in the generator `.csproj` and review regenerated diffs.
+The generator produces `partial` files of `Z80Cpu<TBus>` (`Specs/spec-cpu-z80.md`, section 5) from `data/opcodes_*.dat`; generated files must not be edited by hand. Register new embedded tables in the generator `.csproj` and review regenerated diffs.
 
 ## Testing Guidelines
 

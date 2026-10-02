@@ -1,6 +1,6 @@
 # Especificación: generador de instrucciones del Z80
 
-Especificación de `ZXSinclair.Net.Generate.Z80OpCodes`, la herramienta que produce los despachos de instrucciones de `Z80Cpu<TBus>` a partir de las tablas de opcodes de FUSE. Es el paso 0 de `Specs/spec-proceso-instrucciones.md` y desarrolla el contrato de `Specs/spec-cpu-z80.md` sección 5. El piloto es `NOP` (`Specs/spec-instr-nop.md`): el generador debe producir el mismo comportamiento que el despacho provisional actual.
+Especificación de `ZXSinclair.Net.Generate.Z80OpCodes`, la herramienta que produce los despachos de instrucciones de `Z80Cpu<TBus>` a partir de las tablas de opcodes de FUSE. Es el paso 0 de `Specs/spec-proceso-instrucciones.md` y desarrolla el contrato de `Specs/spec-cpu-z80.md` sección 5. El piloto es `NOP` (`Specs/spec-instr-nop.md`): el generador debe producir el mismo comportamiento que el despacho provisional al que sustituye. Estado: implementado con NOP como piloto.
 
 Esta spec fija **la mecánica** del generador (entrada, modelo, patrones, salida, ejecución, pruebas). La **semántica** de cada instrucción (ciclos, flags, registros) la fija la spec de su grupo; cada grupo añade sus patrones al catálogo del generador.
 
@@ -19,12 +19,12 @@ Lo no confirmado se marca **(verificar)**.
 | Fichero | Tabla | Método destino | Estado |
 |---|---|---|---|
 | `opcodes_base.dat` | Sin prefijo | `ExecuteMain(byte)` | En el proyecto |
-| `opcodes_cb.dat` | `CB xx` | `ExecuteCB(byte)` | **Recuperar** del historial de git |
+| `opcodes_cb.dat` | `CB xx` | `ExecuteCB(byte)` | Recuperado del historial de git |
 | `opcodes_ed.dat` | `ED xx` | `ExecuteED(byte)` | En el proyecto |
 | `opcodes_ddfd.dat` | `DD xx` / `FD xx` | `ExecuteIndexedOpcode<TIndex>(byte)` | En el proyecto |
-| `opcodes_ddfdcb.dat` | `DD CB d xx` / `FD CB d xx` | `ExecuteIndexedCB<TIndex>(ushort address, byte)` | **Recuperar** del historial de git |
+| `opcodes_ddfdcb.dat` | `DD CB d xx` / `FD CB d xx` | `ExecuteIndexedCB<TIndex>(ushort address, byte)` | Recuperado del historial de git |
 
-`opcodes_cb.dat` y `opcodes_ddfdcb.dat` se borraron con el generador antiguo. Están en `builderCodes/generateZ80Ops/` en el commit anterior a `3aa51e0` y se recuperan sin cambios:
+`opcodes_cb.dat` y `opcodes_ddfdcb.dat` se recuperaron sin cambios del generador antiguo. Su origen está en `builderCodes/generateZ80Ops/` en el commit anterior a `3aa51e0`. Comandos de recuperación:
 
 ```bash
 git show 3aa51e0^:builderCodes/generateZ80Ops/opcodes_cb.dat > ZXSinclair.Net.Generate.Z80OpCodes/data/opcodes_cb.dat
@@ -43,13 +43,14 @@ Una entrada por línea: `0xNN MNEMÓNICO operandos`.
 | Caso | Ejemplo | Tratamiento |
 |---|---|---|
 | Comentario o línea vacía | `# opcodes_base…` | Se ignora |
+| Copia DDFDCB | `0x80 LD B,RES 0,(REGISTER+dd)`; `0x00 LD B,RLC (REGISTER+dd)` | Operando destino `CopyTo` e instrucción interna con su mnemónico y operandos; no se divide toda la línea por comas |
 | Entrada normal | `0x41 LD B,C` | Un opcode con su mnemónico y operandos separados por comas |
 | Opcode sin mnemónico | `0x44` … `0x7c NEG` (ED); `0x40` … `0x47 BIT 0,(REGISTER+dd)` (DDFDCB) | **Alias**: toma el mnemónico y los operandos de la siguiente línea que los tenga |
 | Prefijo | `0xcb shift CB`, `0xdd shift DD`, `0xcb shift DDFDCB` | No genera código: los prefijos los consume el ciclo escrito a mano (spec CPU 4.3) |
 | Trampa de FUSE | `0xfb slttrap` (ED) | No es una instrucción del Z80: se trata como hueco de ED |
 | Opcode ausente | ED `0x00`…`0x3f`; DD/FD `0x00` | Ver 2.3 |
 
-Errores (opcode duplicado, alias sin línea destino, byte fuera de rango, mnemónico vacío al final) detienen el generador con un mensaje que incluye fichero y línea.
+Errores (opcode duplicado, alias sin línea destino, byte fuera de rango, operando desconocido, forma compuesta inválida o entrada ausente en una tabla que debe estar completa) detienen el generador con un mensaje que incluye fichero y línea.
 
 ### 2.3 Opcodes ausentes
 
@@ -81,8 +82,11 @@ El parser clasifica cada operando; el emisor lo traduce a una expresión C#. La 
 | `NZ`, `Z`, `NC`, `C`, `PO`, `PE`, `P`, `M` | Condición | Expresión sobre `Registers.F` (el contexto distingue `C` registro de `C` condición: solo es condición como primer operando de `JP`, `JR`, `CALL`, `RET`) |
 | `(C)`, `(nn)` | Puerto | Ver spec del grupo 10 |
 | `0`…`7` | Bit | Constante |
-| `00`, `08`…`38` | Dirección de `RST` | Constante |
+| `0`/`00`, `8`/`08`, `10`, `18`, `20`, `28`, `30`, `38` (hexadecimal) | Dirección de `RST` | Constante |
 | `0`, `1`, `2` | Modo `IM` | Constante |
+| `0` en `OUT (C),0` | Constante de salida | `0` |
+
+En DDFDCB, `LD r,<instrucción> (REGISTER+dd)` se representa con `CopyTo` (registro destino) e `InnerInstruction` (mnemónico y operandos internos). Las comas de `RES`/`SET` pertenecen a la instrucción interna.
 
 Un operando que el parser no reconoce es un error del generador, no un caso "no implementado".
 
@@ -90,10 +94,11 @@ Un operando que el parser no reconoce es un error del generador, no un caso "no 
 
 ### 3.1 Modelo
 
-El parser produce, por tabla, 256 entradas `Opcode { Table, Byte, Mnemonic, Operands[], Kind }` con `Kind` = instrucción, alias resuelto, prefijo, hueco o ausente. El modelo no contiene código C#.
+El parser produce, por tabla, 256 entradas `Opcode { Table, Byte, Mnemonic, Operands[], Kind }` con `Kind` = instrucción, alias resuelto, prefijo, hueco o ausente. Incluye `Source` (fichero y línea; línea 0 para entradas ausentes), `CopyTo` e `InnerInstruction` para formas compuestas. El modelo no contiene código C#.
 
 ### 3.2 Catálogo de patrones
 
+- `DispatchEmitter.Generate(tables, catalog)` recibe el catálogo como parámetro; la CLI usa `PatternCatalog.Default`. Los tests pueden inyectar patrones sin modificar el catálogo real.
 - Un **patrón** reconoce un conjunto de opcodes por mnemónico y forma de operandos (por ejemplo, `LD r,r'`, `LD r,(HL)`, `ALU A,r`, `JR cc,offset`) y **emite el cuerpo** del `case`.
 - Los patrones se agrupan por grupo del manual en ficheros del generador: `Patterns/Control.cs` (`NOP`), `Patterns/Load8.cs`, `Patterns/Load16.cs`… Cada spec de grupo enumera sus patrones y su código emitido.
 - Cada opcode encaja **como mucho en un patrón**; si encaja en dos, el generador falla. Si no encaja en ninguno, se emite `Unimplemented()` y cuenta como pendiente (sección 6).
@@ -127,7 +132,7 @@ Las firmas son las actuales; el ciclo de prefijos (`Step`, `ExecuteIndexed`, `Fi
 Cada fichero:
 1. Empieza con la cabecera GPL exacta de `CLAUDE.md` (nada antes).
 2. Sigue con `// <auto-generated>` y una línea indicando que lo genera `ZXSinclair.Net.Generate.Z80OpCodes` y no se edita a mano.
-3. `namespace ZXSinclair.Net.Core.Z80;` y `public sealed partial class Z80Cpu<TBus>` con un único método: un `switch` sobre `opcode` con los `case` ordenados por byte y `default: Unimplemented(); break;`.
+3. `#nullable enable` explícito, seguido de `namespace ZXSinclair.Net.Core.Z80;` y `public sealed partial class Z80Cpu<TBus>` con un único método: un `switch` sobre `opcode` con los `case` ordenados por byte y `default: Unimplemented(); break;`.
 
 La salida es **determinista**: mismo orden, sangría de 4 espacios, finales de línea `Environment.NewLine` (el repositorio no tiene `.gitattributes` y usa `core.autocrlf`, así que en git quedan como LF), UTF-8 sin BOM, sin fechas ni rutas absolutas. Regenerar sin cambios en las tablas o los patrones no produce diff.
 
@@ -145,21 +150,22 @@ dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 |---|---|
 | (ninguna) | Genera los cinco ficheros en `ZXSinclair.Net.Core/Z80/Generated/` (ruta localizada subiendo desde el directorio actual hasta `zxsinclair.net.slnx`) y muestra el resumen de la sección 6. |
 | `--output <dir>` | Escribe en otro directorio. |
+| `--verbose` | Lista los opcodes pendientes, incluidos los huecos todavía sin patrón. |
 | `--check` | Genera en memoria y compara con los ficheros existentes, normalizando los finales de línea; sale con código 1 y lista los ficheros distintos si no coinciden. No escribe nada. |
 
-- El generador **no referencia el Core**: hoy tiene un `ProjectReference` a `ZXSinclair.Net.Core` que se elimina, para poder regenerar aunque el código generado no compile.
+- El generador **no referencia el Core**, para poder regenerar aunque el código generado no compile. Los errores de argumentos, parsing, patrones o E/S salen con código 2 y mensaje. `--output` permite trabajar fuera del repositorio sin localizar la solución.
 - Las configuraciones de VS Code existentes (`.vscode/launch.json`, `.vscode/tasks.json`) se ajustan a las opciones nuevas.
 
 ## 6. Cobertura
 
-Al terminar, el generador muestra por tabla los opcodes implementados, pendientes, alias y huecos, por ejemplo:
+Al terminar, el generador muestra por tabla los opcodes implementados, pendientes, prefijos, huecos y alias. Los alias se cuentan también como implementados o pendientes; los huecos pendientes se detallan por separado. Cobertura con NOP:
 
 ```
-base    : 1 implementados / 251 pendientes / 4 prefijos
-cb      : 0 / 256
-ed      : 0 / 78 pendientes / 178 huecos (EdHole pendiente)
-ddfd    : 1 / …
-ddfdcb  : 0 / 256
+base   : 1 implemented / 251 pending / 4 prefixes / 0 holes (0 pending) / 0 aliases
+cb     : 0 implemented / 256 pending / 0 prefixes / 0 holes (0 pending) / 0 aliases
+ed     : 0 implemented / 78 pending / 0 prefixes / 178 holes (178 pending) / 19 aliases
+ddfd   : 1 implemented / 251 pending / 4 prefixes / 0 holes (0 pending) / 0 aliases
+ddfdcb : 0 implemented / 256 pending / 0 prefixes / 0 holes (0 pending) / 56 aliases
 ```
 
 Con `--verbose` lista los opcodes pendientes por tabla. Las cifras alimentan la tabla de seguimiento de `spec-proceso-instrucciones.md`.
@@ -186,6 +192,8 @@ Nuevo proyecto xUnit `ZXSinclair.Net.Generate.Z80OpCodes.Tests` (añadido a `zxs
 | `Parser_RejectsMalformedLines` (`[Theory]`) | Duplicado, alias huérfano, byte inválido y operando desconocido fallan con fichero y línea |
 | `Indexed_AbsentOpcodesUseBaseBody` | DD/FD `0x00` emite el mismo cuerpo que base `0x00`; `0xEB` (`EX DE,HL`) igual que en base |
 | `Patterns_AreDisjoint` | Ningún opcode encaja en dos patrones |
+| `Parser_ClassifiesEveryOperand` | Todas las clases aparecen en las tablas reales; condiciones y constantes se clasifican por contexto |
+| `Parser_ParsesDdfdcbCopyForms` | Rotaciones y RES/SET con copia conservan destino e instrucción interna |
 | `Output_StartsWithLicenseHeader` | Los cinco ficheros empiezan exactamente con la cabecera GPL |
 | `Output_IsDeterministic` | Dos generaciones seguidas producen bytes idénticos |
 | `Output_MatchesCommittedFiles` | Equivale a `--check`: la salida coincide con `ZXSinclair.Net.Core/Z80/Generated/` (detecta ediciones a mano y regeneraciones olvidadas) |
@@ -194,9 +202,9 @@ Nuevo proyecto xUnit `ZXSinclair.Net.Generate.Z80OpCodes.Tests` (añadido a `zxs
 
 Con solo el patrón `NOP`:
 - `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` contienen `case 0x00: break; // NOP`; el resto de métodos solo el `default`.
-- `Z80Cpu.Instructions.cs` desaparece.
+- El archivo provisional fue sustituido por los cinco archivos de `Generated/`.
 - Siguen en verde, sin cambios, `dotnet test ZXSinclair.Net.Core.Tests` (incluido `NopTests`) y el runner FUSE (3 casos pasados, 0 fallos).
-- El benchmark `*Z80Cpu*` no empeora respecto a la última medición de spec CPU 8.4.
+- El benchmark `*Z80Cpu*` se contrasta con la última medición de spec CPU 8.4. Si no se reproduce, se compara también con el despacho anterior en el entorno actual y se documentan ambas cifras. Verificación del piloto: 3.782 ns generado frente a 3.783 ns del control anterior, 0 B en ambos; la cifra histórica de 2.113 ns no se reprodujo en el control.
 
 ## 9. Criterios de aceptación
 

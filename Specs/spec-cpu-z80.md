@@ -111,14 +111,14 @@ Cada instrucción emite exactamente la secuencia de ciclos de la tabla de la Sin
 
 Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; los ciclos internos usan **siempre** la dirección correcta, aunque en el bus sin contención no tenga efecto.
 
-## 5. Contrato con el generador de instrucciones (futuro)
+## 5. Contrato con el generador de instrucciones
 
 - El generador produce ficheros `partial` de `Z80Cpu<TBus>` con métodos `ExecuteMain(byte)`, `ExecuteCB(byte)`, `ExecuteED(byte)`, `ExecuteIndexedOpcode<TIndex>(byte)`, `ExecuteIndexedCB<TIndex>(ushort address, byte opcode)`, cada uno un `switch` sobre el byte (el JIT lo compila a una tabla de saltos). `ExecuteIndexed<TIndex>()` y `FinishIndexed<TIndex>(byte)` pertenecen al ciclo de prefijos escrito a mano.
 - Cada caso llama a métodos pequeños `[AggressiveInlining]` escritos a mano (ALU, rotaciones, `Push`/`Pop`…) o contiene el código directamente.
-- Las tablas de entrada son `data/opcodes_*.dat` (formato FUSE), que se conservan en el proyecto del generador.
+- Las cinco tablas de entrada son `data/opcodes_*.dat` (formato FUSE), incrustadas en `ZXSinclair.Net.Generate.Z80OpCodes`. El generador está implementado según `spec-generador-z80.md`, con NOP como patrón piloto; no referencia el Core.
 - Los ficheros generados llevan la cabecera GPL y no se editan a mano.
-- Mientras no exista el generador, los `switch` son provisionales: `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` como un caso vacío; el resto queda como "no implementado" (ver 8).
-- `Z80Cpu.Instructions.cs` contiene estos despachos provisionales y será sustituido por el generador. Cada opcode completo aún no implementado llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
+- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` como un caso vacío; el resto queda como "no implementado" (ver 8).
+- El archivo provisional se ha eliminado. Se regenera con `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes`; `-- --check` compara sin escribir y detecta diferencias con código 1. Cada opcode completo aún no implementado llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
 
 ## 6. Interrupciones
 
@@ -198,6 +198,20 @@ Medición del 2026-10-02: `Z80CpuBenchmarks.ExecuteFrame`, BenchmarkDotNet 0.15.
 Cada invocación fija PC=0, ejecuta 69888 T-states y llama a `EndFrame()`: 17472 NOP (`00`), normalizados con `OperationsPerInvoke`. Las direcciones contenidas se alcanzan tras el intervalo de pantalla, por lo que este recorrido no añade esperas. Incluye fetch, despacho de NOP y comprobación de interrupciones. Devuelve PC para conservar un resultado dependiente de la ejecución. No mide una mezcla de instrucciones ni WebAssembly. La base del despacho sin instrucciones era 3.844 ns/opcode y 0 B (2026-10-02).
 
 Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*'`. Informe de esta ejecución en `ZXSinclair.Net.Benchmarks/bin/nop-benchmark-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md` (artefacto local excluido de git).
+
+
+### Comparación tras implementar el generador (2026-10-02)
+
+Mismo benchmark, hardware, SDK y runtime indicados arriba, Release. Se repitió la medición del despacho generado y se midió el despacho anterior en una copia aislada bajo `bin/`, restaurando desde HEAD su archivo provisional y conservando el mismo benchmark.
+
+| Despacho | Media por opcode | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|---|
+| Generado, repetición | 3.782 ns | 0.0029 ns | 0.0027 ns | 0 B |
+| Anterior, control actual | 3.783 ns | 0.0021 ns | 0.0017 ns | 0 B |
+
+Los intervalos se solapan; esta comparación no muestra una regresión del despacho generado. La primera ejecución generada dio 3.770 ns (error 0.0626 ns, desviación 0.0586 ns, 0 B). La cifra histórica de 2.113 ns no se reprodujo tampoco con el despacho anterior; la causa de la diferencia entre ejecuciones no está determinada. Se conserva la medición histórica y se usa el control actual para evaluar este cambio.
+
+Informes locales, excluidos de git: `ZXSinclair.Net.Benchmarks/bin/generator-repeat-benchmark-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md` y `ZXSinclair.Net.Benchmarks/bin/generator-baseline-control-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md`.
 
 ## 9. Fuera de alcance
 

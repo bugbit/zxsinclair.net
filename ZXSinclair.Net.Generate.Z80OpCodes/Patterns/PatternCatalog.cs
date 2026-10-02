@@ -15,6 +15,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using ZXSinclair.Net.Generate.Z80OpCodes;
+using ZXSinclair.Net.Generate.Z80OpCodes.Model;
 
-return GeneratorApplication.Run(args, Directory.GetCurrentDirectory(), Console.Out, Console.Error);
+namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
+
+internal sealed class PatternCatalog(params IPattern[] patterns)
+{
+    public static PatternCatalog Default { get; } = new(new NopPattern());
+
+    public IPattern? Resolve(Opcode opcode)
+    {
+        IPattern? match = null;
+        foreach (var pattern in patterns)
+        {
+            if (!pattern.Matches(opcode)) continue;
+            if (match is not null)
+                throw new GeneratorException(opcode.Source, $"Multiple patterns match {opcode.Table} 0x{opcode.Byte:X2} ({opcode.Comment}).");
+            match = pattern;
+        }
+        return match;
+    }
+}
