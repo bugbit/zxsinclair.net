@@ -16,6 +16,10 @@ The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXS
 
 `Docs/z80cpu_um.pdf` is the Z80 technical manual. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
 
+## Specifications
+
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the 48K/128K/+2 memory (contention, paging) for the `ZXSinclair.Net.Core` rewrite.
+
 ## Performance Is the Top Priority
 
 Optimization dominates every design decision in this emulator. Very efficient, fast C# is the essence of the project and what distinguishes it from similar emulators (see README.md). It must run cycle-accurate emulation at full speed, including in Blazor WebAssembly. When abstraction or elegance conflicts with speed in the emulation hot path (instruction fetch/decode/execute, memory and bus access, T-state accounting, ULA/video), choose speed:

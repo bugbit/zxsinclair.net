@@ -12,6 +12,10 @@ The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXS
 
 `Docs/z80cpu_um.pdf` is the Z80 technical manual. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
 
+## Specifications
+
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the 48K/128K/+2 memory (contention, paging) for the `ZXSinclair.Net.Core` rewrite.
+
 ## Required C# License Header
 
 Every C# file (`.cs`) must start with the following exact block. Include it in new files and preserve it when editing existing files. Generator templates must emit the same header. Do not place code, using directives, or other comments before it.

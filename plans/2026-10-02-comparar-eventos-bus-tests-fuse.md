@@ -34,7 +34,7 @@ Que el runner de tests compare, además de registros, memoria y T-states, la sec
    - `CompareTest`: comparar la secuencia completa (misma longitud, mismo orden, mismo time/type/address/data).
    - Sustituir los `Debug.Assert` de comparación por comprobaciones que **acumulan fallos** (nombre del test + primer campo/evento distinto, con esperado vs obtenido) y siguen con el siguiente test. Al final, resumen `pasados / fallidos / omitidos (no implementados)` y código de salida ≠ 0 si hay fallos. Los asserts de parseo de `clsTests.cs` se quedan.
    - Opción `--no-events` (o constante) para desactivar la comparación de eventos.
-5. **Documentación**: actualizar la sección de tests de `CLAUDE.md` y `AGENTS.md` (y la 9.5 de `Docs/spec-buses-memoria.md`): el runner compara eventos de bus, informa de fallos sin abortar y los ciclos internos deben usar `InternalCycles(dirección, n)`, nunca `Ticks.AddCycles`.
+5. **Documentación**: actualizar la sección de tests de `CLAUDE.md` y `AGENTS.md` (y la 9.5 de `Specs/spec-buses-memoria.md`): el runner compara eventos de bus, informa de fallos sin abortar y los ciclos internos deben usar `InternalCycles(dirección, n)`, nunca `Ticks.AddCycles`.
 6. **Verificación**:
    - `dotnet build zxsinclair.net.slnx -c Debug` y `-c Release` (Release compila sin el código de registro).
    - `dotnet run --project ZXSinclair.Net.Test -c Debug`: los opcodes implementados (LD r,r', LD r,n, LD r,(HL), LD (IX+d),…, LD A,I…) pasan también la comparación de eventos; el resumen muestra los omitidos.
