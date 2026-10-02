@@ -21,7 +21,7 @@ using ZXSinclair.Net.Core.Z80;
 namespace ZXSinclair.Net.Benchmarks;
 
 /// <summary>
-/// Fixed CPU fetch/dispatch/interrupt-check cost, in ns per unimplemented opcode.
+/// NOP cost including fetch, dispatch and interrupt checks, in ns per opcode.
 /// This frame starts at PC=0: the contended addresses are reached after the display interval.
 /// It is not an instruction-mix benchmark or a WebAssembly measurement.
 /// </summary>
@@ -45,6 +45,6 @@ public class Z80CpuBenchmarks
         cpu.Registers.PC = 0;
         cpu.Execute(machine.Timing.TStatesPerFrame);
         machine.EndFrame();
-        return cpu.UnimplementedOpcodes;
+        return cpu.Registers.PC;
     }
 }

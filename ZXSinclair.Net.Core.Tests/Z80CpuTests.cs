@@ -51,13 +51,13 @@ public class Z80CpuTests
     }
 
     [Theory]
-    [InlineData(new byte[] { 0x00 }, 4, 1)]
+    [InlineData(new byte[] { 0x01 }, 4, 1)]
     [InlineData(new byte[] { 0xCB, 0x12 }, 8, 2)]
     [InlineData(new byte[] { 0xED, 0x12 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0x00 }, 8, 2)]
-    [InlineData(new byte[] { 0xFD, 0x00 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0xFD, 0x00 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xDD, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xDD, 0x01 }, 8, 2)]
+    [InlineData(new byte[] { 0xFD, 0x01 }, 8, 2)]
+    [InlineData(new byte[] { 0xDD, 0xFD, 0x01 }, 12, 3)]
+    [InlineData(new byte[] { 0xFD, 0xDD, 0x01 }, 12, 3)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
     [InlineData(new byte[] { 0xFD, 0xCB, 0xFE, 0x12 }, 16, 2)]
     [InlineData(new byte[] { 0xDD, 0xCB, 0x80, 0x12 }, 16, 2)]
@@ -80,6 +80,7 @@ public class Z80CpuTests
         var (cpu, state) = Create();
         for (var i = 0; i < 65535; i++)
             state.Memory[i] = (byte)((i & 1) == 0 ? 0xDD : 0xFD);
+        state.Memory[0xFFFF] = 0x01;
         cpu.Registers.R = 0x80;
         cpu.Step();
         Assert.Equal(262144, state.Cycles);
@@ -312,7 +313,7 @@ public class Z80CpuTests
         var cpu = new Z80Cpu<SpectrumBus>(machine.Bus);
         cpu.Execute(machine.Timing.TStatesPerFrame);
         Assert.Equal(machine.Timing.TStatesPerFrame, machine.TStates);
-        Assert.Equal(17472, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
         Assert.Equal((ushort)17472, cpu.Registers.PC);
         machine.EndFrame();
         Assert.Equal(0, machine.TStates);

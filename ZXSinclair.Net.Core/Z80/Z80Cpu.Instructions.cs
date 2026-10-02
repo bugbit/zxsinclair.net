@@ -24,6 +24,7 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x00: break; // NOP
             default: Unimplemented(); break;
         }
     }
@@ -48,6 +49,7 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x00: break; // NOP
             default: Unimplemented(); break;
         }
     }
