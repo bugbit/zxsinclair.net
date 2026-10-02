@@ -25,7 +25,7 @@ dotnet restore zxsinclair.net.slnx
 dotnet build zxsinclair.net.slnx -c Debug --no-restore -m:1
 dotnet build zxsinclair.net.slnx -c Release --no-restore -m:1
 dotnet test ZXSinclair.Net.Core.Tests
-dotnet run --project ZXSinclair.Net.Test -c Debug
+dotnet run --project ZXSinclair.Net.Test
 ```
 
-`ZXSinclair.Net.Core.Tests` contiene los tests xUnit del Core. `ZXSinclair.Net.Test` es el ejecutor de los tests Z80 de FUSE: debe ejecutarse en Debug y, hasta que exista la CPU, solo carga y valida los ficheros de tests. El generador de instrucciones (`ZXSinclair.Net.Generate.Z80OpCodes`) se rehará desde cero; de momento solo conserva las tablas de opcodes de FUSE.
+`ZXSinclair.Net.Core.Tests` contiene los tests xUnit del Core. `ZXSinclair.Net.Test` es el ejecutor de los tests Z80 de FUSE (en Debug o Release); hoy omite todos los casos porque la CPU aún no tiene instrucciones. Los ficheros FUSE, su parser y el bus de pruebas están en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit. El generador de instrucciones (`ZXSinclair.Net.Generate.Z80OpCodes`) se rehará desde cero; de momento solo conserva las tablas de opcodes de FUSE.

@@ -8,7 +8,7 @@ Se apoya en `Specs/spec-buses-memoria.md`: la CPU solo habla con un bus `IZ80Bus
 
 - `Docs/z80cpu_um.pdf` — Zilog *Z80 CPU User Manual* (UM0080): registros, interrupciones, modos IM, temporización.
 - Sean Young, *The Undocumented Z80 Documented*: flags F3/F5, MEMPTR, comportamiento tras reset, R, prefijos repetidos.
-- FUSE: tests `ZXSinclair.Net.Test/data/tests.in` / `tests.expected` y tablas `opcodes_*.dat`.
+- FUSE: tests `ZXSinclair.Net.Fuse/data/tests.in` / `tests.expected` y tablas `opcodes_*.dat`.
 - Sinclair Wiki, [Contended memory](https://sinclair.wiki.zxnet.co.uk/wiki/Contended_memory): secuencia de ciclos de bus de cada instrucción (`pc:4, hl:3, ir:1 ×2…`).
 
 Lo no confirmado se marca **(verificar)**.
@@ -44,7 +44,7 @@ Reglas (sección 9 de la spec de buses):
 Estado interno, también en el struct:
 - `IFF1`, `IFF2` (bool o byte), `IM` (0, 1, 2).
 - `Halted`.
-- `EiPending`: la instrucción anterior fue `EI` (o un prefijo DD/FD), así que no se acepta INT al final de esta.
+- `EiPending`: la instrucción anterior fue `EI`; bloquea INT hasta completar la siguiente instrucción. Los prefijos DD/FD se procesan dentro del mismo paso y no necesitan este estado.
 - `Q`: flags modificados por la última instrucción, necesarios para F3/F5 de `SCF`/`CCF` en el NMOS **(verificar si los tests FUSE lo exigen)**.
 
 La CPU expone `ref Z80Registers Registers` (campo, no propiedad que copie) para tests, depurador y snapshots.
@@ -63,7 +63,7 @@ Tablas precalculadas de 256 entradas en `Z80Flags` (como `mTablePV` y `mTableZS5
 
 | Miembro | Comportamiento |
 |---|---|
-| `Z80Cpu(TBus bus)` | Guarda el bus en un campo `readonly`. |
+| `Z80Cpu(TBus bus)` | Guarda el bus en un campo mutable para evitar copias defensivas de structs genéricos; inicializa la CPU mediante `Reset()`. |
 | `void Reset()` | Ver 7. Resetea la CPU, no el bus. |
 | `void Step()` | Atiende interrupciones pendientes o ejecuta **una** instrucción completa (con todos sus prefijos). |
 | `void Execute(int targetCycles)` | Repite `Step()` mientras `bus.Cycles < targetCycles`. Es el bucle de la máquina: un frame = `Execute(TStatesPerFrame)` + `EndFrame()`. |
@@ -96,6 +96,8 @@ M1 = `bus.FetchOpcode(PC)` + incremento de los 7 bits bajos de R. El incremento 
 
 Las instrucciones indexadas se generan **una sola vez** y se especializan para IX e IY con un parámetro genérico de tipo struct (`ExecuteIndexed<TIndex>() where TIndex : struct, IIndexRegister`), que el JIT convierte en dos copias sin coste en tiempo de ejecución. Nada de `ref` a un registro elegido en tiempo de ejecución ni de duplicar el código a mano.
 
+Los prefijos repetidos se consumen mediante un bucle de espacio constante, conservando el último DD/FD y despachando después a la especialización IX/IY. PC puede dar la vuelta a 64K. Si toda la memoria contiene prefijos, no se completa una instrucción y `Step()` no retorna; el contrato no permite cortar una instrucción a mitad.
+
 ### 4.4 Temporización de las instrucciones
 
 Cada instrucción emite exactamente la secuencia de ciclos de la tabla de la Sinclair Wiki, traducida a llamadas al bus:
@@ -111,11 +113,12 @@ Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; lo
 
 ## 5. Contrato con el generador de instrucciones (futuro)
 
-- El generador produce ficheros `partial` de `Z80Cpu<TBus>` con métodos `ExecuteMain(byte)`, `ExecuteCB(byte)`, `ExecuteED(byte)`, `ExecuteIndexed<TIndex>(byte)`, `ExecuteIndexedCB<TIndex>(…)`, cada uno un `switch` sobre el byte (el JIT lo compila a una tabla de saltos).
+- El generador produce ficheros `partial` de `Z80Cpu<TBus>` con métodos `ExecuteMain(byte)`, `ExecuteCB(byte)`, `ExecuteED(byte)`, `ExecuteIndexedOpcode<TIndex>(byte)`, `ExecuteIndexedCB<TIndex>(ushort address, byte opcode)`, cada uno un `switch` sobre el byte (el JIT lo compila a una tabla de saltos). `ExecuteIndexed<TIndex>()` y `FinishIndexed<TIndex>(byte)` pertenecen al ciclo de prefijos escrito a mano.
 - Cada caso llama a métodos pequeños `[AggressiveInlining]` escritos a mano (ALU, rotaciones, `Push`/`Pop`…) o contiene el código directamente.
 - Las tablas de entrada son `data/opcodes_*.dat` (formato FUSE), que se conservan en el proyecto del generador.
 - Los ficheros generados llevan la cabecera GPL y no se editan a mano.
 - Mientras no exista el generador, los `switch` quedan vacíos: todo opcode es "no implementado" (ver 8).
+- `Z80Cpu.Instructions.cs` contiene estos despachos provisionales y será sustituido por el generador. Cada opcode completo llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
 
 ## 6. Interrupciones
 
@@ -140,6 +143,8 @@ Nivel (`bus.IntActive`); se acepta si `IFF1` y no `EiPending`. `IFF1 = IFF2 = 0`
 | IM 1 | Apila PC (`sp-1:3`, `sp-2:3`) y salta a `0x0038` | 7 + 6 = 13 |
 | IM 2 | Apila PC, lee el vector en `(I << 8) | byte del bus` (`2 × 3`) y salta | 7 + 6 + 6 = 19 |
 
+En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de 7 T). Los otros bytes incrementan `UnimplementedOpcodes`, sin apilar PC ni cambiar PC/WZ tras salir de HALT. IFF1/IFF2 y R sí reflejan el reconocimiento realizado. No es su ejecución real: queda pendiente junto con las instrucciones. Zilog UM0080, apartado CPU Response / Mode 0, confirma que el dispositivo puede proporcionar cualquier instrucción.
+
 ## 7. Reset
 
 `Reset()` deja: `PC = 0`, `I = R = 0`, `IFF1 = IFF2 = 0`, `IM = 0`, `Halted = false`, `EiPending = false`, `AF = SP = 0xFFFF` (valor del hardware real según Young) y el resto de registros a 0 **(verificar valores no garantizados)**. No resetea el bus ni la máquina.
@@ -148,10 +153,11 @@ Nivel (`bus.IntActive`); se acepta si `IFF1` y no `EiPending`. `IFF1 = IFF2 = 0`
 
 ### 8.1 Tests FUSE (`ZXSinclair.Net.Test`)
 
-- El runner usará un bus propio del proyecto de tests, `FuseTestBus : struct, IZ80Bus`: memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
+- El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado se marca en la CPU (contador u opción de compilación del test) y el test se cuenta como omitido, como hasta ahora.
-- Hasta que exista `Z80Cpu`, el runner solo carga y valida los ficheros FUSE.
+- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente todos omitidos por falta de instrucciones. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 ### 8.2 Tests xUnit (`ZXSinclair.Net.Core.Tests`)
 
@@ -165,6 +171,16 @@ Sin instrucciones se puede probar ya, con un bus de prueba:
 ### 8.3 Rendimiento
 
 Benchmark en `ZXSinclair.Net.Benchmarks` del bucle `Execute` con `Z80Cpu<SpectrumBus>` (cuando haya instrucciones: un programa de prueba con mezcla típica). Objetivo orientativo: muy por encima de tiempo real en escritorio (el Spectrum necesita ~3.5 millones de T-states por segundo) y al menos tiempo real holgado en Blazor WebAssembly **(fijar cifras al medir)**.
+
+Medición del 2026-10-02: `Z80CpuBenchmarks.ExecuteFrame`, BenchmarkDotNet 0.15.8, Intel Core i7-14700, Windows 11, SDK 10.0.401, .NET 10.0.12 x64 RyuJIT, Release:
+
+| Media por opcode | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|
+| 3.844 ns | 0.0293 ns | 0.0260 ns | 0 B |
+
+Cada invocación fija PC=0, ejecuta 69888 T-states y llama a `EndFrame()`: 17472 opcodes a cero, normalizados con `OperationsPerInvoke`. Las direcciones contenidas se alcanzan tras el intervalo de pantalla, por lo que este recorrido no añade esperas. Incluye fetch, despacho provisional, contador de no implementados y comprobación de interrupciones. No mide instrucciones reales ni WebAssembly.
+
+Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*'`. Informe de esta ejecución en `ZXSinclair.Net.Benchmarks/bin/cpu-benchmark-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md` (artefacto local excluido de git).
 
 ## 9. Fuera de alcance
 

@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-namespace ZXSinclair.Net.Test;
+namespace ZXSinclair.Net.Fuse;
 
 /// <summary>
 /// CPU-independent checks of a FUSE test result. They will be used again when the Z80 of

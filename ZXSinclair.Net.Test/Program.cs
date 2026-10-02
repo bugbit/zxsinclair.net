@@ -15,106 +15,63 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// FUSE Z80 test runner. The Z80 CPU is being rewritten in ZXSinclair.Net.Core (Specs/spec-cpu-z80.md);
-// until it exists, this program only loads and validates the FUSE test files.
+using ZXSinclair.Net.Core.Z80;
+using ZXSinclair.Net.Fuse;
 
-var assembly = Assembly.GetExecutingAssembly();
-var embeddedProvider = new EmbeddedFileProvider(assembly);
+// FUSE Z80 test runner (Debug or Release). Cases with unimplemented instructions are counted as skipped.
 
-if (!DebugBuild())
-{
-    Console.Error.WriteLine("Run the FUSE tests in Debug configuration; Release omits the parser assertions.");
-    Environment.ExitCode = 2;
-    return;
-}
-
-var testsIn = await ReadTestsIn();
-var testsExpected = await ReadTestsExpected();
+var testsIn = FuseTestFile.LoadInputs();
+var testsExpected = FuseTestFile.LoadExpected();
 var missing = testsIn.Where(t => !testsExpected.ContainsKey(t.Base.Name)).Select(t => t.Base.Name).ToList();
 
 foreach (var name in missing)
     Console.Error.WriteLine($"FAIL {name}: missing expected result");
 
 Console.WriteLine($"FUSE: {testsIn.Count} tests loaded, {testsExpected.Count} expected results, {testsExpected.Values.Sum(t => t.Events.Length)} bus events.");
-Console.WriteLine("No Z80 CPU in ZXSinclair.Net.Core yet: no test was executed.");
-if (missing.Count != 0)
+var passed = 0;
+var failed = missing.Count;
+var skipped = 0;
+var recordEvents = !args.Contains("--no-events");
+foreach (var test in testsIn)
+{
+    if (!testsExpected.TryGetValue(test.Base.Name, out var expected))
+        continue;
+    var state = new FuseTestBusState { Events = recordEvents ? new() : null };
+    for (var address = 0; address < state.Memory.Length; address += 4)
+    {
+        state.Memory[address] = 0xDE;
+        state.Memory[address + 1] = 0xAD;
+        state.Memory[address + 2] = 0xBE;
+        state.Memory[address + 3] = 0xEF;
+    }
+    foreach (var block in test.Base.Memories)
+    {
+        var address = block.Address;
+        foreach (var value in block.Data)
+            state.Memory[address++] = value;
+    }
+    var initialMemory = (byte[])state.Memory.Clone();
+    var cpu = new Z80Cpu<FuseTestBus>(new(state));
+    cpu.Registers = FuseCpuState.Load(test.Base);
+    cpu.Execute(test.Base.Line2.endtstates);
+    if (cpu.UnimplementedOpcodes != 0)
+    {
+        skipped++;
+        continue;
+    }
+    var error = FuseCpuState.Compare(expected.Base, in cpu.Registers, state.Cycles)
+        ?? FuseComparison.CompareMemory(FuseComparison.ExpectedMemory(initialMemory, expected),
+            address => state.Memory[address]);
+    if (error is null && recordEvents)
+        error = FuseComparison.CompareEvents(expected, state.Events!);
+    if (error is null)
+        passed++;
+    else
+    {
+        failed++;
+        Console.Error.WriteLine($"FAIL {test.Base.Name}: {error}");
+    }
+}
+Console.WriteLine($"FUSE: {passed} passed / {failed} failed / {skipped} skipped");
+if (failed != 0)
     Environment.ExitCode = 1;
-
-async Task<string[]> ReadLinesTxtFileEmb(string key)
-{
-    using var stream = embeddedProvider.GetFileInfo(key).CreateReadStream();
-    using var reader = new StreamReader(stream);
-    var lines = new List<string>();
-    string? line;
-
-    while ((line = await reader.ReadLineAsync()) != null)
-        lines.Add(line);
-
-    return lines.ToArray();
-}
-
-async Task<List<clsTestIn>> ReadTestsIn()
-{
-    var lines = await ReadLinesTxtFileEmb("data/tests.in");
-    var i = 0;
-    var tests = new List<clsTestIn>();
-    string name;
-
-    while (i < lines.Length)
-    {
-        do
-        {
-            if (i >= lines.Length)
-                return tests;
-            name = lines[i++];
-        } while (string.IsNullOrEmpty(name));
-
-        var test = new clsTestIn();
-
-        tests.Add(test);
-        test.Base.Name = name;
-        test.Base.Line1.read(lines[i++]);
-        test.Base.Line2.read(lines[i++]);
-        test.Base.Memories = clsTestMemory.Read(lines, ref i);
-    }
-
-    return tests;
-}
-
-async Task<IDictionary<string, clsTestExpected>> ReadTestsExpected()
-{
-    var lines = await ReadLinesTxtFileEmb("data/tests.expected");
-    var i = 0;
-    var tests = new Dictionary<string, clsTestExpected>();
-    string name;
-
-    while (i < lines.Length)
-    {
-        do
-        {
-            if (i >= lines.Length)
-                return tests;
-            name = lines[i++];
-        } while (string.IsNullOrEmpty(name));
-
-        var test = new clsTestExpected();
-
-        tests.Add(name, test);
-        test.Base.Name = name;
-        test.Events = clsTestEvent.ReadEvents(lines, ref i);
-        test.Base.Line1.read(lines[i++]);
-        test.Base.Line2.read(lines[i++]);
-        test.Base.Memories = clsTestMemory.Read(lines, ref i);
-    }
-
-    return tests;
-}
-
-static bool DebugBuild()
-{
-#if DEBUG
-    return true;
-#else
-    return false;
-#endif
-}

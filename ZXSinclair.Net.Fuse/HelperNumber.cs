@@ -15,13 +15,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-namespace ZXSinclair.Net.Test;
-
-public enum Z80BusEventType { MC, MR, MW, PC, PR, PW }
-
-public readonly record struct Z80BusEvent(int Time, Z80BusEventType Type, ushort Address, byte? Data)
+namespace ZXSinclair.Net.Fuse
 {
-    public override string ToString() => Data is byte data
-        ? $"{Time,5} {Type} {Address:x4} {data:x2}"
-        : $"{Time,5} {Type} {Address:x4}";
+    public static class HelperNumber
+    {
+        public static ushort? HexToShort(string hex) => (ushort.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out ushort num)) ? num : null;
+
+        public static bool TryUShortHex(string hex, out ushort num)
+        {
+            var numh = HexToShort(hex);
+
+            if (numh.HasValue)
+            {
+                num = numh.Value;
+
+                return true;
+            }
+
+            num = default(ushort);
+
+            return false;
+        }
+    }
 }

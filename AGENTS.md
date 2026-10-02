@@ -6,15 +6,17 @@ This C# ZX Spectrum emulator targets .NET 10. The planned Blazor front end does 
 
 The emulator is being rewritten in `ZXSinclair.Net.Core`; all emulator code goes there. The old `ZXSinclair.Net` project has been deleted (it remains in git history). The Z80 CPU of the Core is specified in `Specs/spec-cpu-z80.md` and has no instructions yet.
 
-- `ZXSinclair.Net.Core/`: destination for the emulator rewrite; implements `Specs/spec-buses-memoria.md`; the CPU (`Specs/spec-cpu-z80.md`) is not implemented yet.
+- `ZXSinclair.Net.Core/`: destination for the emulator rewrite; implements `Specs/spec-buses-memoria.md` and the base CPU in `Specs/spec-cpu-z80.md`, without instructions.
   - `Abstractions/`: generic contracts for any CPU/machine (`IBus`, `IBusData<TAddress, TData>`, `IBusIo<TPort, TData>`, `IMemory<TAddress, TData>`, `IMemoryBuffer<TAddress, TData>`); `Z80/IZ80Bus` adds the Z80 cycles.
+  - `Abstractions/ICpu`, `Z80/Z80Cpu<TBus>`: CPU contract, registers, flag tables, prefix loop, interrupts, HALT state and reset. The bus field is mutable to avoid defensive struct copies. `Z80Cpu.Instructions.cs` contains provisional dispatches, to be replaced by the future generator; all opcodes currently increment `UnimplementedOpcodes`.
   - `Memory/`: `MemoryLayout` (any 64K map: page size, ROM/RAM regions, mirrors) and `PagedMemory` (one pinned array, separate read/write page tables, branch-free access). Presets in `Machines/Layouts.cs`: Spectrum 16K/48K/128K(+2), ZX81 1K/16K.
   - `Timing/`: timing presets and precomputed contention and floating-bus tables.
   - `Machines/Spectrum/`: `SpectrumMachine`, `SpectrumBus` (a `readonly struct` used only as a generic argument, `where TBus : struct, IZ80Bus`, so the JIT specialises and inlines it), `Spectrum128Paging` (port 0x7FFD).
 - `ZXSinclair.Net.Core.Tests/`: xUnit tests for the Core.
 - `ZXSinclair.Net.Benchmarks/`: BenchmarkDotNet benchmarks (memory strategies, Core bus).
 - `ZXSinclair.Net.Generate.Z80OpCodes/`: future Z80 instruction generator; only the FUSE opcode tables in `data/` remain. The new generator follows `Specs/spec-cpu-z80.md` section 5.
-- `ZXSinclair.Net.Test/`: FUSE console runner (references the Core) and embedded FUSE-format fixtures in `data/`.
+- `ZXSinclair.Net.Fuse/`: library shared by the FUSE runner and the Core tests: embedded FUSE fixtures in `data/`, their parser (`FuseTestFile`), the recording `FuseTestBus`, `FuseCpuState` and `FuseComparison`.
+- `ZXSinclair.Net.Test/`: FUSE console runner (references the Core and `ZXSinclair.Net.Fuse`).
 - `.vscode/`: build tasks and debugger configurations.
 
 ## Z80 Technical Reference
@@ -41,12 +43,12 @@ Run from the repository root with an SDK supporting `net10.0` and the .NET 10 ru
 ```sh
 dotnet build zxsinclair.net.slnx -c Debug -m:1
 dotnet test ZXSinclair.Net.Core.Tests
-dotnet run --project ZXSinclair.Net.Test -c Debug
+dotnet run --project ZXSinclair.Net.Test
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -c Debug
 dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Bus*'
 ```
 
-These build the solution, run the Core xUnit tests, load and validate the FUSE fixtures (no CPU to run them yet), run the generator placeholder, and run benchmarks, respectively.
+These build the solution, run the Core xUnit tests, execute the FUSE runner (currently 1335 skipped cases), run the generator placeholder, and run bus benchmarks, respectively. CPU benchmark: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*'`.
 
 ## Required C# License Header
 
@@ -85,7 +87,7 @@ The previous generator and its generated files were removed. The new generator w
 
 Core code is tested with xUnit in `ZXSinclair.Net.Core.Tests` (`dotnet test`, Debug or Release); add a test for each rule of the spec you implement.
 
-Run the FUSE console runner in Debug; `dotnet test` does not execute it, and Release is rejected because the parser relies on `Debug.Assert`. Until the Core has a Z80 CPU it only loads and validates `tests.in` and `tests.expected`. When the CPU exists it will run on a recording `FuseTestBus` (no test instrumentation inside the CPU) and compare registers, IFF/IM/halted, T-states, memory, and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`) using `FuseComparison`. Add matching, identically named cases to `tests.in` and `tests.expected`.
+Run the FUSE console runner (Debug or Release); `dotnet test` does not execute it. Malformed FUSE files throw `FormatException` with the test name. It runs `Z80Cpu<FuseTestBus>` on a recording bus (no test instrumentation inside the CPU), skips cases with unimplemented opcodes, and compares registers through `FuseCpuState`, plus memory and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`) through `FuseComparison`. `--no-events` disables event recording/comparison. Core xUnit tests use the same `ZXSinclair.Net.Fuse` library to verify the recording bus and the parser against the real fixtures. Add matching, identically named cases to `tests.in` and `tests.expected`.
 
 Instructions emit all their timing through the bus (`FetchOpcode`, `Read`, `Write`, `Internal(address, n)`, `In`, `Out`); never add cycles directly.
 

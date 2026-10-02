@@ -15,12 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ZXSinclair.Net.Test
+namespace ZXSinclair.Net.Fuse
 {
     public class clsTestLine1
     {
@@ -28,26 +23,22 @@ namespace ZXSinclair.Net.Test
 
         public void read(string line)
         {
-            //&af, &bc, &de, &hl, &af_, &bc_, &de_, &hl_, &ix, &iy, &sp, &pc
+            // af bc de hl af' bc' de' hl' ix iy sp pc
+            var fields = FuseFormat.Fields(line, 12);
+            var i = 0;
 
-            var reghs = line.Split(' ').Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-
-            Debug.Assert(reghs.Length == 12);
-
-            int i = 0;
-
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.af));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.bc));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.de));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.hl));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.af_));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.bc_));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.de_));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.hl_));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.ix));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.iy));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.sp));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.pc));
+            af = FuseFormat.Hex(fields[i++]);
+            bc = FuseFormat.Hex(fields[i++]);
+            de = FuseFormat.Hex(fields[i++]);
+            hl = FuseFormat.Hex(fields[i++]);
+            af_ = FuseFormat.Hex(fields[i++]);
+            bc_ = FuseFormat.Hex(fields[i++]);
+            de_ = FuseFormat.Hex(fields[i++]);
+            hl_ = FuseFormat.Hex(fields[i++]);
+            ix = FuseFormat.Hex(fields[i++]);
+            iy = FuseFormat.Hex(fields[i++]);
+            sp = FuseFormat.Hex(fields[i++]);
+            pc = FuseFormat.Hex(fields[i++]);
         }
     }
     public class clsTestLine2
@@ -58,21 +49,17 @@ namespace ZXSinclair.Net.Test
 
         public void read(string line)
         {
-            // &i, &r, &iff1, &iff2, &im, &halted, &end_tstates2
-            var reghs = line.Split(' ').Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+            // i r iff1 iff2 im halted end_tstates
+            var fields = FuseFormat.Fields(line, 7);
+            var j = 0;
 
-            Debug.Assert(reghs.Length == 7);
-
-            int i = 0;
-
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out this.i));
-            Debug.Assert(HelperNumber.TryUShortHex(reghs[i++], out r));
-
-            Debug.Assert(ushort.TryParse(reghs[i++], out this.iff1));
-            Debug.Assert(ushort.TryParse(reghs[i++], out this.iff2));
-            Debug.Assert(ushort.TryParse(reghs[i++], out this.im));
-            Debug.Assert(int.TryParse(reghs[i++], out this.halted));
-            Debug.Assert(ushort.TryParse(reghs[i++], out this.endtstates));
+            i = FuseFormat.Hex(fields[j++]);
+            r = FuseFormat.Hex(fields[j++]);
+            iff1 = FuseFormat.Decimal(fields[j++]);
+            iff2 = FuseFormat.Decimal(fields[j++]);
+            im = FuseFormat.Decimal(fields[j++]);
+            halted = FuseFormat.Decimal(fields[j++]);
+            endtstates = FuseFormat.Decimal(fields[j++]);
         }
     }
     public class clsTestMemory
@@ -91,22 +78,25 @@ namespace ZXSinclair.Net.Test
                 if (string.IsNullOrWhiteSpace(line))
                     break;
 
-                var reghs = line.Split(' ');
-                var j = 0;
-                var addressstr = reghs[j++];
+                var fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                if (string.Equals(addressstr, "-1"))
+                if (fields[0] == "-1")
                     break;
 
-                var addressParsed = HelperNumber.TryUShortHex(addressstr, out ushort address);
-                Debug.Assert(addressParsed);
+                var address = FuseFormat.Hex(fields[0]);
+                var length = fields[^1] == "-1" ? fields.Length - 2 : fields.Length - 1;
+                var data = new byte[length];
 
-                var len = (string.Equals(reghs.LastOrDefault(), "-1")) ? reghs.Length - 2 : reghs.Length - 1;
-                var data = reghs.Skip(j).Take(len).Select(h => HelperNumber.HexToShort(h)).ToArray();
+                for (var j = 0; j < length; j++)
+                {
+                    var value = FuseFormat.Hex(fields[j + 1]);
 
-                Debug.Assert(data.All(h => h.HasValue));
+                    if (value > 0xFF)
+                        throw new FormatException($"Memory byte out of range: '{fields[j + 1]}'.");
+                    data[j] = (byte)value;
+                }
 
-                memories.Add(new clsTestMemory { Address = address, Data = data.Select(h => (byte)h.Value).ToArray() });
+                memories.Add(new clsTestMemory { Address = address, Data = data });
             }
 
             return memories.ToArray();
@@ -131,40 +121,32 @@ namespace ZXSinclair.Net.Test
 <data> is the byte written or read. Missing for contentions.
         */
         public ushort time;
-        public string type;
+        public string type = "";
         public ushort address;
         public byte? data;
 
         public Z80BusEvent ToBusEvent() => new(time, Enum.Parse<Z80BusEventType>(type), address, data);
 
+        /// <summary>Parses an event line, or returns null if the line is not an event (the register line follows).</summary>
         public static clsTestEvent? Read(string line)
         {
-            /*
-        <time> <type> <address> <data>
-
-<time> is simply the time at which the event occurs.
-<type> is one of MR (memory read), MW (memory write), MC (memory
-       contend), PR (port read), PW (port write) or PC (port contend).
-<address> is the address (or IO port) affected.
-<data> is the byte written or read. Missing for contentions.
-        */
-            var reghs = line.Split(' ').Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+            var fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             byte? data;
 
-            if (reghs.Length != 4 && reghs.Length != 3)
+            if (fields.Length != 4 && fields.Length != 3)
                 return null;
 
-            if (!ushort.TryParse(reghs[0], out ushort time))
+            if (!ushort.TryParse(fields[0], out ushort time))
                 return null;
 
-            if (!HelperNumber.TryUShortHex(reghs[2], out ushort address))
+            if (!HelperNumber.TryUShortHex(fields[2], out ushort address))
                 return null;
 
-            if (reghs.Length == 3)
+            if (fields.Length == 3)
                 data = null;
             else
             {
-                if (!HelperNumber.TryUShortHex(reghs[3], out ushort data2))
+                if (!HelperNumber.TryUShortHex(fields[3], out ushort data2))
                     return null;
 
                 data = (byte)data2;
@@ -173,7 +155,7 @@ namespace ZXSinclair.Net.Test
             return new clsTestEvent
             {
                 time = time,
-                type = reghs[1],
+                type = fields[1],
                 address = address,
                 data = data
             };
@@ -202,5 +184,25 @@ namespace ZXSinclair.Net.Test
     {
         public clsTestBase Base { get; } = new();
         public clsTestEvent[] Events { get; set; } = new clsTestEvent[0];
+    }
+
+    /// <summary>Field parsing for the FUSE files. Errors throw <see cref="FormatException"/> in Debug and Release.</summary>
+    internal static class FuseFormat
+    {
+        public static string[] Fields(string line, int count)
+        {
+            var fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (fields.Length != count)
+                throw new FormatException($"Expected {count} fields, found {fields.Length}: '{line}'.");
+
+            return fields;
+        }
+
+        public static ushort Hex(string field) =>
+            HelperNumber.TryUShortHex(field, out var value) ? value : throw new FormatException($"Invalid hexadecimal value '{field}'.");
+
+        public static ushort Decimal(string field) =>
+            ushort.TryParse(field, out var value) ? value : throw new FormatException($"Invalid decimal value '{field}'.");
     }
 }
