@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado inicial (2026-10-02): **1 de 150 entradas completadas; 149 pendientes**.
+Estado (2026-10-02): **22 de 150 entradas completadas; 128 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado inicial (2026-10-02): **1 de 150 entradas completadas; 149 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-Solo NOP está completada. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
+NOP y las 21 entradas del grupo de carga de 8 bits están completadas. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -43,27 +43,27 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Carga de 8 bits
 
-- [ ] `LD r, r'` — p. 71.
-- [ ] `LD r, n` — p. 72.
-- [ ] `LD r, (HL)` — p. 74.
-- [ ] `LD r, (IX+d)` — p. 75.
-- [ ] `LD r, (IY+d)` — p. 77.
-- [ ] `LD (HL), r` — p. 79.
-- [ ] `LD (IX+d), r` — p. 81.
-- [ ] `LD (IY+d), r` — p. 83.
-- [ ] `LD (HL), n` — p. 85.
-- [ ] `LD (IX+d), n` — p. 86.
-- [ ] `LD (IY+d), n` — p. 87.
-- [ ] `LD A, (BC)` — p. 88.
-- [ ] `LD A, (DE)` — p. 89.
-- [ ] `LD A, (nn)` — p. 90.
-- [ ] `LD (BC), A` — p. 91.
-- [ ] `LD (DE), A` — p. 92.
-- [ ] `LD (nn), A` — p. 93.
-- [ ] `LD A, I` — p. 94.
-- [ ] `LD A, R` — p. 95.
-- [ ] `LD I, A` — p. 96.
-- [ ] `LD R, A` — p. 97.
+- [x] `LD r, r'` — p. 71. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD r, n` — p. 72. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD r, (HL)` — p. 74. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD r, (IX+d)` — p. 75. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD r, (IY+d)` — p. 77. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (HL), r` — p. 79. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (IX+d), r` — p. 81. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (IY+d), r` — p. 83. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (HL), n` — p. 85. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (IX+d), n` — p. 86. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (IY+d), n` — p. 87. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD A, (BC)` — p. 88. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD A, (DE)` — p. 89. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD A, (nn)` — p. 90. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (BC), A` — p. 91. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (DE), A` — p. 92. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD (nn), A` — p. 93. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD A, I` — p. 94. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD A, R` — p. 95. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD I, A` — p. 96. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
+- [x] `LD R, A` — p. 97. [Spec](spec-instr-carga-8.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8Tests.cs).
 
 ### Carga de 16 bits y pila
 

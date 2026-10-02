@@ -21,7 +21,20 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 internal sealed class PatternCatalog(params IPattern[] patterns)
 {
-    public static PatternCatalog Default { get; } = new(new NopPattern());
+    public static PatternCatalog Default { get; } = new(
+        new NopPattern(),
+        new LoadRegisterRegister(),
+        new LoadRegisterImmediate(),
+        new LoadRegisterIndirect(),
+        new StoreIndirectRegister(),
+        new StoreIndirectImmediate(),
+        new LoadAccumulatorAbsolute(),
+        new StoreAbsoluteAccumulator(),
+        new LoadRegisterIndexed(),
+        new StoreIndexedRegister(),
+        new StoreIndexedImmediate(),
+        new LoadAccumulatorSpecial(),
+        new StoreSpecialAccumulator());
 
     public IPattern? Resolve(Opcode opcode)
     {

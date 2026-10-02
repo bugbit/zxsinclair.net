@@ -128,6 +128,23 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     private byte ReadPc() => bus.Read(Registers.PC++);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort ReadPc16()
+    {
+        var low = ReadPc();
+        return (ushort)(low | ReadPc() << 8);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort IndexedAddress<TIndex>() where TIndex : struct, IIndexRegister
+    {
+        var displacement = (sbyte)ReadPc();
+        bus.Internal((ushort)(Registers.PC - 1), 5);
+        var address = (ushort)(TIndex.Pair(ref Registers) + displacement);
+        Registers.WZ = address;
+        return address;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Push(ushort value)
     {
         bus.Write(--Registers.SP, (byte)(value >> 8));

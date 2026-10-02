@@ -28,6 +28,185 @@ public sealed partial class Z80Cpu<TBus>
         switch (opcode)
         {
             case 0x00: break; // NOP
+            case 0x02: // LD (BC),A
+            {
+                bus.Write(Registers.BC, Registers.A);
+                Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.BC + 1) & 0xFF));
+                break;
+            }
+            case 0x06: Registers.B = ReadPc(); break; // LD B,nn
+            case 0x0a: // LD A,(BC)
+            {
+                Registers.A = bus.Read(Registers.BC);
+                Registers.WZ = (ushort)(Registers.BC + 1);
+                break;
+            }
+            case 0x0e: Registers.C = ReadPc(); break; // LD C,nn
+            case 0x12: // LD (DE),A
+            {
+                bus.Write(Registers.DE, Registers.A);
+                Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.DE + 1) & 0xFF));
+                break;
+            }
+            case 0x16: Registers.D = ReadPc(); break; // LD D,nn
+            case 0x1a: // LD A,(DE)
+            {
+                Registers.A = bus.Read(Registers.DE);
+                Registers.WZ = (ushort)(Registers.DE + 1);
+                break;
+            }
+            case 0x1e: Registers.E = ReadPc(); break; // LD E,nn
+            case 0x26: TIndex.High(ref Registers) = ReadPc(); break; // LD REGISTERH,nn
+            case 0x2e: TIndex.Low(ref Registers) = ReadPc(); break; // LD REGISTERL,nn
+            case 0x32: // LD (nnnn),A
+            {
+                var address = ReadPc16();
+                bus.Write(address, Registers.A);
+                Registers.WZ = (ushort)((Registers.A << 8) | ((address + 1) & 0xFF));
+                break;
+            }
+            case 0x36: StoreIndexedImmediate<TIndex>(); break; // LD (REGISTER+dd),nn
+            case 0x3a: // LD A,(nnnn)
+            {
+                var address = ReadPc16();
+                Registers.A = bus.Read(address);
+                Registers.WZ = (ushort)(address + 1);
+                break;
+            }
+            case 0x3e: Registers.A = ReadPc(); break; // LD A,nn
+            case 0x40: break; // LD B,B
+            case 0x41: Registers.B = Registers.C; break; // LD B,C
+            case 0x42: Registers.B = Registers.D; break; // LD B,D
+            case 0x43: Registers.B = Registers.E; break; // LD B,E
+            case 0x44: Registers.B = TIndex.High(ref Registers); break; // LD B,REGISTERH
+            case 0x45: Registers.B = TIndex.Low(ref Registers); break; // LD B,REGISTERL
+            case 0x46: // LD B,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.B = bus.Read(address);
+                break;
+            }
+            case 0x47: Registers.B = Registers.A; break; // LD B,A
+            case 0x48: Registers.C = Registers.B; break; // LD C,B
+            case 0x49: break; // LD C,C
+            case 0x4a: Registers.C = Registers.D; break; // LD C,D
+            case 0x4b: Registers.C = Registers.E; break; // LD C,E
+            case 0x4c: Registers.C = TIndex.High(ref Registers); break; // LD C,REGISTERH
+            case 0x4d: Registers.C = TIndex.Low(ref Registers); break; // LD C,REGISTERL
+            case 0x4e: // LD C,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.C = bus.Read(address);
+                break;
+            }
+            case 0x4f: Registers.C = Registers.A; break; // LD C,A
+            case 0x50: Registers.D = Registers.B; break; // LD D,B
+            case 0x51: Registers.D = Registers.C; break; // LD D,C
+            case 0x52: break; // LD D,D
+            case 0x53: Registers.D = Registers.E; break; // LD D,E
+            case 0x54: Registers.D = TIndex.High(ref Registers); break; // LD D,REGISTERH
+            case 0x55: Registers.D = TIndex.Low(ref Registers); break; // LD D,REGISTERL
+            case 0x56: // LD D,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.D = bus.Read(address);
+                break;
+            }
+            case 0x57: Registers.D = Registers.A; break; // LD D,A
+            case 0x58: Registers.E = Registers.B; break; // LD E,B
+            case 0x59: Registers.E = Registers.C; break; // LD E,C
+            case 0x5a: Registers.E = Registers.D; break; // LD E,D
+            case 0x5b: break; // LD E,E
+            case 0x5c: Registers.E = TIndex.High(ref Registers); break; // LD E,REGISTERH
+            case 0x5d: Registers.E = TIndex.Low(ref Registers); break; // LD E,REGISTERL
+            case 0x5e: // LD E,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.E = bus.Read(address);
+                break;
+            }
+            case 0x5f: Registers.E = Registers.A; break; // LD E,A
+            case 0x60: TIndex.High(ref Registers) = Registers.B; break; // LD REGISTERH,B
+            case 0x61: TIndex.High(ref Registers) = Registers.C; break; // LD REGISTERH,C
+            case 0x62: TIndex.High(ref Registers) = Registers.D; break; // LD REGISTERH,D
+            case 0x63: TIndex.High(ref Registers) = Registers.E; break; // LD REGISTERH,E
+            case 0x64: break; // LD REGISTERH,REGISTERH
+            case 0x65: TIndex.High(ref Registers) = TIndex.Low(ref Registers); break; // LD REGISTERH,REGISTERL
+            case 0x66: // LD H,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.H = bus.Read(address);
+                break;
+            }
+            case 0x67: TIndex.High(ref Registers) = Registers.A; break; // LD REGISTERH,A
+            case 0x68: TIndex.Low(ref Registers) = Registers.B; break; // LD REGISTERL,B
+            case 0x69: TIndex.Low(ref Registers) = Registers.C; break; // LD REGISTERL,C
+            case 0x6a: TIndex.Low(ref Registers) = Registers.D; break; // LD REGISTERL,D
+            case 0x6b: TIndex.Low(ref Registers) = Registers.E; break; // LD REGISTERL,E
+            case 0x6c: TIndex.Low(ref Registers) = TIndex.High(ref Registers); break; // LD REGISTERL,REGISTERH
+            case 0x6d: break; // LD REGISTERL,REGISTERL
+            case 0x6e: // LD L,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.L = bus.Read(address);
+                break;
+            }
+            case 0x6f: TIndex.Low(ref Registers) = Registers.A; break; // LD REGISTERL,A
+            case 0x70: // LD (REGISTER+dd),B
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.B);
+                break;
+            }
+            case 0x71: // LD (REGISTER+dd),C
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.C);
+                break;
+            }
+            case 0x72: // LD (REGISTER+dd),D
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.D);
+                break;
+            }
+            case 0x73: // LD (REGISTER+dd),E
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.E);
+                break;
+            }
+            case 0x74: // LD (REGISTER+dd),H
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.H);
+                break;
+            }
+            case 0x75: // LD (REGISTER+dd),L
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.L);
+                break;
+            }
+            case 0x77: // LD (REGISTER+dd),A
+            {
+                var address = IndexedAddress<TIndex>();
+                bus.Write(address, Registers.A);
+                break;
+            }
+            case 0x78: Registers.A = Registers.B; break; // LD A,B
+            case 0x79: Registers.A = Registers.C; break; // LD A,C
+            case 0x7a: Registers.A = Registers.D; break; // LD A,D
+            case 0x7b: Registers.A = Registers.E; break; // LD A,E
+            case 0x7c: Registers.A = TIndex.High(ref Registers); break; // LD A,REGISTERH
+            case 0x7d: Registers.A = TIndex.Low(ref Registers); break; // LD A,REGISTERL
+            case 0x7e: // LD A,(REGISTER+dd)
+            {
+                var address = IndexedAddress<TIndex>();
+                Registers.A = bus.Read(address);
+                break;
+            }
+            case 0x7f: break; // LD A,A
             default: Unimplemented(); break;
         }
     }

@@ -68,6 +68,8 @@ internal static class DispatchEmitter
         lines.AppendLine();
         lines.AppendLine("public sealed partial class Z80Cpu<TBus>");
         lines.AppendLine("{");
+        if (table == OpcodeTableKind.Base)
+            lines.AppendLine("    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
         lines.AppendLine($"    private void {signature}");
         lines.AppendLine("    {");
         lines.AppendLine("        switch (opcode)");
@@ -81,8 +83,13 @@ internal static class DispatchEmitter
                 lines.AppendLine($"            case 0x{item.Opcode.Byte:x2}:");
             var last = items[^1];
             var bodyLines = group.Key.Body.Split('\n');
+            if (table == OpcodeTableKind.Base && group.Key.Body.Length != 0)
+            {
+                lines.AppendLine($"            case 0x{last.Opcode.Byte:x2}: ExecuteMain{last.Opcode.Byte:X2}(); return; // {group.Key.Comment}");
+                continue;
+            }
             if (bodyLines.Length == 1)
-                lines.AppendLine($"            case 0x{last.Opcode.Byte:x2}: {(group.Key.Body.Length == 0 ? "" : group.Key.Body + " ")}break; // {group.Key.Comment}");
+                lines.AppendLine($"            case 0x{last.Opcode.Byte:x2}: {(group.Key.Body.Length == 0 ? "" : group.Key.Body + " ")}{(table == OpcodeTableKind.Base ? "return" : "break")}; // {group.Key.Comment}");
             else
             {
                 lines.AppendLine($"            case 0x{last.Opcode.Byte:x2}: // {group.Key.Comment}");
@@ -95,6 +102,20 @@ internal static class DispatchEmitter
         lines.AppendLine("            default: Unimplemented(); break;");
         lines.AppendLine("        }");
         lines.AppendLine("    }");
+        if (table == OpcodeTableKind.Base)
+        {
+            foreach (var group in groups.Where(g => g.Key.Body.Length != 0))
+            {
+                var value = group.Max(e => e.Opcode.Byte);
+                lines.AppendLine();
+                lines.AppendLine("    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+                lines.AppendLine($"    private void ExecuteMain{value:X2}()");
+                lines.AppendLine("    {");
+                foreach (var line in group.Key.Body.Split('\n'))
+                    lines.AppendLine("        " + line);
+                lines.AppendLine("    }");
+            }
+        }
         lines.AppendLine("}");
         return new(table, file, lines.ToString(), emitted.ToArray());
     }

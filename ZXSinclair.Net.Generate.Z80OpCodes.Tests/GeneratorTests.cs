@@ -208,6 +208,31 @@ public class GeneratorTests
     }
 
     [Fact]
+    public void Load8Patterns_RejectAll16BitLoads()
+    {
+        foreach (var opcode in Tables().Values.SelectMany(t => t).Where(o => o.Mnemonic == "LD"
+            && o.Operands.Any(p => p.Kind is OperandKind.Register16 or OperandKind.IndexPair or OperandKind.Immediate16)))
+            Assert.Null(PatternCatalog.Default.Resolve(opcode));
+    }
+
+    [Theory]
+    [InlineData(0, 0x41, "Registers.B = Registers.C;")]
+    [InlineData(0, 0x40, "")]
+    [InlineData(0, 0x0A, "Registers.A = bus.Read(Registers.BC);\nRegisters.WZ = (ushort)(Registers.BC + 1);")]
+    [InlineData(3, 0x36, "StoreIndexedImmediate<TIndex>();")]
+    [InlineData(3, 0x66, "var address = IndexedAddress<TIndex>();\nRegisters.H = bus.Read(address);")]
+    [InlineData(3, 0x26, "TIndex.High(ref Registers) = ReadPc();")]
+    [InlineData(2, 0x57, "LoadAFromSpecial(Registers.I);")]
+    public void Load8Patterns_EmitExpectedBodies(int tableId, int value, string expected)
+    {
+        var table = (OpcodeTableKind)tableId;
+        var opcode = Tables()[table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new(table)));
+    }
+
+    [Fact]
     public void Output_GroupsAliasesAndRetainsComments()
     {
         var result = DispatchEmitter.Generate(Tables(), new PatternCatalog(new TestPattern("NEG")));
@@ -256,15 +281,37 @@ public class GeneratorTests
     }
 
     [Fact]
-    public void Output_PilotContainsOnlyNop()
+    public void Output_MatchesExpectedCoverage()
     {
         foreach (var dispatch in Generate())
         {
-            var expected = dispatch.Table is OpcodeTableKind.Base or OpcodeTableKind.DDFD ? 1 : 0;
+            var expected = dispatch.Table switch
+            {
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 78,
+                OpcodeTableKind.ED => 4,
+                _ => 0,
+            };
             Assert.Equal(expected, dispatch.Opcodes.Count(o => o.Implemented));
-            Assert.Equal(expected, dispatch.Text.Split("case 0x00: break; // NOP").Length - 1);
+            Assert.Equal(dispatch.Table is OpcodeTableKind.Base or OpcodeTableKind.DDFD ? 1 : 0,
+                dispatch.Text.Split(dispatch.Table == OpcodeTableKind.Base
+                    ? "case 0x00: return; // NOP" : "case 0x00: break; // NOP").Length - 1);
             Assert.Contains("default: Unimplemented(); break;", dispatch.Text);
         }
+    }
+
+    [Fact]
+    public void MainDispatch_UsesInlineHelpersAndDirectReturns()
+    {
+        var main = Generate().Single(d => d.Table == OpcodeTableKind.Base);
+        Assert.Contains("MethodImplOptions.AggressiveInlining", main.Text);
+        foreach (var item in main.Opcodes.Where(o => o.Implemented && o.Body.Length != 0))
+        {
+            Assert.Contains($"case 0x{item.Opcode.Byte:x2}: ExecuteMain{item.Opcode.Byte:X2}(); return;", main.Text);
+            Assert.Contains($"private void ExecuteMain{item.Opcode.Byte:X2}()", main.Text);
+            foreach (var line in item.Body.Split('\n'))
+                Assert.Contains("        " + line, main.Text);
+        }
+        Assert.Contains("case 0x40: return; // LD B,B", main.Text);
     }
 
     [Fact]
@@ -308,7 +355,8 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("1 implemented / 251 pending / 4 prefixes", text);
+        Assert.Contains("78 implemented / 174 pending / 4 prefixes", text);
+        Assert.Contains("4 implemented / 74 pending", text);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
         Assert.DoesNotContain("0x00 NOP", text);

@@ -44,7 +44,7 @@ Tras ejecutar `NOP`, la siguiente comprobación de interrupciones de `Step()` pu
 
 ```csharp
 // ExecuteMain(byte opcode)
-case 0x00: break; // NOP
+case 0x00: return; // NOP
 ```
 
 Requisitos:
@@ -60,7 +60,7 @@ Requisitos:
 
 - Entrada: `0x00 NOP` en `opcodes_base.dat`. El generador emite el `case` en `ExecuteMain` y, por la regla de 4.1, en `ExecuteIndexedOpcode<TIndex>`.
 - La salida lleva la cabecera GPL y no se edita a mano (spec CPU 5).
-- El generador ya emite `case 0x00: break;` desde `NopPattern` en `Generated/Z80Cpu.Main.g.cs` y `Generated/Z80Cpu.Indexed.g.cs`. La salida no se edita a mano.
+- El patrón `NopPattern` emite un cuerpo vacío. El generador lo termina con `return` en `Generated/Z80Cpu.Main.g.cs` y con `break` en `Generated/Z80Cpu.Indexed.g.cs`; ambas formas ejecutan solo el fetch. La tabla base usa retornos directos para reducir el IL al añadir carga de 8 bits (spec CPU 8.4). La salida no se edita a mano.
 
 ## 5. Pruebas
 
