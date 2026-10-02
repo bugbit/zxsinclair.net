@@ -8,6 +8,10 @@ ZX Spectrum (Sinclair) emulator in C# / .NET 10, with a Blazor WebAssembly front
 
 The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXSinclair.Net.Core`; implement new emulator functionality there. Use `ZXSinclair.Net` as a reference for the legacy implementation.
 
+## Z80 Technical Reference
+
+`Docs/z80cpu_um.pdf` is the Z80 technical manual. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
+
 ## Required C# License Header
 
 Every C# file (`.cs`) must start with the following exact block. Include it in new files and preserve it when editing existing files. Generator templates must emit the same header. Do not place code, using directives, or other comments before it.
