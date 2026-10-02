@@ -28,6 +28,14 @@ public sealed partial class Z80Cpu<TBus>
         switch (opcode)
         {
             case 0x43: StoreWordAbsolute(Registers.BC); break; // LD (nnnn),BC
+            case 0x45:
+            case 0x4d:
+            case 0x55:
+            case 0x5d:
+            case 0x65:
+            case 0x6d:
+            case 0x75:
+            case 0x7d: ReturnFromInterrupt(); break; // RETN
             case 0x47: // LD I,A
             {
                 bus.Internal(Registers.IR, 1);

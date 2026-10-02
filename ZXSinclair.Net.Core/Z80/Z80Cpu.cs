@@ -135,6 +135,16 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private byte ReadPcDiscarded() => bus.ReadDiscarded(Registers.PC++);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort ReadPc16Discarded()
+    {
+        var low = ReadPcDiscarded();
+        return (ushort)(low | ReadPcDiscarded() << 8);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ushort IndexedAddress<TIndex>() where TIndex : struct, IIndexRegister
     {
         var displacement = (sbyte)ReadPc();

@@ -261,7 +261,9 @@ public class GeneratorTests
     [InlineData(0x03)] // INC BC
     [InlineData(0xE9)] // JP (HL)
     public void Load16Patterns_RejectOtherGroups(int value) =>
-        Assert.Null(PatternCatalog.Default.Resolve(Tables()[OpcodeTableKind.Base][value]));
+        Assert.Null(new PatternCatalog(new LoadPairImmediate(), new LoadPairAbsolute(),
+            new StoreAbsolutePair(), new LoadStackPointer(), new PushPair(), new PopPair())
+            .Resolve(Tables()[OpcodeTableKind.Base][value]));
 
     [Fact]
     public void Output_GroupsAliasesAndRetainsComments()
@@ -318,8 +320,8 @@ public class GeneratorTests
         {
             var expected = dispatch.Table switch
             {
-                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 93,
-                OpcodeTableKind.ED => 12,
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 135,
+                OpcodeTableKind.ED => 20,
                 _ => 0,
             };
             Assert.Equal(expected, dispatch.Opcodes.Count(o => o.Implemented));
@@ -336,6 +338,8 @@ public class GeneratorTests
         var main = Generate().Single(d => d.Table == OpcodeTableKind.Base);
         Assert.Contains("MethodImplOptions.AggressiveInlining", main.Text);
         Assert.Contains("if (opcode == 0) return;", main.Text);
+        Assert.Contains("ExecuteMainDispatch(opcode);", main.Text);
+        Assert.Contains("private void ExecuteMainDispatch(byte opcode)", main.Text);
         foreach (var item in main.Opcodes.Where(o => o.Implemented && o.Body.Length != 0))
         {
             Assert.Contains($"case 0x{item.Opcode.Byte:x2}: ExecuteMain{item.Opcode.Byte:X2}(); return;", main.Text);
@@ -344,6 +348,38 @@ public class GeneratorTests
                 Assert.Contains("        " + line, main.Text);
         }
         Assert.Contains("case 0x40: return; // LD B,B", main.Text);
+    }
+
+    [Theory]
+    [InlineData(0, 0xC3, "JumpAbsolute(true);")]
+    [InlineData(0, 0xC2, "JumpAbsolute((Registers.F & Z80Flags.Z) == 0);")]
+    [InlineData(0, 0xE9, "Registers.PC = Registers.HL;")]
+    [InlineData(3, 0xE9, "Registers.PC = TIndex.Pair(ref Registers);")]
+    [InlineData(0, 0x18, "JumpRelative(true);")]
+    [InlineData(0, 0x38, "JumpRelative((Registers.F & Z80Flags.C) != 0);")]
+    [InlineData(0, 0x10, "DecrementJumpNonZero();")]
+    [InlineData(0, 0xEC, "CallAbsolute((Registers.F & Z80Flags.PV) != 0);")]
+    [InlineData(0, 0xC9, "Return();")]
+    [InlineData(0, 0xF8, "ReturnConditional((Registers.F & Z80Flags.S) != 0);")]
+    [InlineData(0, 0xCF, "Restart(0x08);")]
+    public void JumpPatterns_EmitExpectedBodies(int table, int value, string expected)
+    {
+        var opcode = Tables()[(OpcodeTableKind)table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new((OpcodeTableKind)table)));
+    }
+
+    [Fact]
+    public void JumpPatterns_GroupAllInterruptReturnAliases()
+    {
+        var ed = Generate().Single(d => d.Table == OpcodeTableKind.ED);
+        foreach (var value in new[] { 0x45, 0x4D, 0x55, 0x5D, 0x65, 0x6D, 0x75, 0x7D })
+        {
+            Assert.Equal("ReturnFromInterrupt();", ed.Opcodes[value].Body);
+            Assert.Contains($"case 0x{value:x2}:", ed.Text);
+        }
+        Assert.Equal(1, ed.Text.Split("ReturnFromInterrupt();").Length - 1);
     }
 
     private sealed class OpcodeZeroPattern(string body) : IPattern
@@ -360,6 +396,7 @@ public class GeneratorTests
         var main = DispatchEmitter.Generate(Tables(), new PatternCatalog(new OpcodeZeroPattern(body)))
             .Single(d => d.Table == OpcodeTableKind.Base);
         Assert.Equal(body.Length == 0, main.Text.Contains("if (opcode == 0) return;"));
+        Assert.Equal(body.Length == 0, main.Text.Contains("private void ExecuteMainDispatch(byte opcode)"));
         var pending = DispatchEmitter.Generate(Tables(), new PatternCatalog())
             .Single(d => d.Table == OpcodeTableKind.Base);
         Assert.DoesNotContain("if (opcode == 0) return;", pending.Text);
@@ -406,8 +443,8 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("93 implemented / 159 pending / 4 prefixes", text);
-        Assert.Contains("12 implemented / 66 pending", text);
+        Assert.Contains("135 implemented / 117 pending / 4 prefixes", text);
+        Assert.Contains("20 implemented / 58 pending", text);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
         Assert.DoesNotContain("0x00 NOP", text);

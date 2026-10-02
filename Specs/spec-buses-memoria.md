@@ -230,11 +230,13 @@ Operaciones mínimas que la CPU necesita (nombres orientativos):
 |---|---|---|
 | `FetchOpcode(addr)` | M1 + refresco (`IR`) | 4 T |
 | `Read(addr)` | lectura | 3 T |
+| `ReadDiscarded(addr)` | lectura de un operando que una instrucción condicional no usa para saltar (`JR`/`JP`/`CALL`/`DJNZ` no tomados) | 3 T |
 | `Write(addr, value)` | escritura | 3 T |
 | `Internal(addr, n)` | ciclos internos con dirección en el bus | n × 1 T |
 | `In(port)` / `Out(port, value)` | E/S con TW automático | 4 T |
 | `AcknowledgeInterrupt()` | M1 con IORQ | según modo |
 
+- `ReadDiscarded` es, en el bus real, idéntica a `Read` (mismo ciclo, contención, coste y dato devuelto); `SpectrumBus` la implementa llamando a `Read`. Existe para que un bus de pruebas pueda seguir a FUSE, que modela ese ciclo como `contend_read` y lo registra solo como `MC`, sin `MR`.
 - **El contador de T-states pasa al bus/máquina**, no a la CPU: quien conoce la contención es la ULA. La CPU solo emite ciclos.
 - Cada operación aplica la contención en el T-state en que empieza (5.3) y suma su coste. Así el retraso queda dentro del acceso y la CPU no necesita saber nada de la ULA.
 - Las líneas de entrada (INT, NMI, RESET) se exponen como enteros/bits que la CPU consulta al final de cada instrucción.

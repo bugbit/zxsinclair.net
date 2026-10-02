@@ -74,7 +74,16 @@ internal static class DispatchEmitter
         lines.AppendLine("    {");
         // Keep the empty NOP path independent of the growing jump table.
         if (table == OpcodeTableKind.Base && emitted.Any(e => e.Opcode.Byte == 0 && e.Implemented && e.Body.Length == 0))
+        {
             lines.AppendLine("        if (opcode == 0) return;");
+            lines.AppendLine("        ExecuteMainDispatch(opcode);");
+            lines.AppendLine("    }");
+            lines.AppendLine();
+            // The small wrapper can inline into Step regardless of the switch's IL size.
+            lines.AppendLine("    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
+            lines.AppendLine("    private void ExecuteMainDispatch(byte opcode)");
+            lines.AppendLine("    {");
+        }
         lines.AppendLine("        switch (opcode)");
         lines.AppendLine("        {");
         var groups = emitted.Where(e => e.Implemented).GroupBy(e => (e.Body, e.Opcode.Comment))

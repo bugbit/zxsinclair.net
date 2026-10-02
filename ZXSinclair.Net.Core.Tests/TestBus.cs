@@ -38,6 +38,7 @@ internal struct TestBus : IZ80Bus
     public void Reset() => state.Cycles = 0;
     public byte FetchOpcode(ushort address) => Read(address, 4, "M1");
     public byte Read(ushort address) => Read(address, 3, "Read");
+    public byte ReadDiscarded(ushort address) => Read(address, 3, "ReadDiscarded");
     private byte Read(ushort address, int cost, string kind)
     {
         var value = state.Memory[address];

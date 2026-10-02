@@ -40,7 +40,16 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new StoreAbsolutePair(),
         new LoadStackPointer(),
         new PushPair(),
-        new PopPair());
+        new PopPair(),
+        new JumpAbsolutePattern(),
+        new JumpRegister(),
+        new JumpRelativePattern(),
+        new DecrementJump(),
+        new CallPattern(),
+        new ReturnPattern(),
+        new ReturnConditionalPattern(),
+        new ReturnFromInterruptPattern(),
+        new RestartPattern());
 
     public IPattern? Resolve(Opcode opcode)
     {

@@ -125,7 +125,7 @@ Se sustituye `ZXSinclair.Net.Core/Z80/Z80Cpu.Instructions.cs` (despacho provisio
 | `Z80Cpu.Indexed.g.cs` | `ExecuteIndexedOpcode<TIndex>(byte opcode) where TIndex : struct, IIndexRegister` |
 | `Z80Cpu.IndexedCB.g.cs` | `ExecuteIndexedCB<TIndex>(ushort address, byte opcode) where TIndex : struct, IIndexRegister` |
 
-La tabla base emite el despacho y auxiliares privados `ExecuteMainXX`, con los cuerpos concretos de los patrones. El despacho y los auxiliares usan `AggressiveInlining`; los casos implementados retornan directamente. Esta forma mantiene la cobertura y evita la regresión de NOP al crecer la tabla (spec CPU 8.4). Antes del switch base se emite `if (opcode == 0) return;` solo cuando `00` está implementado con cuerpo vacío; esto mantiene el coste de NOP al ampliar el rango con los opcodes de pila. El `case 0x00` se conserva para revisar la tabla completa. Las demás tablas conservan los cuerpos en sus casos.
+La tabla base emite auxiliares privados `ExecuteMainXX`, con los cuerpos concretos de los patrones y `AggressiveInlining`; los casos implementados retornan directamente. Cuando `00` está implementado con cuerpo vacío, `ExecuteMain` es una entrada pequeña con `AggressiveInlining`: emite `if (opcode == 0) return;` y delega los demás opcodes en `ExecuteMainDispatch`, que contiene el único switch base y también usa `AggressiveInlining`. Esto permite insertar la salida de NOP en `Step` aunque crezca el IL del switch (spec CPU 8.4). Sin NOP vacío, el switch se emite directamente en `ExecuteMain`. El `case 0x00` se conserva para revisar la tabla completa. Las demás tablas conservan los cuerpos en sus casos.
 
 Las firmas son las actuales; el ciclo de prefijos (`Step`, `ExecuteIndexed`, `FinishIndexed`) sigue escrito a mano en `Z80Cpu.cs`.
 

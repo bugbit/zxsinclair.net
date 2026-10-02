@@ -27,6 +27,12 @@ public sealed partial class Z80Cpu<TBus>
     private void ExecuteMain(byte opcode)
     {
         if (opcode == 0) return;
+        ExecuteMainDispatch(opcode);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainDispatch(byte opcode)
+    {
         switch (opcode)
         {
             case 0x00: return; // NOP
@@ -35,19 +41,25 @@ public sealed partial class Z80Cpu<TBus>
             case 0x06: ExecuteMain06(); return; // LD B,nn
             case 0x0a: ExecuteMain0A(); return; // LD A,(BC)
             case 0x0e: ExecuteMain0E(); return; // LD C,nn
+            case 0x10: ExecuteMain10(); return; // DJNZ offset
             case 0x11: ExecuteMain11(); return; // LD DE,nnnn
             case 0x12: ExecuteMain12(); return; // LD (DE),A
             case 0x16: ExecuteMain16(); return; // LD D,nn
+            case 0x18: ExecuteMain18(); return; // JR offset
             case 0x1a: ExecuteMain1A(); return; // LD A,(DE)
             case 0x1e: ExecuteMain1E(); return; // LD E,nn
+            case 0x20: ExecuteMain20(); return; // JR NZ,offset
             case 0x21: ExecuteMain21(); return; // LD HL,nnnn
             case 0x22: ExecuteMain22(); return; // LD (nnnn),HL
             case 0x26: ExecuteMain26(); return; // LD H,nn
+            case 0x28: ExecuteMain28(); return; // JR Z,offset
             case 0x2a: ExecuteMain2A(); return; // LD HL,(nnnn)
             case 0x2e: ExecuteMain2E(); return; // LD L,nn
+            case 0x30: ExecuteMain30(); return; // JR NC,offset
             case 0x31: ExecuteMain31(); return; // LD SP,nnnn
             case 0x32: ExecuteMain32(); return; // LD (nnnn),A
             case 0x36: ExecuteMain36(); return; // LD (HL),nn
+            case 0x38: ExecuteMain38(); return; // JR C,offset
             case 0x3a: ExecuteMain3A(); return; // LD A,(nnnn)
             case 0x3e: ExecuteMain3E(); return; // LD A,nn
             case 0x40: return; // LD B,B
@@ -113,15 +125,51 @@ public sealed partial class Z80Cpu<TBus>
             case 0x7d: ExecuteMain7D(); return; // LD A,L
             case 0x7e: ExecuteMain7E(); return; // LD A,(HL)
             case 0x7f: return; // LD A,A
+            case 0xc0: ExecuteMainC0(); return; // RET NZ
             case 0xc1: ExecuteMainC1(); return; // POP BC
+            case 0xc2: ExecuteMainC2(); return; // JP NZ,nnnn
+            case 0xc3: ExecuteMainC3(); return; // JP nnnn
+            case 0xc4: ExecuteMainC4(); return; // CALL NZ,nnnn
             case 0xc5: ExecuteMainC5(); return; // PUSH BC
+            case 0xc7: ExecuteMainC7(); return; // RST 00
+            case 0xc8: ExecuteMainC8(); return; // RET Z
+            case 0xc9: ExecuteMainC9(); return; // RET
+            case 0xca: ExecuteMainCA(); return; // JP Z,nnnn
+            case 0xcc: ExecuteMainCC(); return; // CALL Z,nnnn
+            case 0xcd: ExecuteMainCD(); return; // CALL nnnn
+            case 0xcf: ExecuteMainCF(); return; // RST 8
+            case 0xd0: ExecuteMainD0(); return; // RET NC
             case 0xd1: ExecuteMainD1(); return; // POP DE
+            case 0xd2: ExecuteMainD2(); return; // JP NC,nnnn
+            case 0xd4: ExecuteMainD4(); return; // CALL NC,nnnn
             case 0xd5: ExecuteMainD5(); return; // PUSH DE
+            case 0xd7: ExecuteMainD7(); return; // RST 10
+            case 0xd8: ExecuteMainD8(); return; // RET C
+            case 0xda: ExecuteMainDA(); return; // JP C,nnnn
+            case 0xdc: ExecuteMainDC(); return; // CALL C,nnnn
+            case 0xdf: ExecuteMainDF(); return; // RST 18
+            case 0xe0: ExecuteMainE0(); return; // RET PO
             case 0xe1: ExecuteMainE1(); return; // POP HL
+            case 0xe2: ExecuteMainE2(); return; // JP PO,nnnn
+            case 0xe4: ExecuteMainE4(); return; // CALL PO,nnnn
             case 0xe5: ExecuteMainE5(); return; // PUSH HL
+            case 0xe7: ExecuteMainE7(); return; // RST 20
+            case 0xe8: ExecuteMainE8(); return; // RET PE
+            case 0xe9: ExecuteMainE9(); return; // JP HL
+            case 0xea: ExecuteMainEA(); return; // JP PE,nnnn
+            case 0xec: ExecuteMainEC(); return; // CALL PE,nnnn
+            case 0xef: ExecuteMainEF(); return; // RST 28
+            case 0xf0: ExecuteMainF0(); return; // RET P
             case 0xf1: ExecuteMainF1(); return; // POP AF
+            case 0xf2: ExecuteMainF2(); return; // JP P,nnnn
+            case 0xf4: ExecuteMainF4(); return; // CALL P,nnnn
             case 0xf5: ExecuteMainF5(); return; // PUSH AF
+            case 0xf7: ExecuteMainF7(); return; // RST 30
+            case 0xf8: ExecuteMainF8(); return; // RET M
             case 0xf9: ExecuteMainF9(); return; // LD SP,HL
+            case 0xfa: ExecuteMainFA(); return; // JP M,nnnn
+            case 0xfc: ExecuteMainFC(); return; // CALL M,nnnn
+            case 0xff: ExecuteMainFF(); return; // RST 38
             default: Unimplemented(); break;
         }
     }
@@ -159,6 +207,12 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain10()
+    {
+        DecrementJumpNonZero();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain11()
     {
         Registers.DE = ReadPc16();
@@ -178,6 +232,12 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain18()
+    {
+        JumpRelative(true);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain1A()
     {
         Registers.A = bus.Read(Registers.DE);
@@ -188,6 +248,12 @@ public sealed partial class Z80Cpu<TBus>
     private void ExecuteMain1E()
     {
         Registers.E = ReadPc();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain20()
+    {
+        JumpRelative((Registers.F & Z80Flags.Z) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -209,6 +275,12 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain28()
+    {
+        JumpRelative((Registers.F & Z80Flags.Z) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain2A()
     {
         Registers.HL = LoadWordAbsolute();
@@ -218,6 +290,12 @@ public sealed partial class Z80Cpu<TBus>
     private void ExecuteMain2E()
     {
         Registers.L = ReadPc();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain30()
+    {
+        JumpRelative((Registers.F & Z80Flags.C) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -239,6 +317,12 @@ public sealed partial class Z80Cpu<TBus>
     {
         var value = ReadPc();
         bus.Write(Registers.HL, value);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain38()
+    {
+        JumpRelative((Registers.F & Z80Flags.C) != 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -592,9 +676,33 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC0()
+    {
+        ReturnConditional((Registers.F & Z80Flags.Z) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC1()
     {
         Registers.BC = Pop();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC2()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.Z) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC3()
+    {
+        JumpAbsolute(true);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC4()
+    {
+        CallAbsolute((Registers.F & Z80Flags.Z) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -604,9 +712,69 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC7()
+    {
+        Restart(0x00);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC8()
+    {
+        ReturnConditional((Registers.F & Z80Flags.Z) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainC9()
+    {
+        Return();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainCA()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.Z) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainCC()
+    {
+        CallAbsolute((Registers.F & Z80Flags.Z) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainCD()
+    {
+        CallAbsolute(true);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainCF()
+    {
+        Restart(0x08);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD0()
+    {
+        ReturnConditional((Registers.F & Z80Flags.C) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD1()
     {
         Registers.DE = Pop();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD2()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.C) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD4()
+    {
+        CallAbsolute((Registers.F & Z80Flags.C) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -616,9 +784,57 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD7()
+    {
+        Restart(0x10);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD8()
+    {
+        ReturnConditional((Registers.F & Z80Flags.C) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainDA()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.C) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainDC()
+    {
+        CallAbsolute((Registers.F & Z80Flags.C) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainDF()
+    {
+        Restart(0x18);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE0()
+    {
+        ReturnConditional((Registers.F & Z80Flags.PV) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE1()
     {
         Registers.HL = Pop();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE2()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.PV) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE4()
+    {
+        CallAbsolute((Registers.F & Z80Flags.PV) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -628,9 +844,63 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE7()
+    {
+        Restart(0x20);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE8()
+    {
+        ReturnConditional((Registers.F & Z80Flags.PV) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE9()
+    {
+        Registers.PC = Registers.HL;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainEA()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.PV) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainEC()
+    {
+        CallAbsolute((Registers.F & Z80Flags.PV) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainEF()
+    {
+        Restart(0x28);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF0()
+    {
+        ReturnConditional((Registers.F & Z80Flags.S) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF1()
     {
         Registers.AF = Pop();
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF2()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.S) == 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF4()
+    {
+        CallAbsolute((Registers.F & Z80Flags.S) == 0);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -640,9 +910,39 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF7()
+    {
+        Restart(0x30);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF8()
+    {
+        ReturnConditional((Registers.F & Z80Flags.S) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF9()
     {
         bus.Internal(Registers.IR, 2);
         Registers.SP = Registers.HL;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainFA()
+    {
+        JumpAbsolute((Registers.F & Z80Flags.S) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainFC()
+    {
+        CallAbsolute((Registers.F & Z80Flags.S) != 0);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainFF()
+    {
+        Restart(0x38);
     }
 }

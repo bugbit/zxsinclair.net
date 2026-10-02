@@ -25,7 +25,7 @@ Lo no confirmado se marca **(verificar)**.
 Reglas (sección 9 de la spec de buses):
 - `TBus` es siempre un **struct** para que el JIT especialice `Z80Cpu<SpectrumBus>` y haga inline de cada acceso al bus. Nunca se guarda el bus como `IZ80Bus`.
 - Sin clases base con métodos virtuales en el bucle, sin delegados ni tablas de `Action`, sin asignaciones por instrucción.
-- La CPU no suma ciclos por su cuenta: **todo el tiempo pasa por el bus** (`FetchOpcode`, `Read`, `Write`, `Internal`, `In`, `Out`, `AcknowledgeInterrupt`). Así la contención se aplica sola y los eventos de bus de los tests FUSE salen exactos.
+- La CPU no suma ciclos por su cuenta: **todo el tiempo pasa por el bus** (`FetchOpcode`, `Read`, `ReadDiscarded`, `Write`, `Internal`, `In`, `Out`, `AcknowledgeInterrupt`). Así la contención se aplica sola y los eventos de bus de los tests FUSE salen exactos.
 
 ## 3. Registros (`Z80Registers`)
 
@@ -106,6 +106,7 @@ Cada instrucción emite exactamente la secuencia de ciclos de la tabla de la Sin
 |---|---|
 | `pc:4` (M1) | `bus.FetchOpcode(PC)` + R++ |
 | `pc:3`, `hl:3`, `sp:3`, `nn:3` | `bus.Read(dir)` / `bus.Write(dir, v)` |
+| `pc+1:3` de un salto condicional no tomado | `bus.ReadDiscarded(dir)` (spec de buses 9.2) |
 | `ir:1 ×2`, `hl:1`, `pc+2:1 ×5` | `bus.Internal(dir, n)` con la dirección que la CPU deja en el bus |
 | `IO` | `bus.In(puerto)` / `bus.Out(puerto, v)` |
 
@@ -117,7 +118,7 @@ Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; lo
 - Cada caso llama a métodos pequeños `[AggressiveInlining]` escritos a mano (ALU, rotaciones, `Push`/`Pop`…) o contiene el código directamente.
 - Las cinco tablas de entrada son `data/opcodes_*.dat` (formato FUSE), incrustadas en `ZXSinclair.Net.Generate.Z80OpCodes`. El generador está implementado según `spec-generador-z80.md`, con NOP como patrón piloto; no referencia el Core.
 - Los ficheros generados llevan la cabecera GPL y no se editan a mano.
-- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` como un caso vacío. Las cargas de 8 bits también están implementadas según `spec-instr-carga-8.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
+- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` como un caso vacío. Las cargas de 8 y 16 bits y los saltos, llamadas y retornos también están implementados según `spec-instr-carga-8.md`, `spec-instr-carga-16.md` y `spec-instr-saltos.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
 - El archivo provisional se ha eliminado. Se regenera con `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes`; `-- --check` compara sin escribir y detecta diferencias con código 1. Cada opcode completo aún no implementado llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
 
 ## 6. Interrupciones
@@ -156,7 +157,7 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 - El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado se marca en la CPU (contador u opción de compilación del test) y el test se cuenta como omitido, como hasta ahora.
-- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 201 pasan (3 de NOP, 163 del grupo de carga de 8 bits y 35 del de carga de 16 bits), 0 fallan y 1134 se omiten por instrucciones pendientes, con comparación de eventos activada. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 280 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits y 79 de saltos, llamadas y retornos), 0 fallan y 1055 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y seguirá omitido hasta el grupo 4. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 ### 8.2 Tests xUnit (`ZXSinclair.Net.Core.Tests`)
@@ -240,9 +241,32 @@ La emisión inicial mostró una regresión de NOP. El generador ahora emite una 
 
 Artefactos locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/load16-initial-benchmark-artifacts/` conserva los logs del control previo y de la emisión inicial; `ZXSinclair.Net.Benchmarks/bin/load16-nop-guard-artifacts/` conserva el informe final.
 
+### Saltos, llamadas y retornos (2026-10-02)
+
+BenchmarkDotNet 0.15.8, Intel Core i7-14700, Windows 11 (10.0.26300.9550), SDK 10.0.401, .NET 10.0.12 x64 RyuJIT, Release. Comparación con afinidad fija al procesador lógico 0 (`--affinity 1`), 6 iteraciones de calentamiento y 15 de medición. El control aislado en `ZXSinclair.Net.Benchmarks/bin/jumps-control/` usa los cinco despachos anteriores de HEAD, conservando el Core y el benchmark actuales.
+
+| Despacho | NOP, ns/opcode | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|---|
+| Carga de 16 bits, control actual | 2.232 | 0.0159 | 0.0141 | 0 B |
+| Saltos, emisión inicial | 2.7293 | 0.0085 | 0.0075 | 0 B |
+| Saltos, entrada pequeña e inlining del switch | 2.1545 | 0.0248 | 0.0220 | 0 B |
+
+La emisión inicial produjo una regresión de NOP. El generador ahora separa la entrada pequeña `ExecuteMain`, con la salida temprana de NOP, del único switch `ExecuteMainDispatch`; ambos usan `AggressiveInlining`. La versión final mejora respecto al control actual. Al dejar el switch sin `AggressiveInlining`, NOP dio 2.1371 ns y el bucle 0.6883 ns/T-state; se conserva el atributo para reducir el coste del bucle.
+
+| ExecuteLoopFrame | Media, ns/T-state | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|---|
+| Emisión inicial | 0.6451 | 0.0033 | 0.0030 | 0 B |
+| Entrada pequeña e inlining del switch | 0.6487 | 0.0059 | 0.0049 | 0 B |
+
+Los intervalos del bucle se solapan. La media final equivale a unos 45.34 µs por frame de 69888 T-states y 440 veces tiempo real a 3.5 MHz. Cada invocación fija PC=0x8000, SP=0xFF00 e IFF1=false, ejecuta un frame y llama a `EndFrame()`. El programa está en RAM no contenida y combina cargas, PUSH/POP, CALL/RET, DJNZ y JR; no alcanza opcodes pendientes. La ejecución puede superar el límite del frame en una instrucción; `EndFrame()` conserva ese exceso para el siguiente frame. Es una carga sintética de escritorio; no mide el arranque de la ROM ni WebAssembly.
+
+La primera ejecución sin afinidad fija dio NOP 4.340 ns (error 0.3022, desviación 0.8572) y bucle 1.018 ns/T-state (error 0.0659, desviación 0.1934), ambos con 0 B y dos bandas claras de tiempos. Su variabilidad motivó la comparación con afinidad fija; la causa de las bandas no se ha confirmado.
+
+Reproducir la versión final: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes locales excluidos de git en `ZXSinclair.Net.Benchmarks/bin/jumps-control-artifacts/`, `jumps-affinity-artifacts/`, `jumps-wrapper-inline-artifacts/`; la primera ejecución y la variante sin inlining se conservan en `jumps-benchmark-artifacts/` y `jumps-wrapper-artifacts/`.
+
 ## 9. Fuera de alcance
 
-- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits; se implementan por grupos mediante el generador existente.
+- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits y saltos, llamadas y retornos; se implementan por grupos mediante el generador existente.
 - Z80 CMOS y diferencias NMOS/CMOS más allá de anotarlas.
 - Depurador, desensamblador y snapshots (usarán `Registers` y `Step()`).
 - Integración con la máquina Spectrum (bucle de frame, vídeo).

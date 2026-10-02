@@ -42,6 +42,26 @@ public class FuseTestBusTests
         Assert.Contains("bus event 1", FuseComparison.CompareEvents(expected, state.Events)!);
     }
 
+    [Theory]
+    [InlineData("20_2", new byte[] { 0x20, 0x40 })]
+    [InlineData("c2_2", new byte[] { 0xC2, 0x1B, 0xE1 })]
+    public void NotTakenOperandReadsMatchRealFuseEvents(string name, byte[] program)
+    {
+        var expected = Fixture(name);
+        var state = new FuseTestBusState { Events = new() };
+        program.CopyTo(state.Memory, 0);
+        Assert.Equal(program[1], new FuseTestBus(state).ReadDiscarded(1));
+        Assert.Equal(3, state.Cycles);
+        Assert.Equal(new Z80BusEvent(0, Z80BusEventType.MC, 1, null), Assert.Single(state.Events!));
+
+        state = new FuseTestBusState { Events = new() };
+        program.CopyTo(state.Memory, 0);
+        var cpu = new Z80Cpu<FuseTestBus>(new(state));
+        cpu.Registers.F = (byte)(name == "20_2" ? 0x40 : 0xC7);
+        cpu.Step();
+        Assert.Null(FuseComparison.CompareEvents(expected, state.Events!));
+    }
+
     [Fact]
     public void IndexedPrefixCyclesMatchRealFuseEvents()
     {

@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **42 de 150 entradas completadas; 108 pendientes**.
+Estado (2026-10-02): **60 de 150 entradas completadas; 90 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado (2026-10-02): **42 de 150 entradas completadas; 108 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-NOP, las 21 entradas de carga de 8 bits y las 20 de carga de 16 bits y pila están completadas. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
+NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila y las 18 de saltos, llamadas y retornos están completadas. DJNZ tiene pruebas propias; el caso FUSE `10` sigue omitido porque también ejecuta `INC C`, pendiente del grupo 4. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT ni IM.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -187,24 +187,24 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Saltos, llamadas y retornos
 
-- [ ] `JP nn` — p. 262.
-- [ ] `JP cc, nn` — p. 263.
-- [ ] `JR e` — p. 265.
-- [ ] `JR C, e` — p. 267.
-- [ ] `JR NC, e` — p. 269.
-- [ ] `JR Z, e` — p. 271.
-- [ ] `JR NZ, e` — p. 273.
-- [ ] `JP (HL)` — p. 275.
-- [ ] `JP (IX)` — p. 276.
-- [ ] `JP (IY)` — p. 277.
-- [ ] `DJNZ e` — p. 278.
-- [ ] `CALL nn` — p. 281.
-- [ ] `CALL cc, nn` — p. 283.
-- [ ] `RET` — p. 285.
-- [ ] `RET cc` — p. 286.
-- [ ] `RETI` — p. 288.
-- [ ] `RETN` — p. 290.
-- [ ] `RST p` — p. 292.
+- [x] `JP nn` — p. 262. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JP cc, nn` — p. 263. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JR e` — p. 265. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JR C, e` — p. 267. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JR NC, e` — p. 269. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JR Z, e` — p. 271. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JR NZ, e` — p. 273. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JP (HL)` — p. 275. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JP (IX)` — p. 276. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `JP (IY)` — p. 277. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `DJNZ e` — p. 278. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `CALL nn` — p. 281. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `CALL cc, nn` — p. 283. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `RET` — p. 285. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `RET cc` — p. 286. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `RETI` — p. 288. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `RETN` — p. 290. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
+- [x] `RST p` — p. 292. [Spec](spec-instr-saltos.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/JumpTests.cs).
 
 ### Entrada/salida
 

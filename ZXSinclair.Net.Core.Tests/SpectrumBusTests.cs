@@ -57,6 +57,21 @@ public class SpectrumBusTests
         Assert.Equal(0x42, machine.Memory.Read(0x4000));
     }
 
+    [Theory]
+    [InlineData(0x8000, 0, 3)]
+    [InlineData(0x4000, 0, 3)]
+    [InlineData(0x4000, 14335, 14344)]
+    [InlineData(0x4000, 14337, 14344)]
+    [InlineData(0x8000, 14335, 14338)]
+    public void ReadDiscarded_ReturnsValueWithReadTimingAndContention(int address, int start, int end)
+    {
+        var machine = At(start);
+        machine.Memory.Write((ushort)address, 0x5A);
+        Assert.Equal((byte)0x5A, machine.Bus.ReadDiscarded((ushort)address));
+        Assert.Equal(end, machine.TStates);
+        Assert.Equal((byte)0x5A, machine.Memory.Read((ushort)address));
+    }
+
     [Fact]
     public void FetchOpcode_TakesFourTStatesPlusContention()
     {

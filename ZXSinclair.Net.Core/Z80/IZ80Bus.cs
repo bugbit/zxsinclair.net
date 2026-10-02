@@ -30,6 +30,13 @@ public interface IZ80Bus : IBus, IBusData<ushort, byte>, IBusIo<ushort, byte>
     /// <summary>M1 opcode fetch: contention at T1, then 4 T-states (including refresh).</summary>
     byte FetchOpcode(ushort address);
 
+    /// <summary>
+    /// Memory read of an operand that a conditional instruction does not use to jump (JR/JP/CALL/DJNZ
+    /// not taken): same cycle, contention and 3 T-state cost as <c>Read</c>, and it returns the byte.
+    /// It exists so recording buses can follow FUSE, which logs this cycle as contention only (MC without MR).
+    /// </summary>
+    byte ReadDiscarded(ushort address);
+
     /// <summary>Internal CPU cycles with <paramref name="address"/> on the bus: one contended T-state each.</summary>
     void Internal(ushort address, int tstates);
 

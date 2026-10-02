@@ -50,6 +50,14 @@ public struct FuseTestBus : IZ80Bus
     public byte FetchOpcode(ushort address) => MemoryRead(address, 4);
     public byte Read(ushort address) => MemoryRead(address, 3);
 
+    // FUSE's contend_read: the cycle is contended and timed, but no MR event is logged.
+    public byte ReadDiscarded(ushort address)
+    {
+        Record(Z80BusEventType.MC, address);
+        state.Cycles += 3;
+        return state.Memory[address];
+    }
+
     public void Write(ushort address, byte data)
     {
         Record(Z80BusEventType.MC, address);

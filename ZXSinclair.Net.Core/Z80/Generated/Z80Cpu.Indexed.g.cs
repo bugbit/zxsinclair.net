@@ -43,6 +43,7 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x0e: Registers.C = ReadPc(); break; // LD C,nn
+            case 0x10: DecrementJumpNonZero(); break; // DJNZ offset
             case 0x11: Registers.DE = ReadPc16(); break; // LD DE,nnnn
             case 0x12: // LD (DE),A
             {
@@ -51,6 +52,7 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x16: Registers.D = ReadPc(); break; // LD D,nn
+            case 0x18: JumpRelative(true); break; // JR offset
             case 0x1a: // LD A,(DE)
             {
                 Registers.A = bus.Read(Registers.DE);
@@ -58,11 +60,14 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x1e: Registers.E = ReadPc(); break; // LD E,nn
+            case 0x20: JumpRelative((Registers.F & Z80Flags.Z) == 0); break; // JR NZ,offset
             case 0x21: TIndex.Pair(ref Registers) = ReadPc16(); break; // LD REGISTER,nnnn
             case 0x22: StoreWordAbsolute(TIndex.Pair(ref Registers)); break; // LD (nnnn),REGISTER
             case 0x26: TIndex.High(ref Registers) = ReadPc(); break; // LD REGISTERH,nn
+            case 0x28: JumpRelative((Registers.F & Z80Flags.Z) != 0); break; // JR Z,offset
             case 0x2a: TIndex.Pair(ref Registers) = LoadWordAbsolute(); break; // LD REGISTER,(nnnn)
             case 0x2e: TIndex.Low(ref Registers) = ReadPc(); break; // LD REGISTERL,nn
+            case 0x30: JumpRelative((Registers.F & Z80Flags.C) == 0); break; // JR NC,offset
             case 0x31: Registers.SP = ReadPc16(); break; // LD SP,nnnn
             case 0x32: // LD (nnnn),A
             {
@@ -72,6 +77,7 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x36: StoreIndexedImmediate<TIndex>(); break; // LD (REGISTER+dd),nn
+            case 0x38: JumpRelative((Registers.F & Z80Flags.C) != 0); break; // JR C,offset
             case 0x3a: // LD A,(nnnn)
             {
                 var address = ReadPc16();
@@ -213,20 +219,56 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x7f: break; // LD A,A
+            case 0xc0: ReturnConditional((Registers.F & Z80Flags.Z) == 0); break; // RET NZ
             case 0xc1: Registers.BC = Pop(); break; // POP BC
+            case 0xc2: JumpAbsolute((Registers.F & Z80Flags.Z) == 0); break; // JP NZ,nnnn
+            case 0xc3: JumpAbsolute(true); break; // JP nnnn
+            case 0xc4: CallAbsolute((Registers.F & Z80Flags.Z) == 0); break; // CALL NZ,nnnn
             case 0xc5: PushWithDelay(Registers.BC); break; // PUSH BC
+            case 0xc7: Restart(0x00); break; // RST 00
+            case 0xc8: ReturnConditional((Registers.F & Z80Flags.Z) != 0); break; // RET Z
+            case 0xc9: Return(); break; // RET
+            case 0xca: JumpAbsolute((Registers.F & Z80Flags.Z) != 0); break; // JP Z,nnnn
+            case 0xcc: CallAbsolute((Registers.F & Z80Flags.Z) != 0); break; // CALL Z,nnnn
+            case 0xcd: CallAbsolute(true); break; // CALL nnnn
+            case 0xcf: Restart(0x08); break; // RST 8
+            case 0xd0: ReturnConditional((Registers.F & Z80Flags.C) == 0); break; // RET NC
             case 0xd1: Registers.DE = Pop(); break; // POP DE
+            case 0xd2: JumpAbsolute((Registers.F & Z80Flags.C) == 0); break; // JP NC,nnnn
+            case 0xd4: CallAbsolute((Registers.F & Z80Flags.C) == 0); break; // CALL NC,nnnn
             case 0xd5: PushWithDelay(Registers.DE); break; // PUSH DE
+            case 0xd7: Restart(0x10); break; // RST 10
+            case 0xd8: ReturnConditional((Registers.F & Z80Flags.C) != 0); break; // RET C
+            case 0xda: JumpAbsolute((Registers.F & Z80Flags.C) != 0); break; // JP C,nnnn
+            case 0xdc: CallAbsolute((Registers.F & Z80Flags.C) != 0); break; // CALL C,nnnn
+            case 0xdf: Restart(0x18); break; // RST 18
+            case 0xe0: ReturnConditional((Registers.F & Z80Flags.PV) == 0); break; // RET PO
             case 0xe1: TIndex.Pair(ref Registers) = Pop(); break; // POP REGISTER
+            case 0xe2: JumpAbsolute((Registers.F & Z80Flags.PV) == 0); break; // JP PO,nnnn
+            case 0xe4: CallAbsolute((Registers.F & Z80Flags.PV) == 0); break; // CALL PO,nnnn
             case 0xe5: PushWithDelay(TIndex.Pair(ref Registers)); break; // PUSH REGISTER
+            case 0xe7: Restart(0x20); break; // RST 20
+            case 0xe8: ReturnConditional((Registers.F & Z80Flags.PV) != 0); break; // RET PE
+            case 0xe9: Registers.PC = TIndex.Pair(ref Registers); break; // JP REGISTER
+            case 0xea: JumpAbsolute((Registers.F & Z80Flags.PV) != 0); break; // JP PE,nnnn
+            case 0xec: CallAbsolute((Registers.F & Z80Flags.PV) != 0); break; // CALL PE,nnnn
+            case 0xef: Restart(0x28); break; // RST 28
+            case 0xf0: ReturnConditional((Registers.F & Z80Flags.S) == 0); break; // RET P
             case 0xf1: Registers.AF = Pop(); break; // POP AF
+            case 0xf2: JumpAbsolute((Registers.F & Z80Flags.S) == 0); break; // JP P,nnnn
+            case 0xf4: CallAbsolute((Registers.F & Z80Flags.S) == 0); break; // CALL P,nnnn
             case 0xf5: PushWithDelay(Registers.AF); break; // PUSH AF
+            case 0xf7: Restart(0x30); break; // RST 30
+            case 0xf8: ReturnConditional((Registers.F & Z80Flags.S) != 0); break; // RET M
             case 0xf9: // LD SP,REGISTER
             {
                 bus.Internal(Registers.IR, 2);
                 Registers.SP = TIndex.Pair(ref Registers);
                 break;
             }
+            case 0xfa: JumpAbsolute((Registers.F & Z80Flags.S) != 0); break; // JP M,nnnn
+            case 0xfc: CallAbsolute((Registers.F & Z80Flags.S) != 0); break; // CALL M,nnnn
+            case 0xff: Restart(0x38); break; // RST 38
             default: Unimplemented(); break;
         }
     }
