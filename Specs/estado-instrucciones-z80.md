@@ -1,0 +1,222 @@
+# Estado de las instrucciones Z80
+
+Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
+
+Estado inicial (2026-10-02): **1 de 150 entradas completadas; 149 pendientes**.
+
+## Cómo marcar el avance
+
+- `[ ]`: pendiente. Si hay una implementación parcial, añadir una nota con las variantes disponibles y mantener la casilla sin marcar.
+- `[x]`: implementada y verificada. Deben estar implementadas todas las variantes documentadas de esa entrada y pasar sus pruebas xUnit propias y los casos FUSE aplicables, con comparación de eventos.
+- Al completar una entrada, añadir enlaces a su especificación y pruebas, y actualizar el recuento de este documento.
+
+Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
+
+Solo NOP está completada. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
+
+Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
+
+## Notación de operandos
+
+La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
+
+| Símbolo | Significado |
+|---|---|
+| `r`, `r'` | Registros de 8 bits A, B, C, D, E, H o L; en `LD r, r'` son destino y origen. |
+| `dd`, `ss` | Pares BC, DE, HL o SP. |
+| `qq` | Pares BC, DE, HL o AF. |
+| `pp` | Pares BC, DE, IX o SP. |
+| `rr` | Pares BC, DE, IY o SP. |
+| `n` | Inmediato sin signo de 8 bits, de 0 a 255. |
+| `nn` | Inmediato o dirección de 16 bits, de 0 a 65535. |
+| `d` | Desplazamiento indexado con signo de 8 bits, de -128 a 127. |
+| `e` | Desplazamiento relativo: el manual lo expresa respecto al inicio de la instrucción (-126 a 129); el byte codificado se aplica al PC posterior a sus dos bytes (-128 a 127). |
+| `b` | Posición de bit, de 0 a 7. |
+| `cc` | Condición NZ, Z, NC, C, PO, PE, P o M. Las entradas JR muestran sus condiciones por separado. |
+| `s` | Operando `r`, `n`, `(HL)`, `(IX+d)` o `(IY+d)`. |
+| `m` | Operando `r`, `(HL)`, `(IX+d)` o `(IY+d)`. |
+| `p` | Dirección de RST: 00h, 08h, 10h, 18h, 20h, 28h, 30h o 38h. |
+| `(…)` | Contenido de la memoria indicada, salvo los puertos de IN/OUT. En `JP (HL)`, `JP (IX)` y `JP (IY)`, el destino es el valor del registro, sin lectura indirecta de memoria. |
+| `AF'` | Juego alternativo de AF. |
+
+## Lista de seguimiento
+
+### Carga de 8 bits
+
+- [ ] `LD r, r'` — p. 71.
+- [ ] `LD r, n` — p. 72.
+- [ ] `LD r, (HL)` — p. 74.
+- [ ] `LD r, (IX+d)` — p. 75.
+- [ ] `LD r, (IY+d)` — p. 77.
+- [ ] `LD (HL), r` — p. 79.
+- [ ] `LD (IX+d), r` — p. 81.
+- [ ] `LD (IY+d), r` — p. 83.
+- [ ] `LD (HL), n` — p. 85.
+- [ ] `LD (IX+d), n` — p. 86.
+- [ ] `LD (IY+d), n` — p. 87.
+- [ ] `LD A, (BC)` — p. 88.
+- [ ] `LD A, (DE)` — p. 89.
+- [ ] `LD A, (nn)` — p. 90.
+- [ ] `LD (BC), A` — p. 91.
+- [ ] `LD (DE), A` — p. 92.
+- [ ] `LD (nn), A` — p. 93.
+- [ ] `LD A, I` — p. 94.
+- [ ] `LD A, R` — p. 95.
+- [ ] `LD I, A` — p. 96.
+- [ ] `LD R, A` — p. 97.
+
+### Carga de 16 bits y pila
+
+- [ ] `LD dd, nn` — p. 99.
+- [ ] `LD IX, nn` — p. 100.
+- [ ] `LD IY, nn` — p. 101.
+- [ ] `LD HL, (nn)` — p. 102.
+- [ ] `LD dd, (nn)` — p. 103.
+- [ ] `LD IX, (nn)` — p. 105.
+- [ ] `LD IY, (nn)` — p. 106.
+- [ ] `LD (nn), HL` — p. 107.
+- [ ] `LD (nn), dd` — p. 108.
+- [ ] `LD (nn), IX` — p. 110.
+- [ ] `LD (nn), IY` — p. 111.
+- [ ] `LD SP, HL` — p. 112.
+- [ ] `LD SP, IX` — p. 113.
+- [ ] `LD SP, IY` — p. 114.
+- [ ] `PUSH qq` — p. 115.
+- [ ] `PUSH IX` — p. 117.
+- [ ] `PUSH IY` — p. 118.
+- [ ] `POP qq` — p. 119.
+- [ ] `POP IX` — p. 121.
+- [ ] `POP IY` — p. 122.
+
+### Intercambio y bloques
+
+- [ ] `EX DE, HL` — p. 124.
+- [ ] `EX AF, AF'` — p. 125.
+- [ ] `EXX` — p. 126.
+- [ ] `EX (SP), HL` — p. 127.
+- [ ] `EX (SP), IX` — p. 128.
+- [ ] `EX (SP), IY` — p. 129.
+- [ ] `LDI` — p. 130.
+- [ ] `LDIR` — p. 132.
+- [ ] `LDD` — p. 134.
+- [ ] `LDDR` — p. 136.
+- [ ] `CPI` — p. 138.
+- [ ] `CPIR` — p. 139.
+- [ ] `CPD` — p. 141.
+- [ ] `CPDR` — p. 142.
+
+### Aritmética y lógica de 8 bits
+
+- [ ] `ADD A, r` — p. 145.
+- [ ] `ADD A, n` — p. 147.
+- [ ] `ADD A, (HL)` — p. 148.
+- [ ] `ADD A, (IX+d)` — p. 149.
+- [ ] `ADD A, (IY+d)` — p. 150.
+- [ ] `ADC A, s` — p. 151.
+- [ ] `SUB s` — p. 153.
+- [ ] `SBC A, s` — p. 155.
+- [ ] `AND s` — p. 157.
+- [ ] `OR s` — p. 159.
+- [ ] `XOR s` — p. 161.
+- [ ] `CP s` — p. 163.
+- [ ] `INC r` — p. 165.
+- [ ] `INC (HL)` — p. 167.
+- [ ] `INC (IX+d)` — p. 168.
+- [ ] `INC (IY+d)` — p. 169.
+- [ ] `DEC m` — p. 170.
+
+### Control de CPU y operaciones generales de AF
+
+- [ ] `DAA` — p. 173.
+- [ ] `CPL` — p. 175.
+- [ ] `NEG` — p. 176.
+- [ ] `CCF` — p. 178.
+- [ ] `SCF` — p. 179.
+- [x] `NOP` — p. 180. [Especificación](spec-instr-nop.md) · [Pruebas](../ZXSinclair.Net.Core.Tests/Z80/Instructions/NopTests.cs).
+- [ ] `HALT` — p. 181.
+- [ ] `DI` — p. 182.
+- [ ] `EI` — p. 183.
+- [ ] `IM 0` — p. 184.
+- [ ] `IM 1` — p. 185.
+- [ ] `IM 2` — p. 186.
+
+### Aritmética de 16 bits
+
+- [ ] `ADD HL, ss` — p. 188.
+- [ ] `ADC HL, ss` — p. 190.
+- [ ] `SBC HL, ss` — p. 192.
+- [ ] `ADD IX, pp` — p. 194.
+- [ ] `ADD IY, rr` — p. 196.
+- [ ] `INC ss` — p. 198.
+- [ ] `INC IX` — p. 199.
+- [ ] `INC IY` — p. 200.
+- [ ] `DEC ss` — p. 201.
+- [ ] `DEC IX` — p. 202.
+- [ ] `DEC IY` — p. 203.
+
+### Rotaciones y desplazamientos
+
+- [ ] `RLCA` — p. 205.
+- [ ] `RLA` — p. 207.
+- [ ] `RRCA` — p. 209.
+- [ ] `RRA` — p. 211.
+- [ ] `RLC r` — p. 213.
+- [ ] `RLC (HL)` — p. 215.
+- [ ] `RLC (IX+d)` — p. 217.
+- [ ] `RLC (IY+d)` — p. 219.
+- [ ] `RL m` — p. 221.
+- [ ] `RRC m` — p. 224.
+- [ ] `RR m` — p. 227.
+- [ ] `SLA m` — p. 230.
+- [ ] `SRA m` — p. 233.
+- [ ] `SRL m` — p. 236.
+- [ ] `RLD` — p. 238.
+- [ ] `RRD` — p. 240.
+
+### Bits
+
+- [ ] `BIT b, r` — p. 243.
+- [ ] `BIT b, (HL)` — p. 245.
+- [ ] `BIT b, (IX+d)` — p. 247.
+- [ ] `BIT b, (IY+d)` — p. 249.
+- [ ] `SET b, r` — p. 251.
+- [ ] `SET b, (HL)` — p. 253.
+- [ ] `SET b, (IX+d)` — p. 255.
+- [ ] `SET b, (IY+d)` — p. 257.
+- [ ] `RES b, m` — p. 259.
+
+### Saltos, llamadas y retornos
+
+- [ ] `JP nn` — p. 262.
+- [ ] `JP cc, nn` — p. 263.
+- [ ] `JR e` — p. 265.
+- [ ] `JR C, e` — p. 267.
+- [ ] `JR NC, e` — p. 269.
+- [ ] `JR Z, e` — p. 271.
+- [ ] `JR NZ, e` — p. 273.
+- [ ] `JP (HL)` — p. 275.
+- [ ] `JP (IX)` — p. 276.
+- [ ] `JP (IY)` — p. 277.
+- [ ] `DJNZ e` — p. 278.
+- [ ] `CALL nn` — p. 281.
+- [ ] `CALL cc, nn` — p. 283.
+- [ ] `RET` — p. 285.
+- [ ] `RET cc` — p. 286.
+- [ ] `RETI` — p. 288.
+- [ ] `RETN` — p. 290.
+- [ ] `RST p` — p. 292.
+
+### Entrada/salida
+
+- [ ] `IN A, (n)` — p. 295.
+- [ ] `IN r, (C)` — p. 296.
+- [ ] `INI` — p. 298.
+- [ ] `INIR` — p. 300.
+- [ ] `IND` — p. 302.
+- [ ] `INDR` — p. 304.
+- [ ] `OUT (n), A` — p. 306.
+- [ ] `OUT (C), r` — p. 307.
+- [ ] `OUTI` — p. 309.
+- [ ] `OTIR` — p. 311.
+- [ ] `OUTD` — p. 313.
+- [ ] `OTDR` — p. 315.
