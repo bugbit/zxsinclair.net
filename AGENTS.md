@@ -45,6 +45,8 @@ Run from the repository root with an SDK supporting `net10.0` and the .NET 10 ru
 dotnet build zxsinclair.net.slnx -c Debug -m:1
 dotnet test ZXSinclair.Net.Core.Tests
 dotnet run --project ZXSinclair.Net.Test
+dotnet run --project ZXSinclair.Net.Test -- --filter 20_2 --verbose
+dotnet run --project ZXSinclair.Net.Test -- --filter dd --list-skipped --max-failures 1
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -c Debug
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -- --check
 dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests
@@ -97,6 +99,8 @@ Whenever an instruction is implemented and verified, update [Specs/estado-instru
 Run the FUSE console runner (Debug or Release); `dotnet test` does not execute it. Malformed FUSE files throw `FormatException` with the test name. It runs `Z80Cpu<FuseTestBus>` on a recording bus (no test instrumentation inside the CPU), skips cases with unimplemented opcodes, and compares registers through `FuseCpuState`, plus memory and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`) through `FuseComparison`. `--no-events` disables event recording/comparison. Core xUnit tests use the same `ZXSinclair.Net.Fuse` library to verify the recording bus and the parser against the real fixtures. Add matching, identically named cases to `tests.in` and `tests.expected`.
 
 Instructions emit all their timing through the bus (`FetchOpcode`, `Read`, `ReadDiscarded`, `Write`, `Internal(address, n)`, `In`, `Out`); never add cycles directly. Operand bytes of a conditional jump that is not taken are read with `ReadDiscarded` (same as `Read` on `SpectrumBus`; `FuseTestBus` logs it as `MC` only, like FUSE's `contend_read`).
+
+For a FUSE failure, run `dotnet run --project ZXSinclair.Net.Test -- --filter <case> --verbose`, attach the report to the review, and classify the cause as semantics, timing or a FUSE convention before changing code or specs. Group plans must include filtered runs of their cases; group specs must document relevant FUSE conventions. The report compares all sections even when registers differ, decodes flags, groups memory ranges and shows an event window. `--max-failures` defaults to 10 detailed failures; the remaining failures get one line each. `--list-skipped` shows the last pending opcode and preceding memory bytes; it is context, not a disassembly.
 
 ## Commit & Pull Request Guidelines
 

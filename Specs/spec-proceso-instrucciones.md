@@ -41,6 +41,7 @@ Por dependencias y por casos FUSE que desbloquea cada paso.
    - `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -- --check` y `dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests` en verde.
    - `dotnet test ZXSinclair.Net.Core.Tests` en verde, incluidos los tests propios del grupo (spec CPU 8.3).
    - Runner FUSE (`dotnet run --project ZXSinclair.Net.Test`) con eventos: suben los casos pasados y **0 fallos**.
+   - Cada plan incluye ejecuciones con `--filter <prefijo>` para los casos del grupo. Ante un fallo, ejecutar `dotnet run --project ZXSinclair.Net.Test -- --filter <caso> --verbose`, adjuntar el informe a la revisión y clasificar la causa como semántica, temporización o convención de FUSE antes de tocar código o spec.
 5. **Documentación**: actualizar la tabla de seguimiento (sección 6), spec CPU 8.1 (cifras del runner) y `CLAUDE.md`/`AGENTS.md` si cambia algo que describan.
 6. **Benchmark**: cada dos o tres grupos, no por grupo (sección 5).
 
@@ -55,7 +56,7 @@ Mismas secciones que `spec-instr-nop.md`:
 3. **Variantes**: prefijos `DD`/`FD`, `CB`, `ED`, `DDCB`/`FDCB` y no documentadas.
 4. **Implementación**: patrones y plantillas del generador, métodos auxiliares a mano, tablas de flags que se reutilizan (`Z80Flags`) y requisitos de rendimiento del camino caliente.
 5. **Pruebas**:
-   - FUSE: casos del grupo que deben pasar.
+   - FUSE: casos del grupo que deben pasar y convenciones conocidas que afectan a su comparación (por ejemplo, `ReadDiscarded` en los saltos no tomados).
    - Tests propios (spec CPU 8.3): tabla con nombre, montaje y comprobación.
    - Tests existentes que hay que adaptar (opcodes usados como "no implementado" que dejan de serlo).
 6. **Rendimiento**: impacto esperado y si toca medir en este grupo.

@@ -27,6 +27,8 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     private bool nmiPending;
     public Z80Registers Registers;
     public int UnimplementedOpcodes { get; private set; }
+    /// <summary>PC when the last unimplemented opcode was recorded; ordinary fetches leave it just after the opcode.</summary>
+    public ushort LastUnimplementedAddress { get; private set; }
     public bool Halted => Registers.Halted;
 
     public Z80Cpu(TBus bus)
@@ -41,6 +43,7 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
         Registers.AF = Registers.SP = 0xFFFF;
         nmiPending = false;
         UnimplementedOpcodes = 0;
+        LastUnimplementedAddress = 0;
     }
 
     public void RequestNmi() => nmiPending = true;
@@ -169,5 +172,9 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Unimplemented() => UnimplementedOpcodes++;
+    private void Unimplemented()
+    {
+        UnimplementedOpcodes++;
+        LastUnimplementedAddress = Registers.PC;
+    }
 }

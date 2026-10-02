@@ -156,11 +156,27 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 
 - El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
-- Un opcode no implementado se marca en la CPU (contador u opción de compilación del test) y el test se cuenta como omitido, como hasta ahora.
+- Un opcode no implementado incrementa `UnimplementedOpcodes` y guarda el PC actual en `LastUnimplementedAddress`. Esta propiedad solo se escribe en `Unimplemented()` y se limpia en `Reset()`; el caso se cuenta como omitido.
 - El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 280 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits y 79 de saltos, llamadas y retornos), 0 fallan y 1055 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y seguirá omitido hasta el grupo 4. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
+- `FuseReport` compara siempre registros, flags, memoria y T-states; también compara los eventos cuando están activados. Muestra el nombre, cuatro bytes desde el PC inicial con vuelta a 64K, las dos líneas del estado inicial y todas las diferencias por sección. AF/AF' se separan en A/F; F se decodifica como `S Z 5 H 3 P/V N C`, y R distingue su bit 7 de los bits bajos. La memoria se agrupa en rangos contiguos (16 por defecto, configurables en `DiffMemory`/`FuseReport`), con el número de rangos omitidos.
+- Para eventos muestra la primera divergencia, los totales y tres filas anteriores y posteriores alineadas por índice. La pista es una posible causa, no una clasificación definitiva. `Compare*` conserva sus firmas como envoltorios de la primera diferencia.
+
+Opciones del runner:
+
+| Opción | Efecto |
+|---|---|
+| `--filter <prefijo>` | Selecciona nombres que empiezan por ese prefijo, sin distinguir mayúsculas. `--filter 20_2` selecciona ese caso; `--filter dd` selecciona 343 casos. |
+| `--verbose` | Añade todos los eventos esperados y reales de los fallos con detalle. |
+| `--max-failures <n>` | Detalle de los primeros n fallos; los demás siguen contando y se muestran en una línea. Por defecto 10; 0 muestra solo líneas breves. |
+| `--list-skipped` | Muestra el último opcode pendiente y cuatro bytes de contexto anteriores al PC guardado, incluidos los posibles prefijos. El contexto puede contener bytes anteriores a la instrucción y procede de la memoria al terminar el caso. |
+| `--no-events` | Desactiva únicamente el registro y la comparación de eventos. |
+
+El resumen conserva pasados/fallidos/omitidos y añade el número de casos fallidos por sección y por primer byte del programa (los prefijos DD/FD/ED/CB agrupan sus casos). Un caso puede contar en varias secciones. Código de salida 0 sin fallos, 1 con fallos, 2 ante argumentos inválidos. Ante un fallo, ejecutar `dotnet run --project ZXSinclair.Net.Test -- --filter <caso> --verbose`, adjuntar el informe y clasificar su causa antes de modificar CPU o spec.
+
 ### 8.2 Tests xUnit (`ZXSinclair.Net.Core.Tests`)
+
 
 El núcleo de CPU se prueba con un bus de prueba:
 - Alias de registros (endianness) y juego alternativo.
@@ -263,6 +279,17 @@ Los intervalos del bucle se solapan. La media final equivale a unos 45.34 µs po
 La primera ejecución sin afinidad fija dio NOP 4.340 ns (error 0.3022, desviación 0.8572) y bucle 1.018 ns/T-state (error 0.0659, desviación 0.1934), ambos con 0 B y dos bandas claras de tiempos. Su variabilidad motivó la comparación con afinidad fija; la causa de las bandas no se ha confirmado.
 
 Reproducir la versión final: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes locales excluidos de git en `ZXSinclair.Net.Benchmarks/bin/jumps-control-artifacts/`, `jumps-affinity-artifacts/`, `jumps-wrapper-inline-artifacts/`; la primera ejecución y la variante sin inlining se conservan en `jumps-benchmark-artifacts/` y `jumps-wrapper-artifacts/`.
+
+### Informe FUSE y registro del opcode pendiente (2026-10-02)
+
+Mismo entorno y parámetros de la medición anterior: Release, afinidad 1, 6 iteraciones de calentamiento y 15 de medición. El benchmark se conserva sin cambios.
+
+| Método | Antes | Con informe FUSE | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|---|---|
+| ExecuteFrame, ns/opcode | 2.1545 | 2.1597 | 0.0149 | 0.0132 | 0 B |
+| ExecuteLoopFrame, ns/T-state | 0.6487 | 0.6537 | 0.0035 | 0.0030 | 0 B |
+
+Los intervalos se solapan en ambos métodos; no se observa una regresión en esta medición. El informe se compone fuera de la ejecución de instrucciones. `LastUnimplementedAddress` solo se actualiza al registrar un opcode pendiente y en reset. Informe local excluido de git: `ZXSinclair.Net.Benchmarks/bin/fuse-report-benchmark-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md`.
 
 ## 9. Fuera de alcance
 

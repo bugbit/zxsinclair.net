@@ -61,6 +61,8 @@ dotnet test ZXSinclair.Net.Core.Tests
 
 ```bash
 dotnet run --project ZXSinclair.Net.Test
+dotnet run --project ZXSinclair.Net.Test -- --filter 20_2 --verbose
+dotnet run --project ZXSinclair.Net.Test -- --filter dd --list-skipped --max-failures 1
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -- --check
 dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests
@@ -84,6 +86,8 @@ dotnet test ZXSinclair.Net.Generate.Z80OpCodes.Tests
 - **ZXSinclair.Net.Test**: FUSE Z80 conformance runner (console; references the Core and `ZXSinclair.Net.Fuse`).
 
 ### Core architecture (`ZXSinclair.Net.Core`)
+
+For a FUSE failure, run `dotnet run --project ZXSinclair.Net.Test -- --filter <case> --verbose`, attach the report to the review, and classify semantics, timing or a FUSE convention before changing code or specs. Include filtered group runs in instruction plans and known FUSE conventions in their specs. Reports compare registers, flags, memory, events and T-states independently; `--max-failures` defaults to 10 detailed failures, while `--list-skipped` shows the last pending opcode and surrounding bytes.
 Implements `Specs/spec-buses-memoria.md` and the base CPU in `Specs/spec-cpu-z80.md`, with NOP, the 8-bit and 16-bit load groups, and the jump, call and return group implemented.
 - `ICpu`, `Z80Registers`, `Z80Flags`, `Z80Cpu<TBus>`: registers, flag tables, prefix loop, interrupts, HALT state and reset. The CPU stores its bus in a mutable field to avoid defensive copies. The generator emits the five dispatches in `Z80/Generated/`, with NOP, the 8-bit and 16-bit load groups, and the jump, call and return group implemented and other opcodes incrementing `UnimplementedOpcodes`. Repeated DD/FD prefixes use constant stack space; unsupported IM0 bytes are counted without inventing a jump.
 - CPU benchmark: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. With logical CPU 0 affinity, NOP including fetch, dispatch and interrupt checks measures 2.1545 ns/opcode versus 2.232 ns for the previous dispatch control. `ExecuteLoopFrame` measures a synthetic loop of loads, stack operations, calls, returns and relative jumps in uncontended RAM: 0.6487 ns/T-state, about 440 times real time at 3.5 MHz. Both allocate 0 B (2026-10-02, spec section 8.4); neither measures WebAssembly. The generated base dispatch keeps a small `ExecuteMain` entry with an early NOP return and a single switch in `ExecuteMainDispatch`.
