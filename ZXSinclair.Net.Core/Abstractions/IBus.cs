@@ -15,9 +15,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Z80 instruction generator for ZXSinclair.Net.Core. The previous generator (which wrote into the
-// removed ZXSinclair.Net project) has been deleted; the new one will be written from its own
-// specification, following the generator contract in Specs/spec-cpu-z80.md (section 5).
-// The FUSE opcode tables it will read are kept in data/opcodes_*.dat.
+namespace ZXSinclair.Net.Core.Abstractions;
 
-Console.WriteLine("The Z80 instruction generator is not implemented yet (see Specs/spec-cpu-z80.md, section 5).");
+/// <summary>
+/// Root of any clocked system bus, whatever the CPU.
+/// Buses are implemented as structs and used as generic constraints (<c>where TBus : struct, ...</c>),
+/// never through an interface-typed variable in the emulation hot path.
+/// </summary>
+public interface IBus
+{
+    /// <summary>Clock cycles (T-states on the Z80) elapsed in the current frame.</summary>
+    int Cycles { get; }
+
+    void Reset();
+}

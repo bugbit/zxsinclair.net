@@ -1,229 +1,77 @@
-﻿var assembly = Assembly.GetExecutingAssembly();
-var embeddedProvider = new EmbeddedFileProvider(assembly);
+#region LICENSE
+/*
+    ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
+    Copyright (C) 2016 Oscar Hernandez Bano
+    This file is part of ZXSincalir.Net.
+    ZXSincalir.Net is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+#endregion
 
-endiantest();
-await z80opcodestest();
+using ZXSinclair.Net.Core.Z80;
+using ZXSinclair.Net.Fuse;
 
-async Task<string[]> ReadLinesTxtFileEmb(string key)
+// FUSE Z80 test runner (Debug or Release). Cases with unimplemented instructions are counted as skipped.
+
+var testsIn = FuseTestFile.LoadInputs();
+var testsExpected = FuseTestFile.LoadExpected();
+var missing = testsIn.Where(t => !testsExpected.ContainsKey(t.Base.Name)).Select(t => t.Base.Name).ToList();
+
+foreach (var name in missing)
+    Console.Error.WriteLine($"FAIL {name}: missing expected result");
+
+Console.WriteLine($"FUSE: {testsIn.Count} tests loaded, {testsExpected.Count} expected results, {testsExpected.Values.Sum(t => t.Events.Length)} bus events.");
+var passed = 0;
+var failed = missing.Count;
+var skipped = 0;
+var recordEvents = !args.Contains("--no-events");
+foreach (var test in testsIn)
 {
-    using (var stream = embeddedProvider.GetFileInfo(key).CreateReadStream())
+    if (!testsExpected.TryGetValue(test.Base.Name, out var expected))
+        continue;
+    var state = new FuseTestBusState { Events = recordEvents ? new() : null };
+    for (var address = 0; address < state.Memory.Length; address += 4)
     {
-        using (var reader = new StreamReader(stream))
-        {
-            var lines = new List<string>();
-            string? line;
-
-            while ((line = await reader.ReadLineAsync()) != null)
-                lines.Add(line);
-
-            return lines.ToArray();
-        }
+        state.Memory[address] = 0xDE;
+        state.Memory[address + 1] = 0xAD;
+        state.Memory[address + 2] = 0xBE;
+        state.Memory[address + 3] = 0xEF;
+    }
+    foreach (var block in test.Base.Memories)
+    {
+        var address = block.Address;
+        foreach (var value in block.Data)
+            state.Memory[address++] = value;
+    }
+    var initialMemory = (byte[])state.Memory.Clone();
+    var cpu = new Z80Cpu<FuseTestBus>(new(state));
+    cpu.Registers = FuseCpuState.Load(test.Base);
+    cpu.Execute(test.Base.Line2.endtstates);
+    if (cpu.UnimplementedOpcodes != 0)
+    {
+        skipped++;
+        continue;
+    }
+    var error = FuseCpuState.Compare(expected.Base, in cpu.Registers, state.Cycles)
+        ?? FuseComparison.CompareMemory(FuseComparison.ExpectedMemory(initialMemory, expected),
+            address => state.Memory[address]);
+    if (error is null && recordEvents)
+        error = FuseComparison.CompareEvents(expected, state.Events!);
+    if (error is null)
+        passed++;
+    else
+    {
+        failed++;
+        Console.Error.WriteLine($"FAIL {test.Base.Name}: {error}");
     }
 }
-
-void endiantest()
-{
-    Console.WriteLine("endiantest");
-
-    var regs = new Z80Regs();
-    var w = 0x4000 + 0x1F;
-    var h = (byte)0x40;
-    var l = (byte)0x1f;
-
-    regs.A = h;
-    regs.F = l;
-
-    Debug.Assert(regs.AF == w);
-
-    regs.B = h;
-    regs.C = l;
-
-    Debug.Assert(regs.BC == w);
-
-    regs.D = h;
-    regs.E = l;
-
-    Debug.Assert(regs.DE == w);
-
-    regs.H = h;
-    regs.L = l;
-
-    Debug.Assert(regs.HL == w);
-
-    /* var wb=new[]{ 0x12,0x34 };
-    var w = 0x1234;
-
-    regs.A = 0x34;
-    regs.F = 0x12;
-
-    Debug.Assert(regs.AF == w); */
-}
-
-async Task z80opcodestest()
-{
-    Console.WriteLine("z80opcodestest");
-
-    var testsin = await readTestsIn();
-    var testsexpected = await readTestsExpected();
-
-    RunTests(testsin, testsexpected);
-}
-
-async Task<List<clsTestIn>> readTestsIn()
-{
-    var lines = await ReadLinesTxtFileEmb("data/tests.in");
-    var i = 0;
-    var tests = new List<clsTestIn>();
-    string name;
-
-    while (i < lines.Length)
-    {
-        do
-        {
-            if (i >= lines.Length)
-                return tests;
-            name = lines[i++];
-        } while (string.IsNullOrEmpty(name));
-
-        var test = new clsTestIn();
-
-        tests.Add(test);
-        test.Base.Name = name;
-        test.Base.Line1.read(lines[i++]);
-        test.Base.Line2.read(lines[i++]);
-        test.Base.Memories = clsTestMemory.Read(lines, ref i);
-    }
-
-    return tests;
-}
-
-async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
-{
-    var lines = await ReadLinesTxtFileEmb("data/tests.expected");
-    var i = 0;
-    var tests = new Dictionary<string, clsTestExpected>();
-    string name;
-
-    while (i < lines.Length)
-    {
-        do
-        {
-            if (i >= lines.Length)
-                return tests;
-            name = lines[i++];
-        } while (string.IsNullOrEmpty(name));
-
-        var test = new clsTestExpected();
-
-        tests.Add(name, test);
-        test.Base.Name = name;
-        test.Events = clsTestEvent.ReadEvents(lines, ref i);
-        test.Base.Line1.read(lines[i++]);
-        test.Base.Line2.read(lines[i++]);
-        test.Base.Memories = clsTestMemory.Read(lines, ref i);
-    }
-
-    return tests;
-}
-
-unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpected> testsexpected)
-{
-    var mb = new MemoryBuffer8Bit(0x10000);
-    var m0 = new byte[mb.Size];
-    var m = new MemoryRam16Bits<byte>(mb);
-    var z80 = new Z80Cpu(mb, m);
-
-    foreach (var t in testsin)
-    {
-        PrepareTestCpu(z80, t);
-        mb.CopyTo(m0);
-        do
-        {
-            z80.Instrfetch();
-        } while (z80.Ticks.TStates < t.Base.Line2.endtstates);
-#if Z80_OPCODES_TEST
-        if (z80.instrNotImp)
-            continue;
-#endif
-        Debug.Assert(testsexpected.TryGetValue(t.Base.Name, out var t2));
-        CompareTest(z80, m0, t2);
-    }
-}
-
-void PrepareTestCpu(Z80Cpu cpu, clsTestIn t)
-{
-    var r = cpu.Regs;
-    var m = cpu.MemoryBuffer;
-
-    cpu.Reset();
-    r.SetAF_nn(t.Base.Line1.af);
-    r.SetBC_nn(t.Base.Line1.bc);
-    r.SetDE_nn(t.Base.Line1.de);
-    r.SetHL_nn(t.Base.Line1.hl);
-    r.SetIX_nn(t.Base.Line1.ix);
-    r.SetIY_nn(t.Base.Line1.iy);
-    r.SetSP_nn(t.Base.Line1.sp);
-    r.SetPC_nn(t.Base.Line1.pc);
-    r.SetI_n((byte)t.Base.Line2.i);
-    r.SetR_n((byte)t.Base.Line2.r);
-
-    for (var i = 0; i < 0x10000;)
-    {
-        m.Write((ushort)i, 0xde);
-        m.Write((ushort)i++, 0xad);
-        m.Write((ushort)i++, 0xbe);
-        m.Write((ushort)i++, 0xef);
-
-    }
-    foreach (var mm in t.Base.Memories)
-    {
-        var a = mm.Address;
-
-        foreach (var d in mm.Data)
-            m.Write(a++, d);
-    }
-}
-
-void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
-{
-    var r = cpu.Regs;
-    var m = cpu.MemoryBuffer;
-    var l1 = t.Base.Line1;
-    var l2 = t.Base.Line2;
-
-    Debug.Assert(r.AF == l1.af);
-    Debug.Assert(r.BC == l1.bc);
-    Debug.Assert(r.DE == l1.de);
-    Debug.Assert(r.HL == l1.hl);
-    Debug.Assert(r.IX == l1.ix);
-    Debug.Assert(r.IY == l1.iy);
-    Debug.Assert(r.SP == l1.sp);
-    Debug.Assert(r.PC == l1.pc);
-    Debug.Assert(r.I == l2.i);
-    Debug.Assert(r.R == l2.r);
-    Debug.Assert(cpu.Ticks.TStates == l2.endtstates);
-
-    var j = 0;
-    var me = t.Base.Memories;
-
-    for (var i = 0; i < 0x10000; i++)
-    {
-        if (m.Read((ushort)i) == m0[i])
-            continue;
-
-        Debug.Assert(j < me.Length);
-
-        var mm = me[j++];
-
-        Debug.Assert(mm.Address == i);
-
-        foreach (var d in mm.Data)
-        {
-            var d1 = m.Read((ushort)i);
-            var d2 = m0[i++];
-
-            Debug.Assert(d == d1);
-            Debug.Assert(d1 != d2);
-        }
-    }
-}
+Console.WriteLine($"FUSE: {passed} passed / {failed} failed / {skipped} skipped");
+if (failed != 0)
+    Environment.ExitCode = 1;

@@ -15,9 +15,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Z80 instruction generator for ZXSinclair.Net.Core. The previous generator (which wrote into the
-// removed ZXSinclair.Net project) has been deleted; the new one will be written from its own
-// specification, following the generator contract in Specs/spec-cpu-z80.md (section 5).
-// The FUSE opcode tables it will read are kept in data/opcodes_*.dat.
+namespace ZXSinclair.Net.Benchmarks;
 
-Console.WriteLine("The Z80 instruction generator is not implemented yet (see Specs/spec-cpu-z80.md, section 5).");
+/// <summary>
+/// One-off cost of allocating (and releasing) the emulated memory: 64K (48K model) and 160K (128K model: 2 ROM + 8 RAM banks).
+/// This happens once per machine, so it matters far less than access cost.
+/// </summary>
+[MemoryDiagnoser]
+public class MemoryAllocationBenchmarks
+{
+    [Params(0x10000, 0x28000)]
+    public int Size;
+
+    [Benchmark(Baseline = true)]
+    public byte[] NewArray() => new byte[Size];
+
+    [Benchmark]
+    public byte[] UninitializedPinnedArray() => GC.AllocateUninitializedArray<byte>(Size, pinned: true);
+
+    [Benchmark]
+    public void AllocHGlobalAndFree() => Marshal.FreeHGlobal(Marshal.AllocHGlobal(Size));
+
+    [Benchmark]
+    public unsafe void NativeMemoryAllocZeroedAndFree() => NativeMemory.Free(NativeMemory.AllocZeroed((nuint)Size));
+}

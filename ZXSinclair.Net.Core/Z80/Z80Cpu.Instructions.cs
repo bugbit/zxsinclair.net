@@ -1,0 +1,62 @@
+#region LICENSE
+/*
+    ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
+    Copyright (C) 2016 Oscar Hernandez Bano
+    This file is part of ZXSincalir.Net.
+    ZXSincalir.Net is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+#endregion
+
+namespace ZXSinclair.Net.Core.Z80;
+
+// Provisional dispatch: the future generator replaces this file (spec section 5).
+public sealed partial class Z80Cpu<TBus>
+{
+    private void ExecuteMain(byte opcode)
+    {
+        switch (opcode)
+        {
+            default: Unimplemented(); break;
+        }
+    }
+
+    private void ExecuteCB(byte opcode)
+    {
+        switch (opcode)
+        {
+            default: Unimplemented(); break;
+        }
+    }
+
+    private void ExecuteED(byte opcode)
+    {
+        switch (opcode)
+        {
+            default: Unimplemented(); break;
+        }
+    }
+
+    private void ExecuteIndexedOpcode<TIndex>(byte opcode) where TIndex : struct, IIndexRegister
+    {
+        switch (opcode)
+        {
+            default: Unimplemented(); break;
+        }
+    }
+
+    private void ExecuteIndexedCB<TIndex>(ushort address, byte opcode) where TIndex : struct, IIndexRegister
+    {
+        switch (opcode)
+        {
+            default: Unimplemented(); break;
+        }
+    }
+}

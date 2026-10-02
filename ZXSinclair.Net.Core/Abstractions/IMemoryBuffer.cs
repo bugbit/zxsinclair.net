@@ -15,9 +15,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Z80 instruction generator for ZXSinclair.Net.Core. The previous generator (which wrote into the
-// removed ZXSinclair.Net project) has been deleted; the new one will be written from its own
-// specification, following the generator contract in Specs/spec-cpu-z80.md (section 5).
-// The FUSE opcode tables it will read are kept in data/opcodes_*.dat.
+namespace ZXSinclair.Net.Core.Abstractions;
 
-Console.WriteLine("The Z80 instruction generator is not implemented yet (see Specs/spec-cpu-z80.md, section 5).");
+/// <summary>
+/// Block access to a memory address space, for loading and saving (ROMs, snapshots).
+/// Not used in the emulation hot path.
+/// </summary>
+public interface IMemoryBuffer<TAddress, TData>
+    where TAddress : struct
+    where TData : struct
+{
+    /// <summary>Size of the address space.</summary>
+    int Size { get; }
+
+    /// <summary>Writes <paramref name="data"/> starting at <paramref name="address"/>, following the memory map (read-only areas are not modified).</summary>
+    void CopyFrom(TAddress address, ReadOnlySpan<TData> data);
+
+    /// <summary>Reads the address space starting at <paramref name="address"/> into <paramref name="destination"/>.</summary>
+    void CopyTo(TAddress address, Span<TData> destination);
+}

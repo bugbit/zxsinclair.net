@@ -15,9 +15,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Z80 instruction generator for ZXSinclair.Net.Core. The previous generator (which wrote into the
-// removed ZXSinclair.Net project) has been deleted; the new one will be written from its own
-// specification, following the generator contract in Specs/spec-cpu-z80.md (section 5).
-// The FUSE opcode tables it will read are kept in data/opcodes_*.dat.
+using System.Numerics;
 
-Console.WriteLine("The Z80 instruction generator is not implemented yet (see Specs/spec-cpu-z80.md, section 5).");
+namespace ZXSinclair.Net.Core.Z80;
+
+public static class Z80Flags
+{
+    public const byte C = 0x01, N = 0x02, PV = 0x04, F3 = 0x08,
+        H = 0x10, F5 = 0x20, Z = 0x40, S = 0x80;
+    public static readonly byte[] SZ53 = new byte[256];
+    public static readonly byte[] SZ53P = new byte[256];
+    public static readonly byte[] Parity = new byte[256];
+
+    static Z80Flags()
+    {
+        for (var value = 0; value < 256; value++)
+        {
+            SZ53[value] = (byte)((value & (S | F5 | F3)) | (value == 0 ? Z : 0));
+            Parity[value] = (byte)((BitOperations.PopCount((uint)value) & 1) == 0 ? PV : 0);
+            SZ53P[value] = (byte)(SZ53[value] | Parity[value]);
+        }
+    }
+}

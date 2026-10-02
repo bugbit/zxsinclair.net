@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="ZXSinclair.Net.Benchmarks/ZXSinclair.Net.Benchmarks.csproj" />
+  <Project Path="ZXSinclair.Net.Core.Tests/ZXSinclair.Net.Core.Tests.csproj" />
+  <Project Path="ZXSinclair.Net.Core/ZXSinclair.Net.Core.csproj" />
+  <Project Path="ZXSinclair.Net.Fuse/ZXSinclair.Net.Fuse.csproj" />
+  <Project Path="ZXSinclair.Net.Generate.Z80OpCodes/ZXSinclair.Net.Generate.Z80OpCodes.csproj" />
+  <Project Path="ZXSinclair.Net.Test/ZXSinclair.Net.Test.csproj" />
+</Solution>

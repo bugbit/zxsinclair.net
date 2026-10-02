@@ -5,16 +5,22 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="data/opcodes_base.dat" />
-    <EmbeddedResource Include="data/opcodes_ddfd.dat" />
-    <EmbeddedResource Include="data/opcodes_ed.dat" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="BenchmarkDotNet.Attributes" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ZXSinclair.Net.Core\ZXSinclair.Net.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
   </ItemGroup>
 
 </Project>

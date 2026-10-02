@@ -15,9 +15,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-// Z80 instruction generator for ZXSinclair.Net.Core. The previous generator (which wrote into the
-// removed ZXSinclair.Net project) has been deleted; the new one will be written from its own
-// specification, following the generator contract in Specs/spec-cpu-z80.md (section 5).
-// The FUSE opcode tables it will read are kept in data/opcodes_*.dat.
+namespace ZXSinclair.Net.Fuse;
 
-Console.WriteLine("The Z80 instruction generator is not implemented yet (see Specs/spec-cpu-z80.md, section 5).");
+public enum Z80BusEventType { MC, MR, MW, PC, PR, PW }
+
+public readonly record struct Z80BusEvent(int Time, Z80BusEventType Type, ushort Address, byte? Data)
+{
+    public override string ToString() => Data is byte data
+        ? $"{Time,5} {Type} {Address:x4} {data:x2}"
+        : $"{Time,5} {Type} {Address:x4}";
+}
