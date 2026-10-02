@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **22 de 150 entradas completadas; 128 pendientes**.
+Estado (2026-10-02): **42 de 150 entradas completadas; 108 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado (2026-10-02): **22 de 150 entradas completadas; 128 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-NOP y las 21 entradas del grupo de carga de 8 bits están completadas. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
+NOP, las 21 entradas de carga de 8 bits y las 20 de carga de 16 bits y pila están completadas. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT, IM ni RST.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -67,26 +67,26 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Carga de 16 bits y pila
 
-- [ ] `LD dd, nn` — p. 99.
-- [ ] `LD IX, nn` — p. 100.
-- [ ] `LD IY, nn` — p. 101.
-- [ ] `LD HL, (nn)` — p. 102.
-- [ ] `LD dd, (nn)` — p. 103.
-- [ ] `LD IX, (nn)` — p. 105.
-- [ ] `LD IY, (nn)` — p. 106.
-- [ ] `LD (nn), HL` — p. 107.
-- [ ] `LD (nn), dd` — p. 108.
-- [ ] `LD (nn), IX` — p. 110.
-- [ ] `LD (nn), IY` — p. 111.
-- [ ] `LD SP, HL` — p. 112.
-- [ ] `LD SP, IX` — p. 113.
-- [ ] `LD SP, IY` — p. 114.
-- [ ] `PUSH qq` — p. 115.
-- [ ] `PUSH IX` — p. 117.
-- [ ] `PUSH IY` — p. 118.
-- [ ] `POP qq` — p. 119.
-- [ ] `POP IX` — p. 121.
-- [ ] `POP IY` — p. 122.
+- [x] `LD dd, nn` — p. 99. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD IX, nn` — p. 100. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD IY, nn` — p. 101. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD HL, (nn)` — p. 102. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD dd, (nn)` — p. 103. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD IX, (nn)` — p. 105. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD IY, (nn)` — p. 106. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD (nn), HL` — p. 107. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD (nn), dd` — p. 108. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD (nn), IX` — p. 110. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD (nn), IY` — p. 111. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD SP, HL` — p. 112. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD SP, IX` — p. 113. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `LD SP, IY` — p. 114. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `PUSH qq` — p. 115. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `PUSH IX` — p. 117. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `PUSH IY` — p. 118. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `POP qq` — p. 119. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `POP IX` — p. 121. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
+- [x] `POP IY` — p. 122. [Spec](spec-instr-carga-16.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/Load16Tests.cs).
 
 ### Intercambio y bloques
 

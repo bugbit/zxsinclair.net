@@ -156,7 +156,7 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 - El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado se marca en la CPU (contador u opción de compilación del test) y el test se cuenta como omitido, como hasta ahora.
-- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 166 pasan (3 de NOP y 163 del grupo de carga de 8 bits), 0 fallan y 1169 se omiten por instrucciones pendientes, con comparación de eventos activada. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 201 pasan (3 de NOP, 163 del grupo de carga de 8 bits y 35 del de carga de 16 bits), 0 fallan y 1134 se omiten por instrucciones pendientes, con comparación de eventos activada. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 ### 8.2 Tests xUnit (`ZXSinclair.Net.Core.Tests`)
@@ -226,9 +226,23 @@ Los intervalos se solapan; esta comparación no muestra una regresión de NOP. L
 
 Informes locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/load8-control-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md` y `ZXSinclair.Net.Benchmarks/bin/load8-returns-artifacts/results/ZXSinclair.Net.Benchmarks.Z80CpuBenchmarks-report-github.md`.
 
+### Carga de 16 bits y salida temprana de NOP (2026-10-02)
+
+Mismo benchmark, hardware, SDK y runtime anteriores, Release. La base se midió en este checkout antes de añadir el grupo 2.
+
+| Despacho | Media por opcode | Error (IC 99.9%) | Desviación estándar | Asignaciones |
+|---|---|---|---|---|
+| Carga de 8 bits, control previo | 3.765 ns | 0.0742 ns | 0.0793 ns | 0 B |
+| Carga de 16 bits, emisión inicial | 4.026 ns | 0.0017 ns | 0.0014 ns | 0 B |
+| Carga de 16 bits, salida temprana de NOP | 3.769 ns | 0.0724 ns | 0.0833 ns | 0 B |
+
+La emisión inicial mostró una regresión de NOP. El generador ahora emite una salida temprana para `00` antes del único switch base, solo si su cuerpo está implementado y vacío. Los intervalos del control y de la versión final se solapan; no se observa una regresión en esta medición. Se conservan los auxiliares por opcode, los registros concretos y los despachos de las demás tablas. Esta medida cubre NOP en escritorio; no mide la mezcla de instrucciones ni WebAssembly.
+
+Artefactos locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/load16-initial-benchmark-artifacts/` conserva los logs del control previo y de la emisión inicial; `ZXSinclair.Net.Benchmarks/bin/load16-nop-guard-artifacts/` conserva el informe final.
+
 ## 9. Fuera de alcance
 
-- Las instrucciones distintas de NOP y del grupo de carga de 8 bits; se implementan por grupos mediante el generador existente.
+- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits; se implementan por grupos mediante el generador existente.
 - Z80 CMOS y diferencias NMOS/CMOS más allá de anotarlas.
 - Depurador, desensamblador y snapshots (usarán `Registers` y `Step()`).
 - Integración con la máquina Spectrum (bucle de frame, vídeo).

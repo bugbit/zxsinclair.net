@@ -210,9 +210,13 @@ public class GeneratorTests
     [Fact]
     public void Load8Patterns_RejectAll16BitLoads()
     {
+        var catalog = new PatternCatalog(new LoadRegisterRegister(), new LoadRegisterImmediate(),
+            new LoadRegisterIndirect(), new StoreIndirectRegister(), new StoreIndirectImmediate(),
+            new LoadAccumulatorAbsolute(), new StoreAbsoluteAccumulator(), new LoadRegisterIndexed(),
+            new StoreIndexedRegister(), new StoreIndexedImmediate(), new LoadAccumulatorSpecial(), new StoreSpecialAccumulator());
         foreach (var opcode in Tables().Values.SelectMany(t => t).Where(o => o.Mnemonic == "LD"
             && o.Operands.Any(p => p.Kind is OperandKind.Register16 or OperandKind.IndexPair or OperandKind.Immediate16)))
-            Assert.Null(PatternCatalog.Default.Resolve(opcode));
+            Assert.Null(catalog.Resolve(opcode));
     }
 
     [Theory]
@@ -231,6 +235,33 @@ public class GeneratorTests
         Assert.NotNull(pattern);
         Assert.Equal(expected, pattern.EmitBody(opcode, new(table)));
     }
+
+    [Theory]
+    [InlineData(0, 0x01, "Registers.BC = ReadPc16();")]
+    [InlineData(3, 0x21, "TIndex.Pair(ref Registers) = ReadPc16();")]
+    [InlineData(0, 0x2A, "Registers.HL = LoadWordAbsolute();")]
+    [InlineData(2, 0x6B, "Registers.HL = LoadWordAbsolute();")]
+    [InlineData(2, 0x63, "StoreWordAbsolute(Registers.HL);")]
+    [InlineData(2, 0x73, "StoreWordAbsolute(Registers.SP);")]
+    [InlineData(3, 0xF9, "bus.Internal(Registers.IR, 2);\nRegisters.SP = TIndex.Pair(ref Registers);")]
+    [InlineData(0, 0xF5, "PushWithDelay(Registers.AF);")]
+    [InlineData(3, 0xE1, "TIndex.Pair(ref Registers) = Pop();")]
+    public void Load16Patterns_EmitExpectedBodies(int tableId, int value, string expected)
+    {
+        var table = (OpcodeTableKind)tableId;
+        var opcode = Tables()[table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new(table)));
+    }
+
+    [Theory]
+    [InlineData(0xE3)] // EX (SP),HL
+    [InlineData(0x09)] // ADD HL,BC
+    [InlineData(0x03)] // INC BC
+    [InlineData(0xE9)] // JP (HL)
+    public void Load16Patterns_RejectOtherGroups(int value) =>
+        Assert.Null(PatternCatalog.Default.Resolve(Tables()[OpcodeTableKind.Base][value]));
 
     [Fact]
     public void Output_GroupsAliasesAndRetainsComments()
@@ -287,8 +318,8 @@ public class GeneratorTests
         {
             var expected = dispatch.Table switch
             {
-                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 78,
-                OpcodeTableKind.ED => 4,
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 93,
+                OpcodeTableKind.ED => 12,
                 _ => 0,
             };
             Assert.Equal(expected, dispatch.Opcodes.Count(o => o.Implemented));
@@ -304,6 +335,7 @@ public class GeneratorTests
     {
         var main = Generate().Single(d => d.Table == OpcodeTableKind.Base);
         Assert.Contains("MethodImplOptions.AggressiveInlining", main.Text);
+        Assert.Contains("if (opcode == 0) return;", main.Text);
         foreach (var item in main.Opcodes.Where(o => o.Implemented && o.Body.Length != 0))
         {
             Assert.Contains($"case 0x{item.Opcode.Byte:x2}: ExecuteMain{item.Opcode.Byte:X2}(); return;", main.Text);
@@ -312,6 +344,25 @@ public class GeneratorTests
                 Assert.Contains("        " + line, main.Text);
         }
         Assert.Contains("case 0x40: return; // LD B,B", main.Text);
+    }
+
+    private sealed class OpcodeZeroPattern(string body) : IPattern
+    {
+        public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.Base && opcode.Byte == 0;
+        public string EmitBody(Opcode opcode, EmitContext context) => body;
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Registers.A = 1;")]
+    public void MainDispatch_FastPathRequiresEmptyOpcodeZero(string body)
+    {
+        var main = DispatchEmitter.Generate(Tables(), new PatternCatalog(new OpcodeZeroPattern(body)))
+            .Single(d => d.Table == OpcodeTableKind.Base);
+        Assert.Equal(body.Length == 0, main.Text.Contains("if (opcode == 0) return;"));
+        var pending = DispatchEmitter.Generate(Tables(), new PatternCatalog())
+            .Single(d => d.Table == OpcodeTableKind.Base);
+        Assert.DoesNotContain("if (opcode == 0) return;", pending.Text);
     }
 
     [Fact]
@@ -355,8 +406,8 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("78 implemented / 174 pending / 4 prefixes", text);
-        Assert.Contains("4 implemented / 74 pending", text);
+        Assert.Contains("93 implemented / 159 pending / 4 prefixes", text);
+        Assert.Contains("12 implemented / 66 pending", text);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
         Assert.DoesNotContain("0x00 NOP", text);

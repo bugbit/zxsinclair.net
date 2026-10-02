@@ -27,20 +27,28 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x43: StoreWordAbsolute(Registers.BC); break; // LD (nnnn),BC
             case 0x47: // LD I,A
             {
                 bus.Internal(Registers.IR, 1);
                 Registers.I = Registers.A;
                 break;
             }
+            case 0x4b: Registers.BC = LoadWordAbsolute(); break; // LD BC,(nnnn)
             case 0x4f: // LD R,A
             {
                 bus.Internal(Registers.IR, 1);
                 Registers.R = Registers.A;
                 break;
             }
+            case 0x53: StoreWordAbsolute(Registers.DE); break; // LD (nnnn),DE
             case 0x57: LoadAFromSpecial(Registers.I); break; // LD A,I
+            case 0x5b: Registers.DE = LoadWordAbsolute(); break; // LD DE,(nnnn)
             case 0x5f: LoadAFromSpecial(Registers.R); break; // LD A,R
+            case 0x63: StoreWordAbsolute(Registers.HL); break; // LD (nnnn),HL
+            case 0x6b: Registers.HL = LoadWordAbsolute(); break; // LD HL,(nnnn)
+            case 0x73: StoreWordAbsolute(Registers.SP); break; // LD (nnnn),SP
+            case 0x7b: Registers.SP = LoadWordAbsolute(); break; // LD SP,(nnnn)
             default: Unimplemented(); break;
         }
     }

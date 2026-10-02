@@ -76,7 +76,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | — | Piloto `NOP` | `spec-instr-nop.md` | Implementado | 3 (`00`, `dd00`, `ddfd00`) |
 | 0 | Generador | `spec-generador-z80.md` | Implementado | 3 (piloto NOP) |
 | 1 | Carga de 8 bits | `spec-instr-carga-8.md` | Implementado | 163 (166 acumulados, 0 fallos; eventos activados) |
-| 2 | Carga de 16 bits | — | Pendiente | — |
+| 2 | Carga de 16 bits | `spec-instr-carga-16.md` | Implementado | 35 (201 acumulados, 0 fallos; eventos activados) |
 | 3 | Saltos y llamadas | — | Pendiente | — |
 | 4 | ALU de 8 bits | — | Pendiente | — |
 | 5 | Aritmética general y control | — | Pendiente | — |

@@ -28,6 +28,7 @@ public sealed partial class Z80Cpu<TBus>
         switch (opcode)
         {
             case 0x00: break; // NOP
+            case 0x01: Registers.BC = ReadPc16(); break; // LD BC,nnnn
             case 0x02: // LD (BC),A
             {
                 bus.Write(Registers.BC, Registers.A);
@@ -42,6 +43,7 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x0e: Registers.C = ReadPc(); break; // LD C,nn
+            case 0x11: Registers.DE = ReadPc16(); break; // LD DE,nnnn
             case 0x12: // LD (DE),A
             {
                 bus.Write(Registers.DE, Registers.A);
@@ -56,8 +58,12 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x1e: Registers.E = ReadPc(); break; // LD E,nn
+            case 0x21: TIndex.Pair(ref Registers) = ReadPc16(); break; // LD REGISTER,nnnn
+            case 0x22: StoreWordAbsolute(TIndex.Pair(ref Registers)); break; // LD (nnnn),REGISTER
             case 0x26: TIndex.High(ref Registers) = ReadPc(); break; // LD REGISTERH,nn
+            case 0x2a: TIndex.Pair(ref Registers) = LoadWordAbsolute(); break; // LD REGISTER,(nnnn)
             case 0x2e: TIndex.Low(ref Registers) = ReadPc(); break; // LD REGISTERL,nn
+            case 0x31: Registers.SP = ReadPc16(); break; // LD SP,nnnn
             case 0x32: // LD (nnnn),A
             {
                 var address = ReadPc16();
@@ -207,6 +213,20 @@ public sealed partial class Z80Cpu<TBus>
                 break;
             }
             case 0x7f: break; // LD A,A
+            case 0xc1: Registers.BC = Pop(); break; // POP BC
+            case 0xc5: PushWithDelay(Registers.BC); break; // PUSH BC
+            case 0xd1: Registers.DE = Pop(); break; // POP DE
+            case 0xd5: PushWithDelay(Registers.DE); break; // PUSH DE
+            case 0xe1: TIndex.Pair(ref Registers) = Pop(); break; // POP REGISTER
+            case 0xe5: PushWithDelay(TIndex.Pair(ref Registers)); break; // PUSH REGISTER
+            case 0xf1: Registers.AF = Pop(); break; // POP AF
+            case 0xf5: PushWithDelay(Registers.AF); break; // PUSH AF
+            case 0xf9: // LD SP,REGISTER
+            {
+                bus.Internal(Registers.IR, 2);
+                Registers.SP = TIndex.Pair(ref Registers);
+                break;
+            }
             default: Unimplemented(); break;
         }
     }
