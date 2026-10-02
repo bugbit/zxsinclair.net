@@ -72,7 +72,9 @@ Edit generator tables, templates, or instruction handlers before regenerating `Z
 
 ## Testing Guidelines
 
-The runner uses `Debug.Assert`, without a unit-test framework; `dotnet test` does not execute these checks. Release builds omit assertions. Add matching, identically named cases to `tests.in` and `tests.expected`, following existing opcode identifiers. Check registers, changed memory, and exact T-state counts. Unimplemented opcodes are skipped under `Z80_OPCODES_TEST`; report remaining gaps. No coverage threshold is configured.
+Run the console FUSE runner in Debug; `dotnet test` does not execute it. It compares registers, memory, exact T-state counts, and the full ordered bus-event sequence (`MC`, `MR`, `MW`, `PC`, `PR`, `PW`). Failures report the test name and first mismatch, then continue. The summary lists passed, failed, and skipped cases; failures return a nonzero exit code. Unimplemented opcodes are skipped. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. Parser assertions still require Debug; Release execution is rejected. Add matching, identically named cases to `tests.in` and `tests.expected`. No coverage threshold is configured.
+
+Internal instruction cycles must use `InternalCycles(address, tstates)`, rather than calling `Ticks.AddCycles` directly. Recording is compiled only under `Z80_OPCODES_TEST` and is optional when `BusEvents` is null. The legacy CPU is instrumented solely to validate existing instructions pending the Core rewrite.
 
 ## Commit & Pull Request Guidelines
 

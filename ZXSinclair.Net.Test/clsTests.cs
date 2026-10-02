@@ -135,6 +135,8 @@ namespace ZXSinclair.Net.Test
         public ushort address;
         public byte? data;
 
+        public Z80BusEvent ToBusEvent() => new(time, Enum.Parse<Z80BusEventType>(type), address, data);
+
         public static clsTestEvent? Read(string line)
         {
             /*

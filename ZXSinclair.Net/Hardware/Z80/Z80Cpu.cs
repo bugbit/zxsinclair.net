@@ -57,21 +57,29 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
 #if Z80_OPCODES_TEST
     public bool instrNotImp { get; protected set; } = false;
+    public List<Z80BusEvent>? BusEvents;
 #endif
 
     public override void Reset()
     {
 #if Z80_OPCODES_TEST
         instrNotImp = false;
+        BusEvents?.Clear();
 #endif
         base.Reset();
     }
 
     public override byte ReadOpCode(ushort address)
     {
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MC, address, null));
+#endif
         var opcode = base.ReadOpCode(address);
 
         Ticks.AddCycles(4);
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MR, address, opcode));
+#endif
         Regs.RefreshR();
 
         return opcode;
@@ -79,11 +87,30 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
     public override byte ReadMemory(ushort address)
     {
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MC, address, null));
+#endif
         var data = base.ReadMemory(address);
 
         Ticks.AddCycles(3);
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MR, address, data));
+#endif
 
         return data;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    public void InternalCycles(ushort address, int tstates)
+    {
+#if Z80_OPCODES_TEST
+        if (BusEvents is { } events)
+        {
+            for (var i = 0; i < tstates; i++)
+                events.Add(new Z80BusEvent(Ticks.TStates + i, Z80BusEventType.MC, address, null));
+        }
+#endif
+        Ticks.AddCycles(tstates);
     }
 
     public ushort ReadWordMemory(ushort address)
@@ -110,9 +137,15 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
     public override void WriteMemory(ushort address, byte data)
     {
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MC, address, null));
+#endif
         base.WriteMemory(address, data);
 
         Ticks.AddCycles(3);
+#if Z80_OPCODES_TEST
+        BusEvents?.Add(new Z80BusEvent(Ticks.TStates, Z80BusEventType.MW, address, data));
+#endif
     }
 
     public void WriteWordMemory(ushort address, ushort data)
@@ -165,9 +198,10 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
     public byte Read_M_IX_PLUS_D_M()
     {
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var n = ReadMemory(Regs.GetIX_d(d));
 
@@ -176,9 +210,10 @@ public unsafe partial class Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>
 
     public byte Read_M_IY_PLUS_D_M()
     {
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var n = ReadMemory(Regs.GetIY_d(d));
 
@@ -228,7 +263,7 @@ If an interrupt occurs during execution of this instruction, the Parity flag con
 
         rr.SetF(f);
 
-        Ticks.AddCycles(1);
+        InternalCycles(Regs.IR, 1);
     }
 
     protected void LD_A_R()
@@ -256,18 +291,18 @@ If an interrupt occurs during execution of this instruction, the Parity flag con
 
         rr.SetF(f);
 
-        Ticks.AddCycles(1);
+        InternalCycles(Regs.IR, 1);
     }
 
     public void LD_I_A()
     {
+        InternalCycles(Regs.IR, 1);
         Regs.SetI_A();
-        Ticks.AddCycles(1);
     }
     public void LD_R_A()
     {
+        InternalCycles(Regs.IR, 1);
         Regs.SetR_A();
-        Ticks.AddCycles(1);
     }
 
     // TODO: reemplazar el finalizador solo si "Dispose(bool disposing)" tiene código para liberar los recursos no administrados

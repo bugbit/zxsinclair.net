@@ -59,7 +59,7 @@ dotnet run --project ZXSinclair.Net.Test
 dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 ```
 
-- **Tests are not xUnit/NUnit.** `ZXSinclair.Net.Test` is a console app (`Program.cs`) that checks results with `Debug.Assert`, so it must run in **Debug** configuration. In Release the asserts are compiled out and nothing is checked. You can't run a single test from the CLI. To focus on one, filter `testsin` in `RunTests` (e.g. by `t.Base.Name`) while debugging.
+- **Tests are a console FUSE runner, not xUnit/NUnit.** Run in Debug. It compares registers, memory, T-states, and the complete ordered bus-event sequence. It reports the first mismatch per failed test, continues, and prints passed/failed/skipped counts; failures return a nonzero exit code. Parser assertions remain Debug-only, and Release execution is rejected. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. There is no CLI filter for a single fixture.
 - VS Code launch/tasks configs exist for the three runnable projects (`.vscode/launch.json`, `.vscode/tasks.json`).
 - If git reports "dubious ownership" for this directory, the user needs to add a `safe.directory` exception. Don't change global git config without asking.
 
@@ -73,7 +73,7 @@ dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
 
 ### CPU model
 - `Cpu<A, D, E, R>` (A = address type, D = data type, E = pins enum, R = register set) is the generic base. It owns an `IMemoryBuffer<D>` (raw storage), an `IMemory<A, D>` (the access layer over the buffer: RAM/ROM/Null), a register object, and `ITicks` (T-state counter).
-- `Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>` is a `partial` class. Timing is added inside the memory overrides. `ReadOpCode` adds 4 T-states and refreshes R. `ReadMemory` and `WriteMemory` each add 3. Instructions add any extra cycles explicitly with `Ticks.AddCycles(n)`. Tests compare exact T-state counts, so timing matters.
+- `Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>` is a `partial` class. Timing is added inside the memory overrides. `ReadOpCode` adds 4 T-states and refreshes R. `ReadMemory` and `WriteMemory` each add 3. Internal instruction cycles must use `InternalCycles(address, n)`, rather than calling `Ticks.AddCycles` directly. Bus-event recording is compiled only under `Z80_OPCODES_TEST`; a null `BusEvents` disables it. Instrumenting the legacy CPU is limited to validating its existing instructions pending the Core rewrite. Tests compare exact T-state counts, so timing matters.
 - `Z80Regs` uses `[StructLayout(LayoutKind.Explicit)]` with overlapping `FieldOffset`s, so 8-bit registers alias the halves of 16-bit pairs (little-endian: e.g. `F` at offset 0, `A` at offset 1 of `AF`). Alternate registers and IXH/IXL/IYH/IYL are still commented out.
 - `MemoryBuffer` uses unmanaged memory (`Marshal.AllocHGlobal`) and unsafe pointers, so `AllowUnsafeBlocks` is enabled.
 - The prefixes DD/FD/ED go through `InstrfetchDD/FD/ED` → `ExecOpCodeDD/FD/ED`. CB/DDCB/FDCB are not implemented yet.
@@ -94,7 +94,7 @@ To change them, edit the generator instead:
 To add an instruction, add or extend its generator function and any helper methods it calls in `Z80Cpu.cs`. Then rerun the generator and the test runner.
 
 ### `Z80_OPCODES_TEST` and unimplemented opcodes
-In Debug, `Z80_OPCODES_TEST` is defined in both `ZXSinclair.Net` and the test project. Unimplemented opcodes get generated code that sets `instrNotImp = true`, and the test runner then **skips** that test instead of failing it. A green run therefore means only that the implemented opcodes pass.
+In Debug, `Z80_OPCODES_TEST` is defined in both `ZXSinclair.Net` and the test project. Unimplemented opcodes get generated code that sets `instrNotImp = true`, and the test runner then **skips** that test instead of failing it. The summary reports skipped cases separately; passing implemented cases does not establish complete opcode coverage.
 
 ### Test data
-The data files are `ZXSinclair.Net.Test/data/tests.in` and `tests.expected` (embedded resources), in the FUSE Z80 test suite format. Each test has a name, a register line (AF BC DE HL AF' BC' DE' HL' IX IY SP PC), a line with I R IFF1 IFF2 IM halted end-tstates, and memory blocks terminated by `-1`. In `tests.expected`, bus event lines (MC/MR/MW...) come before the registers. The runner fills memory with `DE AD BE EF`, executes until `end_tstates`, then compares registers, T-states and the changed memory bytes.
+The data files are `ZXSinclair.Net.Test/data/tests.in` and `tests.expected` (embedded resources), in the FUSE Z80 test suite format. Each test has a name, a register line (AF BC DE HL AF' BC' DE' HL' IX IY SP PC), a line with I R IFF1 IFF2 IM halted end-tstates, and memory blocks terminated by `-1`. In `tests.expected`, bus event lines (MC/MR/MW...) come before the registers. The runner fills memory with `DE AD BE EF`, executes until `end_tstates`, then compares registers, T-states, memory, and every bus event (time, type, address, and optional data).

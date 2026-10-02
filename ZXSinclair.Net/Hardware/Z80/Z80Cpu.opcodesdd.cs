@@ -23,9 +23,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_A()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -35,9 +36,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_B()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -47,9 +49,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_C()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -59,9 +62,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_D()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -71,9 +75,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_E()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -83,9 +88,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_H()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 
@@ -95,9 +101,10 @@ public partial class Z80Cpu
     public void LD_M_IX_PLUS_D_M_L()
     {
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.GetIX_d(d);
 

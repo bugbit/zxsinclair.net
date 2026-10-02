@@ -196,9 +196,10 @@ $@"
     public void LD_M_{opcodes.Register}_PLUS_D_M_{r8}()
     {{
         var r = Regs;
-        var d = (sbyte)ReadMemory(Regs.GetPCAndInc());
+        var displacementAddress = Regs.GetPCAndInc();
+        var d = (sbyte)ReadMemory(displacementAddress);
 
-        Ticks.AddCycles(5);
+        InternalCycles(displacementAddress, 5);
 
         var nn =r.Get{opcodes.Register}_d(d);
 
