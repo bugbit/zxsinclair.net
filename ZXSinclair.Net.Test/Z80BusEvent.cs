@@ -15,20 +15,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-namespace ZXSinclair.Net.Hardware.Z80;
+namespace ZXSinclair.Net.Test;
 
-public partial class Z80Cpu
+public enum Z80BusEventType { MC, MR, MW, PC, PR, PW }
+
+public readonly record struct Z80BusEvent(int Time, Z80BusEventType Type, ushort Address, byte? Data)
 {
-{{BEFORE}}
-    public void ExecOpCodeFD(byte opcode)
-    {
-        switch (opcode)
-        {
-{{CODE}}
-            default:
-                //Nop();
-                ExecOpCode(opcode);
-                break;
-        }
-    }
+    public override string ToString() => Data is byte data
+        ? $"{Time,5} {Type} {Address:x4} {data:x2}"
+        : $"{Time,5} {Type} {Address:x4}";
 }

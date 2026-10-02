@@ -274,8 +274,8 @@ Decisiones:
 
 ### 9.5 Validación
 
-- Los tests FUSE (`tests.expected`) ya incluyen los eventos de bus `MC` (contención de memoria), `MR`, `MW`, `PC`, `PR`, `PW` con su T-state. El runner los compara en Debug además de registros, memoria y T-states, respetando longitud, orden, tiempo, tipo, dirección y dato. Informa del primer fallo de cada test y continúa; al terminar muestra pasados, fallidos y omitidos y devuelve un código distinto de cero si hay fallos. `--no-events` desactiva el registro y la comparación de eventos. Los opcodes sin implementar se omiten.
-- Los ciclos internos de instrucciones usan `InternalCycles(dirección, n)`, nunca una llamada directa a `Ticks.AddCycles`. El registro existe solo bajo `Z80_OPCODES_TEST`, sin lista ni registro en Release. En `LD I,A` y `LD R,A`, el ciclo interno usa `IR` antes de modificar el registro.
+- Los tests FUSE (`tests.expected`) ya incluyen los eventos de bus `MC` (contención de memoria), `MR`, `MW`, `PC`, `PR`, `PW` con su T-state. Cuando exista la CPU del Core, el runner los comparará además de registros, memoria y T-states, respetando longitud, orden, tiempo, tipo, dirección y dato (`FuseComparison` en `ZXSinclair.Net.Test`). Hasta entonces solo carga y valida los ficheros.
+- Los ciclos internos de las instrucciones pasan siempre por `IZ80Bus.Internal(dirección, n)`. En `LD I,A` y `LD R,A`, el ciclo interno usa `IR` antes de modificar el registro. El registro de eventos lo hace un bus de pruebas (`FuseTestBus`, ver `Specs/spec-cpu-z80.md`, sección 8.1), no la CPU.
 - Pruebas de máquina con programas de test de contención y bus flotante (p. ej. los de FUSE/ZX test suites) una vez exista la ULA.
 
 ## 10. Pendiente de verificar

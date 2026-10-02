@@ -14,7 +14,9 @@ Principios para el código del núcleo de emulación (ejecución de instruccione
 
 ## Desarrollo con .NET 10
 
-Los cuatro proyectos usan `net10.0`. Instala el SDK de .NET 10 y su runtime. La interfaz Blazor WebAssembly está prevista; todavía no está implementada.
+Todos los proyectos usan `net10.0`. Instala el SDK de .NET 10 y su runtime. La interfaz Blazor WebAssembly está prevista; todavía no está implementada.
+
+El emulador se está reescribiendo en `ZXSinclair.Net.Core` a partir de las especificaciones de `Specs/` (`spec-buses-memoria.md`, `spec-cpu-z80.md`). La CPU Z80 del Core todavía no existe.
 
 Ejecuta desde la raíz del repositorio:
 
@@ -22,8 +24,8 @@ Ejecuta desde la raíz del repositorio:
 dotnet restore zxsinclair.net.slnx
 dotnet build zxsinclair.net.slnx -c Debug --no-restore -m:1
 dotnet build zxsinclair.net.slnx -c Release --no-restore -m:1
+dotnet test ZXSinclair.Net.Core.Tests
 dotnet run --project ZXSinclair.Net.Test -c Debug
-dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes -c Debug
 ```
 
-Las pruebas son un ejecutable con `Debug.Assert`: deben ejecutarse en Debug. Los opcodes sin implementar se omiten. El generador sobrescribe los archivos de opcodes del núcleo; modifica sus tablas o plantillas y revisa el resultado. El ejecutable principal sigue siendo un punto de entrada provisional que imprime `Hello, World!`.
+`ZXSinclair.Net.Core.Tests` contiene los tests xUnit del Core. `ZXSinclair.Net.Test` es el ejecutor de los tests Z80 de FUSE: debe ejecutarse en Debug y, hasta que exista la CPU, solo carga y valida los ficheros de tests. El generador de instrucciones (`ZXSinclair.Net.Generate.Z80OpCodes`) se rehará desde cero; de momento solo conserva las tablas de opcodes de FUSE.
