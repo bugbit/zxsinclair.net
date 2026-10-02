@@ -15,31 +15,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace ZXSinclair.Net.Core.Abstractions;
 
-namespace ZXSinclair.Net.Test
+/// <summary>
+/// Block access to a memory address space, for loading and saving (ROMs, snapshots).
+/// Not used in the emulation hot path.
+/// </summary>
+public interface IMemoryBuffer<TAddress, TData>
+    where TAddress : struct
+    where TData : struct
 {
-    public static class HelperNumber
-    {
-        public static ushort? HexToShort(string hex) => (ushort.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out ushort num)) ? num : null;
+    /// <summary>Size of the address space.</summary>
+    int Size { get; }
 
-        public static bool TryUShortHex(string hex, out ushort num)
-        {
-            var numh = HexToShort(hex);
+    /// <summary>Writes <paramref name="data"/> starting at <paramref name="address"/>, following the memory map (read-only areas are not modified).</summary>
+    void CopyFrom(TAddress address, ReadOnlySpan<TData> data);
 
-            if (numh.HasValue)
-            {
-                num = numh.Value;
-
-                return true;
-            }
-
-            num = default(ushort);
-
-            return false;
-        }
-    }
+    /// <summary>Reads the address space starting at <paramref name="address"/> into <paramref name="destination"/>.</summary>
+    void CopyTo(TAddress address, Span<TData> destination);
 }

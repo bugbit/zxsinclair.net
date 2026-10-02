@@ -1,0 +1,119 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+ZX Spectrum (Sinclair) emulator in C# / .NET 10, with a Blazor WebAssembly front end planned (the front end does not exist yet). Licensed under GPLv3. Every source file starts with the `#region LICENSE` GPL header block, and generator templates include it too. Code comments and TODOs are often in Spanish. The current work is the Z80 CPU core.
+
+The `ZXSinclair.Net` project is obsolete. The emulator will be rewritten in `ZXSinclair.Net.Core`; implement new emulator functionality there. Use `ZXSinclair.Net` as a reference for the legacy implementation.
+
+## Z80 Technical Reference
+
+`Docs/z80cpu_um.pdf` is the Z80 technical manual. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
+
+## Specifications
+
+Specification documents go in `Specs/`, not in `Docs/` (which holds external reference material such as the Z80 manual). `Specs/spec-buses-memoria.md` specifies the Z80 bus and the Spectrum 16K/48K/128K/+2 and ZX81 memory (maps, contention, paging) for the `ZXSinclair.Net.Core` rewrite.
+
+## Required C# License Header
+
+Every C# file (`.cs`) must start with the following exact block. Include it in new files and preserve it when editing existing files. Generator templates must emit the same header. Do not place code, using directives, or other comments before it.
+
+```csharp
+#region LICENSE
+/*
+    ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
+    Copyright (C) 2016 Oscar Hernandez Bano
+    This file is part of ZXSincalir.Net.
+    ZXSincalir.Net is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+#endregion
+```
+
+## Performance is the top priority
+
+Optimization dominates every design decision in this emulator. Very efficient, fast C# is the essence of the project and what distinguishes it from similar emulators (see README.md). It must run cycle-accurate emulation at full speed, including in Blazor WebAssembly. When abstraction or elegance conflicts with speed in the emulation hot path (instruction fetch/decode/execute, memory and bus access, T-state accounting, ULA/video), choose speed:
+- No allocations, LINQ, boxing, closures or `async` in the per-instruction path.
+- Minimize interface and virtual dispatch. Prefer `sealed` classes, concrete types, structs, `switch` dispatch and precomputed lookup tables (like `mTablePV` and `mTableZS53`). Use `[MethodImpl(MethodImplOptions.AggressiveInlining)]` where it helps.
+- Avoid `Enum.HasFlag` on generic enums and similar hidden costs. Use bit operations on plain integers.
+- Any new abstraction in the hot path (e.g. the bus redesign in `ZXSinclair.Net.Core`) must justify its cost. Back hot-path changes with measurements (BenchmarkDotNet or a timing harness).
+
+## Commands
+
+All projects target `net10.0`. Solution: `zxsinclair.net.slnx`.
+
+```bash
+dotnet build zxsinclair.net.slnx
+```
+
+```bash
+dotnet run --project ZXSinclair.Net.Test
+```
+
+```bash
+dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes
+```
+
+```bash
+dotnet test ZXSinclair.Net.Core.Tests
+```
+
+- **`ZXSinclair.Net.Core.Tests`** is an xUnit project for the Core (memory maps, paging, contention, bus, floating bus). Run a single test with `dotnet test ZXSinclair.Net.Core.Tests --filter "FullyQualifiedName~SpectrumBusTests.In_FollowsTheIoContentionTable"`.
+- **The legacy CPU tests are a console FUSE runner, not xUnit/NUnit.** Run in Debug. It compares registers, memory, T-states, and the complete ordered bus-event sequence. It reports the first mismatch per failed test, continues, and prints passed/failed/skipped counts; failures return a nonzero exit code. Parser assertions remain Debug-only, and Release execution is rejected. Use `dotnet run --project ZXSinclair.Net.Test -c Debug -- --no-events` to disable event recording and comparison. There is no CLI filter for a single fixture.
+- VS Code launch/tasks configs exist for the three runnable projects (`.vscode/launch.json`, `.vscode/tasks.json`).
+- If git reports "dubious ownership" for this directory, the user needs to add a `safe.directory` exception. Don't change global git config without asking.
+
+## Architecture
+
+### Projects
+- **ZXSinclair.Net** is the obsolete emulator implementation (currently an Exe with a placeholder `Program.cs`). Legacy hardware lives in `Hardware/`, and the Z80 is in `Hardware/Z80/`.
+- **ZXSinclair.Net.Core** is the destination for the emulator rewrite and all new emulator functionality (see "Core architecture" below). Its interfaces are distinct from the similarly named ones in legacy `ZXSinclair.Net/Hardware`.
+- **ZXSinclair.Net.Core.Tests** is the xUnit test project for the Core.
+- **ZXSinclair.Net.Benchmarks** holds BenchmarkDotNet benchmarks (memory strategies, Core bus). Run with `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Bus*'`.
+- **ZXSinclair.Net.Generate.Z80OpCodes** is a code generator that produces the Z80 opcode dispatch code. See below.
+- **ZXSinclair.Net.Test** is the Z80 opcode conformance runner, using the FUSE emulator's test format.
+
+### Core architecture (`ZXSinclair.Net.Core`)
+Implements `Specs/spec-buses-memoria.md`. There is no CPU in the Core yet.
+- `Abstractions/`: generic contracts for any CPU/machine — `IBus` (clock + reset), `IBusData<TAddress, TData>` (timed bus access), `IBusIo<TPort, TData>` (I/O space), `IMemory<TAddress, TData>` (raw access), `IMemoryBuffer<TAddress, TData>` (block load/save). `Z80/IZ80Bus` combines them with the Z80 cycles (`FetchOpcode`, `Internal`, INT).
+- **Buses are structs used only as generic arguments** (`where TBus : struct, IZ80Bus`): the JIT specialises generics only for struct type arguments, so a class or an interface-typed variable brings back interface dispatch. `SpectrumBus` is a `readonly struct` holding one reference to a `sealed` `SpectrumMachine` (T-state counter, memory, tables, ports); the future CPU must be `Z80Cpu<TBus>`.
+- `Memory/`: `MemoryLayout` describes any 64K map (page size as a power of two, ROM/RAM regions of any size, mirrors, unmapped pages); `PagedMemory` builds it into one pinned array with separate read/write offset tables per page (ROM and unmapped writes go to a sink page, unmapped reads to a 0xFF page), so accesses never branch. `Machines/Layouts.cs` has presets for Spectrum 16K/48K/128K(+2) and ZX81 1K/16K.
+- `Timing/`: `MachineTiming` presets, and precomputed per-T-state `ContentionTable` and `FloatingBusTable` (one table read per access). The machine must call `EndFrame()` before T-states exceed the frame by `ContentionTable.Margin`.
+- `Machines/Spectrum/`: `SpectrumMachine` (16K, 48K, 128K, grey +2), `SpectrumBus` (memory/IO contention, ULA port 0xFE, floating bus, INT), `Spectrum128Paging` (port 0x7FFD: paging only rewrites page table entries and contention flags).
+
+### CPU model
+- `Cpu<A, D, E, R>` (A = address type, D = data type, E = pins enum, R = register set) is the generic base. It owns an `IMemoryBuffer<D>` (raw storage), an `IMemory<A, D>` (the access layer over the buffer: RAM/ROM/Null), a register object, and `ITicks` (T-state counter).
+- `Z80Cpu : Cpu<ushort, byte, Z80Pins, Z80Regs>` is a `partial` class. Timing is added inside the memory overrides. `ReadOpCode` adds 4 T-states and refreshes R. `ReadMemory` and `WriteMemory` each add 3. Internal instruction cycles must use `InternalCycles(address, n)`, rather than calling `Ticks.AddCycles` directly. Bus-event recording is compiled only under `Z80_OPCODES_TEST`; a null `BusEvents` disables it. Instrumenting the legacy CPU is limited to validating its existing instructions pending the Core rewrite. Tests compare exact T-state counts, so timing matters.
+- `Z80Regs` uses `[StructLayout(LayoutKind.Explicit)]` with overlapping `FieldOffset`s, so 8-bit registers alias the halves of 16-bit pairs (little-endian: e.g. `F` at offset 0, `A` at offset 1 of `AF`). Alternate registers and IXH/IXL/IYH/IYL are still commented out.
+- `MemoryBuffer` uses unmanaged memory (`Marshal.AllocHGlobal`) and unsafe pointers, so `AllowUnsafeBlocks` is enabled.
+- The prefixes DD/FD/ED go through `InstrfetchDD/FD/ED` → `ExecOpCodeDD/FD/ED`. CB/DDCB/FDCB are not implemented yet.
+
+### Generated code (do not hand-edit)
+These files under `ZXSinclair.Net/Hardware/Z80/` are **overwritten** by the generator:
+- `Z80OpCodes.cs`, `Z80OpCodesDD.cs`, `Z80OpCodesFD.cs`, `Z80OpCodesED.cs`: opcode enums
+- `Z80Cpu.opcodes.cs`, `Z80Cpu.opcodesdd.cs`, `Z80Cpu.opcodesfd.cs`, `Z80Cpu.opcodesed.cs`: `ExecOpCode*` switch statements
+- `Z80Regs.ld.cs`: register-to-register `Set*` helpers
+
+To change them, edit the generator instead:
+- `data/*.dat`: opcode tables (FUSE format: `0xNN MNEMONIC args`). DD and FD share `opcodes_ddfd.dat`, with `REGISTER` replaced by IX or IY.
+- `templates/*.txt`: file skeletons with `{{CODE}}` and `{{BEFORE}}` placeholders.
+- `Program.cs`: one generator function per mnemonic, registered in the `opcodesGenerators` dictionary (currently `NOP`, `LD`, `shift`). Each emits a call to a hand-written helper on `Z80Cpu`/`Z80Regs` (e.g. `Read_M_HL_M()`, `LD_A_I()`). A generator returns `false` for unsupported operands.
+- Data files and templates are **embedded resources**, so any new one must be added to the `.csproj`.
+- Output goes to `<assembly dir>/../../../../ZXSinclair.Net`, so run the generator from its default `bin/<Config>/net10.0` output (`dotnet run` does this).
+
+To add an instruction, add or extend its generator function and any helper methods it calls in `Z80Cpu.cs`. Then rerun the generator and the test runner.
+
+### `Z80_OPCODES_TEST` and unimplemented opcodes
+In Debug, `Z80_OPCODES_TEST` is defined in both `ZXSinclair.Net` and the test project. Unimplemented opcodes get generated code that sets `instrNotImp = true`, and the test runner then **skips** that test instead of failing it. The summary reports skipped cases separately; passing implemented cases does not establish complete opcode coverage.
+
+### Test data
+The data files are `ZXSinclair.Net.Test/data/tests.in` and `tests.expected` (embedded resources), in the FUSE Z80 test suite format. Each test has a name, a register line (AF BC DE HL AF' BC' DE' HL' IX IY SP PC), a line with I R IFF1 IFF2 IM halted end-tstates, and memory blocks terminated by `-1`. In `tests.expected`, bus event lines (MC/MR/MW...) come before the registers. The runner fills memory with `DE AD BE EF`, executes until `end_tstates`, then compares registers, T-states, memory, and every bus event (time, type, address, and optional data).

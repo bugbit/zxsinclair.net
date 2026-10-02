@@ -15,31 +15,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace ZXSinclair.Net.Core.Abstractions;
 
-namespace ZXSinclair.Net.Test
+/// <summary>Separate I/O space of a bus (IN/OUT on the Z80).</summary>
+public interface IBusIo<TPort, TData>
+    where TPort : struct
+    where TData : struct
 {
-    public static class HelperNumber
-    {
-        public static ushort? HexToShort(string hex) => (ushort.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out ushort num)) ? num : null;
-
-        public static bool TryUShortHex(string hex, out ushort num)
-        {
-            var numh = HexToShort(hex);
-
-            if (numh.HasValue)
-            {
-                num = numh.Value;
-
-                return true;
-            }
-
-            num = default(ushort);
-
-            return false;
-        }
-    }
+    TData In(TPort port);
+    void Out(TPort port, TData data);
 }

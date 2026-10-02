@@ -1,8 +1,42 @@
-﻿var assembly = Assembly.GetExecutingAssembly();
+#region LICENSE
+/*
+    ZXSinclair Emulador ZX Computers make in .Net and .Net CORE
+    Copyright (C) 2016 Oscar Hernandez Bano
+    This file is part of ZXSincalir.Net.
+    ZXSincalir.Net is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+#endregion
+
+var assembly = Assembly.GetExecutingAssembly();
 var embeddedProvider = new EmbeddedFileProvider(assembly);
 
-endiantest();
+if (!TestInstrumentationEnabled())
+{
+    Console.Error.WriteLine("Run the FUSE tests in Debug configuration; Release omits test instrumentation and parser assertions.");
+    Environment.ExitCode = 2;
+    return;
+}
+
+if (args.Any(arg => arg != "--no-events"))
+{
+    Console.Error.WriteLine("Usage: ZXSinclair.Net.Test [--no-events]");
+    Environment.ExitCode = 2;
+    return;
+}
+
+var compareEvents = !args.Contains("--no-events");
+var endianPassed = endiantest();
 await z80opcodestest();
+if (!endianPassed)
+    Environment.ExitCode = 1;
 
 async Task<string[]> ReadLinesTxtFileEmb(string key)
 {
@@ -21,42 +55,13 @@ async Task<string[]> ReadLinesTxtFileEmb(string key)
     }
 }
 
-void endiantest()
+bool endiantest()
 {
-    Console.WriteLine("endiantest");
-
-    var regs = new Z80Regs();
-    var w = 0x4000 + 0x1F;
-    var h = (byte)0x40;
-    var l = (byte)0x1f;
-
-    regs.A = h;
-    regs.F = l;
-
-    Debug.Assert(regs.AF == w);
-
-    regs.B = h;
-    regs.C = l;
-
-    Debug.Assert(regs.BC == w);
-
-    regs.D = h;
-    regs.E = l;
-
-    Debug.Assert(regs.DE == w);
-
-    regs.H = h;
-    regs.L = l;
-
-    Debug.Assert(regs.HL == w);
-
-    /* var wb=new[]{ 0x12,0x34 };
-    var w = 0x1234;
-
-    regs.A = 0x34;
-    regs.F = 0x12;
-
-    Debug.Assert(regs.AF == w); */
+    var regs = new Z80Regs { A = 0x40, F = 0x1f, B = 0x40, C = 0x1f, D = 0x40, E = 0x1f, H = 0x40, L = 0x1f };
+    var passed = regs.AF == 0x401f && regs.BC == 0x401f && regs.DE == 0x401f && regs.HL == 0x401f;
+    if (!passed)
+        Console.Error.WriteLine("FAIL endiantest: register byte aliases differ from 401f.");
+    return passed;
 }
 
 async Task z80opcodestest()
@@ -128,10 +133,16 @@ async Task<IDictionary<string, clsTestExpected>> readTestsExpected()
 
 unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpected> testsexpected)
 {
-    var mb = new MemoryBuffer8Bit(0x10000);
+    using var mb = new MemoryBuffer8Bit(0x10000);
     var m0 = new byte[mb.Size];
     var m = new MemoryRam16Bits<byte>(mb);
-    var z80 = new Z80Cpu(mb, m);
+    using var z80 = new Z80Cpu(mb, m);
+#if Z80_OPCODES_TEST
+    z80.BusEvents = compareEvents ? new List<Z80BusEvent>(64) : null;
+#endif
+    var passed = 0;
+    var failed = 0;
+    var skipped = 0;
 
     foreach (var t in testsin)
     {
@@ -140,14 +151,33 @@ unsafe void RunTests(List<clsTestIn> testsin, IDictionary<string, clsTestExpecte
         do
         {
             z80.Instrfetch();
+#if Z80_OPCODES_TEST
+            if (z80.instrNotImp)
+                break;
+#endif
         } while (z80.Ticks.TStates < t.Base.Line2.endtstates);
 #if Z80_OPCODES_TEST
         if (z80.instrNotImp)
+        {
+            skipped++;
             continue;
+        }
 #endif
-        Debug.Assert(testsexpected.TryGetValue(t.Base.Name, out var t2));
-        CompareTest(z80, m0, t2);
+        var error = testsexpected.TryGetValue(t.Base.Name, out var expected)
+            ? CompareTest(z80, m0, expected)
+            : "missing expected result";
+        if (error is null)
+            passed++;
+        else
+        {
+            failed++;
+            Console.Error.WriteLine($"FAIL {t.Base.Name}: {error}");
+        }
     }
+
+    Console.WriteLine($"FUSE: {passed} passed / {failed} failed / {skipped} skipped (unimplemented); bus events {(compareEvents ? "enabled" : "disabled")}");
+    if (failed != 0)
+        Environment.ExitCode = 1;
 }
 
 void PrepareTestCpu(Z80Cpu cpu, clsTestIn t)
@@ -184,46 +214,58 @@ void PrepareTestCpu(Z80Cpu cpu, clsTestIn t)
     }
 }
 
-void CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
+string? CompareTest(Z80Cpu cpu, byte[] m0, clsTestExpected t)
 {
     var r = cpu.Regs;
-    var m = cpu.MemoryBuffer;
     var l1 = t.Base.Line1;
     var l2 = t.Base.Line2;
-
-    Debug.Assert(r.AF == l1.af);
-    Debug.Assert(r.BC == l1.bc);
-    Debug.Assert(r.DE == l1.de);
-    Debug.Assert(r.HL == l1.hl);
-    Debug.Assert(r.IX == l1.ix);
-    Debug.Assert(r.IY == l1.iy);
-    Debug.Assert(r.SP == l1.sp);
-    Debug.Assert(r.PC == l1.pc);
-    Debug.Assert(r.I == l2.i);
-    Debug.Assert(r.R == l2.r);
-    Debug.Assert(cpu.Ticks.TStates == l2.endtstates);
-
-    var j = 0;
-    var me = t.Base.Memories;
-
-    for (var i = 0; i < 0x10000; i++)
+    var registers = new (string Name, ushort Actual, ushort Expected)[]
     {
-        if (m.Read((ushort)i) == m0[i])
-            continue;
+        ("AF", r.AF, l1.af), ("BC", r.BC, l1.bc), ("DE", r.DE, l1.de), ("HL", r.HL, l1.hl),
+        ("IX", r.IX, l1.ix), ("IY", r.IY, l1.iy), ("SP", r.SP, l1.sp), ("PC", r.PC, l1.pc),
+        ("I", r.I, l2.i), ("R", r.R, l2.r)
+    };
+    foreach (var (name, actual, expected) in registers)
+        if (actual != expected)
+            return $"{name}: expected {expected:x4}, actual {actual:x4}";
+    if (cpu.Ticks.TStates != l2.endtstates)
+        return $"T-states: expected {l2.endtstates}, actual {cpu.Ticks.TStates}";
 
-        Debug.Assert(j < me.Length);
+    var expectedMemory = (byte[])m0.Clone();
+    foreach (var block in t.Base.Memories)
+    {
+        var address = block.Address;
+        foreach (var data in block.Data)
+            expectedMemory[address++] = data;
+    }
+    var memory = cpu.MemoryBuffer!;
+    for (var address = 0; address < expectedMemory.Length; address++)
+    {
+        var actual = memory.Read((ushort)address);
+        if (actual != expectedMemory[address])
+            return $"memory {address:x4}: expected {expectedMemory[address]:x2}, actual {actual:x2}";
+    }
 
-        var mm = me[j++];
-
-        Debug.Assert(mm.Address == i);
-
-        foreach (var d in mm.Data)
+#if Z80_OPCODES_TEST
+    if (compareEvents)
+    {
+        var actualEvents = cpu.BusEvents!;
+        for (var i = 0; i < Math.Max(t.Events.Length, actualEvents.Count); i++)
         {
-            var d1 = m.Read((ushort)i);
-            var d2 = m0[i++];
-
-            Debug.Assert(d == d1);
-            Debug.Assert(d1 != d2);
+            Z80BusEvent? expected = i < t.Events.Length ? t.Events[i].ToBusEvent() : null;
+            Z80BusEvent? actual = i < actualEvents.Count ? actualEvents[i] : null;
+            if (expected != actual)
+                return $"bus event {i}: expected [{expected?.ToString() ?? "<missing>"}], actual [{actual?.ToString() ?? "<missing>"}] (counts {t.Events.Length}/{actualEvents.Count})";
         }
     }
+#endif
+    return null;
+}
+static bool TestInstrumentationEnabled()
+{
+#if Z80_OPCODES_TEST
+    return true;
+#else
+    return false;
+#endif
 }

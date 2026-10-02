@@ -15,31 +15,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace ZXSinclair.Net.Benchmarks;
 
-namespace ZXSinclair.Net.Test
+/// <summary>
+/// One-off cost of allocating (and releasing) the emulated memory: 64K (48K model) and 160K (128K model: 2 ROM + 8 RAM banks).
+/// This happens once per machine, so it matters far less than access cost.
+/// </summary>
+[MemoryDiagnoser]
+public class MemoryAllocationBenchmarks
 {
-    public static class HelperNumber
-    {
-        public static ushort? HexToShort(string hex) => (ushort.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out ushort num)) ? num : null;
+    [Params(0x10000, 0x28000)]
+    public int Size;
 
-        public static bool TryUShortHex(string hex, out ushort num)
-        {
-            var numh = HexToShort(hex);
+    [Benchmark(Baseline = true)]
+    public byte[] NewArray() => new byte[Size];
 
-            if (numh.HasValue)
-            {
-                num = numh.Value;
+    [Benchmark]
+    public byte[] UninitializedPinnedArray() => GC.AllocateUninitializedArray<byte>(Size, pinned: true);
 
-                return true;
-            }
+    [Benchmark]
+    public void AllocHGlobalAndFree() => Marshal.FreeHGlobal(Marshal.AllocHGlobal(Size));
 
-            num = default(ushort);
-
-            return false;
-        }
-    }
+    [Benchmark]
+    public unsafe void NativeMemoryAllocZeroedAndFree() => NativeMemory.Free(NativeMemory.AllocZeroed((nuint)Size));
 }

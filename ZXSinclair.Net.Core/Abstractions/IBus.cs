@@ -15,31 +15,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace ZXSinclair.Net.Core.Abstractions;
 
-namespace ZXSinclair.Net.Test
+/// <summary>
+/// Root of any clocked system bus, whatever the CPU.
+/// Buses are implemented as structs and used as generic constraints (<c>where TBus : struct, ...</c>),
+/// never through an interface-typed variable in the emulation hot path.
+/// </summary>
+public interface IBus
 {
-    public static class HelperNumber
-    {
-        public static ushort? HexToShort(string hex) => (ushort.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out ushort num)) ? num : null;
+    /// <summary>Clock cycles (T-states on the Z80) elapsed in the current frame.</summary>
+    int Cycles { get; }
 
-        public static bool TryUShortHex(string hex, out ushort num)
-        {
-            var numh = HexToShort(hex);
-
-            if (numh.HasValue)
-            {
-                num = numh.Value;
-
-                return true;
-            }
-
-            num = default(ushort);
-
-            return false;
-        }
-    }
+    void Reset();
 }
