@@ -189,7 +189,8 @@ public class GeneratorTests
             Assert.Equal(OpcodeTableKind.DDFD, indexed.Opcode.Table);
         }
         var text = result.Single(r => r.Table == OpcodeTableKind.DDFD).Text;
-        Assert.Contains("case 0xeb: ExchangeDEHL(); break; // EX DE,HL", text);
+        Assert.Contains("case 0xeb: // EX DE,HL", text);
+        Assert.Contains("ExchangeDEHL();\n                Registers.Q = 0;", SourceFormat.Normalize(text));
         Assert.DoesNotContain("ExecuteMain(", text);
         foreach (var value in new[] { 0xCB, 0xDD, 0xED, 0xFD })
             Assert.DoesNotContain($"case 0x{value:x2}:", text);
@@ -273,7 +274,7 @@ public class GeneratorTests
         foreach (var value in new[] { 0x44, 0x4C, 0x54, 0x5C, 0x64, 0x6C, 0x74, 0x7C })
             Assert.Contains($"case 0x{value:x2}:", ed);
         Assert.Equal(1, ed.Split("ExchangeDEHL();").Length - 1);
-        Assert.Contains("break; // NEG", ed);
+        Assert.Contains("case 0x7c: // NEG", ed);
     }
 
     [Fact]
@@ -320,14 +321,14 @@ public class GeneratorTests
         {
             var expected = dispatch.Table switch
             {
-                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 223,
-                OpcodeTableKind.ED => 20,
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 230,
+                OpcodeTableKind.ED => 36,
                 _ => 0,
             };
             Assert.Equal(expected, dispatch.Opcodes.Count(o => o.Implemented));
             Assert.Equal(dispatch.Table is OpcodeTableKind.Base or OpcodeTableKind.DDFD ? 1 : 0,
                 dispatch.Text.Split(dispatch.Table == OpcodeTableKind.Base
-                    ? "case 0x00: return; // NOP" : "case 0x00: break; // NOP").Length - 1);
+                    ? "case 0x00: ExecuteMain00(); return; // NOP" : "case 0x00: Registers.Q = 0; break; // NOP").Length - 1);
             Assert.Contains("default: Unimplemented(); break;", dispatch.Text);
         }
     }
@@ -337,7 +338,7 @@ public class GeneratorTests
     {
         var main = Generate().Single(d => d.Table == OpcodeTableKind.Base);
         Assert.Contains("MethodImplOptions.AggressiveInlining", main.Text);
-        Assert.Contains("if (opcode == 0) return;", main.Text);
+        Assert.Contains("if (opcode == 0)", main.Text);
         Assert.Contains("ExecuteMainDispatch(opcode);", main.Text);
         Assert.Contains("private void ExecuteMainDispatch(byte opcode)", main.Text);
         foreach (var item in main.Opcodes.Where(o => o.Implemented && o.Body.Length != 0))
@@ -347,7 +348,7 @@ public class GeneratorTests
             foreach (var line in item.Body.Split('\n'))
                 Assert.Contains("        " + line, main.Text);
         }
-        Assert.Contains("case 0x40: return; // LD B,B", main.Text);
+        Assert.Contains("case 0x40: ExecuteMain40(); return; // LD B,B", main.Text);
     }
 
     [Theory]
@@ -376,30 +377,32 @@ public class GeneratorTests
         var ed = Generate().Single(d => d.Table == OpcodeTableKind.ED);
         foreach (var value in new[] { 0x45, 0x4D, 0x55, 0x5D, 0x65, 0x6D, 0x75, 0x7D })
         {
-            Assert.Equal("ReturnFromInterrupt();", ed.Opcodes[value].Body);
+            Assert.Equal("ReturnFromInterrupt();\nRegisters.Q = 0;", ed.Opcodes[value].Body);
             Assert.Contains($"case 0x{value:x2}:", ed.Text);
         }
         Assert.Equal(1, ed.Text.Split("ReturnFromInterrupt();").Length - 1);
     }
 
-    private sealed class OpcodeZeroPattern(string body) : IPattern
+    private sealed class OpcodeZeroPattern(string body, bool writesFlags = false) : IPattern
     {
         public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.Base && opcode.Byte == 0;
         public string EmitBody(Opcode opcode, EmitContext context) => body;
+        public bool WritesFlags(Opcode opcode) => writesFlags;
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("Registers.A = 1;")]
-    public void MainDispatch_FastPathRequiresEmptyOpcodeZero(string body)
+    [InlineData("", false)]
+    [InlineData("Registers.A = 1;", false)]
+    [InlineData("", true)]
+    public void MainDispatch_FastPathRequiresEmptyNonFlagWritingOpcodeZero(string body, bool writesFlags)
     {
-        var main = DispatchEmitter.Generate(Tables(), new PatternCatalog(new OpcodeZeroPattern(body)))
+        var main = DispatchEmitter.Generate(Tables(), new PatternCatalog(new OpcodeZeroPattern(body, writesFlags)))
             .Single(d => d.Table == OpcodeTableKind.Base);
-        Assert.Equal(body.Length == 0, main.Text.Contains("if (opcode == 0) return;"));
-        Assert.Equal(body.Length == 0, main.Text.Contains("private void ExecuteMainDispatch(byte opcode)"));
+        Assert.Equal(body.Length == 0 && !writesFlags, main.Text.Contains("if (opcode == 0)"));
+        Assert.Equal(body.Length == 0 && !writesFlags, main.Text.Contains("private void ExecuteMainDispatch(byte opcode)"));
         var pending = DispatchEmitter.Generate(Tables(), new PatternCatalog())
             .Single(d => d.Table == OpcodeTableKind.Base);
-        Assert.DoesNotContain("if (opcode == 0) return;", pending.Text);
+        Assert.DoesNotContain("if (opcode == 0)", pending.Text);
     }
 
     [Fact]
@@ -443,8 +446,8 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("223 implemented / 29 pending / 4 prefixes", text);
-        Assert.Contains("20 implemented / 58 pending", text);
+        Assert.Contains("230 implemented / 22 pending / 4 prefixes", text);
+        Assert.Contains("36 implemented / 42 pending", text);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
         Assert.DoesNotContain("0x00 NOP", text);
@@ -528,4 +531,69 @@ public class GeneratorTests
     public void Alu8Patterns_RejectOtherGroups(int table, int value) =>
         Assert.Null(new PatternCatalog(new Alu8Pattern(), new IncDec8Register(), new IncDec8Memory())
             .Resolve(Tables()[(OpcodeTableKind)table][value]));
+
+    [Fact]
+    public void Patterns_WritesFlagsMatchesSpec()
+    {
+        var flags = new HashSet<int>(Enumerable.Range(0x80, 0x40));
+        foreach (var value in new[] { 0x04, 0x05, 0x0C, 0x0D, 0x14, 0x15, 0x1C, 0x1D,
+            0x24, 0x25, 0x2C, 0x2D, 0x34, 0x35, 0x3C, 0x3D, 0xC6, 0xCE, 0xD6,
+            0xDE, 0xE6, 0xEE, 0xF6, 0xFE, 0x27, 0x2F, 0x37, 0x3F })
+            flags.Add(value);
+        var tables = Tables();
+        foreach (var table in new[] { OpcodeTableKind.Base, OpcodeTableKind.ED, OpcodeTableKind.DDFD })
+        foreach (var original in tables[table])
+        {
+            var opcode = table == OpcodeTableKind.DDFD && original.Kind == OpcodeKind.Absent
+                ? tables[OpcodeTableKind.Base][original.Byte] with { Table = table } : original;
+            var pattern = PatternCatalog.Default.Resolve(opcode);
+            if (pattern is null) continue;
+            var expected = table == OpcodeTableKind.ED
+                ? opcode.Byte is 0x57 or 0x5F or 0x44 or 0x4C or 0x54 or 0x5C or 0x64 or 0x6C or 0x74 or 0x7C
+                : flags.Contains(opcode.Byte);
+            Assert.Equal(expected, pattern.WritesFlags(opcode));
+        }
+    }
+
+    [Fact]
+    public void Dispatch_AppendsQWrite()
+    {
+        foreach (var dispatch in Generate())
+        foreach (var item in dispatch.Opcodes.Where(o => o.Implemented))
+        {
+            var pattern = PatternCatalog.Default.Resolve(item.Opcode)!;
+            var raw = pattern.EmitBody(item.Opcode, new(dispatch.Table));
+            Assert.Equal(SourceFormat.Normalize(raw).Trim(), item.PatternBody);
+            var q = pattern.WritesFlags(item.Opcode) ? "Registers.Q = Registers.F;" : "Registers.Q = 0;";
+            Assert.Equal((item.PatternBody.Length == 0 ? "" : item.PatternBody + "\n") + q, item.Body);
+        }
+    }
+
+    [Theory]
+    [InlineData(0, 0x27, "DecimalAdjust();")]
+    [InlineData(0, 0x2F, "Complement();")]
+    [InlineData(0, 0x37, "SetCarry();")]
+    [InlineData(0, 0x3F, "ComplementCarry();")]
+    [InlineData(0, 0x76, "Halt();")]
+    [InlineData(0, 0xF3, "Registers.IFF1 = Registers.IFF2 = false;")]
+    [InlineData(0, 0xFB, "EnableInterrupts();")]
+    [InlineData(2, 0x44, "Negate();")]
+    [InlineData(2, 0x4E, "Registers.IM = 0;")]
+    [InlineData(2, 0x76, "Registers.IM = 1;")]
+    [InlineData(2, 0x7E, "Registers.IM = 2;")]
+    public void ControlPatterns_EmitExpectedBodies(int table, int value, string expected)
+    {
+        var opcode = Tables()[(OpcodeTableKind)table][value];
+        Assert.Equal(expected, PatternCatalog.Default.Resolve(opcode)!.EmitBody(opcode, new(opcode.Table)));
+    }
+
+    [Fact]
+    public void ControlPatterns_GroupNegAndImAliases()
+    {
+        var ed = Generate().Single(d => d.Table == OpcodeTableKind.ED);
+        Assert.Equal(8, ed.Opcodes.Count(o => o.Implemented && o.PatternBody == "Negate();"));
+        Assert.Equal(4, ed.Opcodes.Count(o => o.Implemented && o.PatternBody == "Registers.IM = 0;"));
+        Assert.Equal(1, ed.Text.Split("Negate();").Length - 1);
+        Assert.Equal(1, ed.Text.Split("Registers.IM = 0;").Length - 1);
+    }
 }

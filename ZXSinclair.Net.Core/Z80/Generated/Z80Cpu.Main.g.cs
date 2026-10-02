@@ -26,7 +26,11 @@ public sealed partial class Z80Cpu<TBus>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain(byte opcode)
     {
-        if (opcode == 0) return;
+        if (opcode == 0)
+        {
+            Registers.Q = 0;
+            return;
+        }
         ExecuteMainDispatch(opcode);
     }
 
@@ -35,7 +39,7 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
-            case 0x00: return; // NOP
+            case 0x00: ExecuteMain00(); return; // NOP
             case 0x01: ExecuteMain01(); return; // LD BC,nnnn
             case 0x02: ExecuteMain02(); return; // LD (BC),A
             case 0x04: ExecuteMain04(); return; // INC B
@@ -62,23 +66,27 @@ public sealed partial class Z80Cpu<TBus>
             case 0x24: ExecuteMain24(); return; // INC H
             case 0x25: ExecuteMain25(); return; // DEC H
             case 0x26: ExecuteMain26(); return; // LD H,nn
+            case 0x27: ExecuteMain27(); return; // DAA
             case 0x28: ExecuteMain28(); return; // JR Z,offset
             case 0x2a: ExecuteMain2A(); return; // LD HL,(nnnn)
             case 0x2c: ExecuteMain2C(); return; // INC L
             case 0x2d: ExecuteMain2D(); return; // DEC L
             case 0x2e: ExecuteMain2E(); return; // LD L,nn
+            case 0x2f: ExecuteMain2F(); return; // CPL
             case 0x30: ExecuteMain30(); return; // JR NC,offset
             case 0x31: ExecuteMain31(); return; // LD SP,nnnn
             case 0x32: ExecuteMain32(); return; // LD (nnnn),A
             case 0x34: ExecuteMain34(); return; // INC (HL)
             case 0x35: ExecuteMain35(); return; // DEC (HL)
             case 0x36: ExecuteMain36(); return; // LD (HL),nn
+            case 0x37: ExecuteMain37(); return; // SCF
             case 0x38: ExecuteMain38(); return; // JR C,offset
             case 0x3a: ExecuteMain3A(); return; // LD A,(nnnn)
             case 0x3c: ExecuteMain3C(); return; // INC A
             case 0x3d: ExecuteMain3D(); return; // DEC A
             case 0x3e: ExecuteMain3E(); return; // LD A,nn
-            case 0x40: return; // LD B,B
+            case 0x3f: ExecuteMain3F(); return; // CCF
+            case 0x40: ExecuteMain40(); return; // LD B,B
             case 0x41: ExecuteMain41(); return; // LD B,C
             case 0x42: ExecuteMain42(); return; // LD B,D
             case 0x43: ExecuteMain43(); return; // LD B,E
@@ -87,7 +95,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x46: ExecuteMain46(); return; // LD B,(HL)
             case 0x47: ExecuteMain47(); return; // LD B,A
             case 0x48: ExecuteMain48(); return; // LD C,B
-            case 0x49: return; // LD C,C
+            case 0x49: ExecuteMain49(); return; // LD C,C
             case 0x4a: ExecuteMain4A(); return; // LD C,D
             case 0x4b: ExecuteMain4B(); return; // LD C,E
             case 0x4c: ExecuteMain4C(); return; // LD C,H
@@ -96,7 +104,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x4f: ExecuteMain4F(); return; // LD C,A
             case 0x50: ExecuteMain50(); return; // LD D,B
             case 0x51: ExecuteMain51(); return; // LD D,C
-            case 0x52: return; // LD D,D
+            case 0x52: ExecuteMain52(); return; // LD D,D
             case 0x53: ExecuteMain53(); return; // LD D,E
             case 0x54: ExecuteMain54(); return; // LD D,H
             case 0x55: ExecuteMain55(); return; // LD D,L
@@ -105,7 +113,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x58: ExecuteMain58(); return; // LD E,B
             case 0x59: ExecuteMain59(); return; // LD E,C
             case 0x5a: ExecuteMain5A(); return; // LD E,D
-            case 0x5b: return; // LD E,E
+            case 0x5b: ExecuteMain5B(); return; // LD E,E
             case 0x5c: ExecuteMain5C(); return; // LD E,H
             case 0x5d: ExecuteMain5D(); return; // LD E,L
             case 0x5e: ExecuteMain5E(); return; // LD E,(HL)
@@ -114,7 +122,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x61: ExecuteMain61(); return; // LD H,C
             case 0x62: ExecuteMain62(); return; // LD H,D
             case 0x63: ExecuteMain63(); return; // LD H,E
-            case 0x64: return; // LD H,H
+            case 0x64: ExecuteMain64(); return; // LD H,H
             case 0x65: ExecuteMain65(); return; // LD H,L
             case 0x66: ExecuteMain66(); return; // LD H,(HL)
             case 0x67: ExecuteMain67(); return; // LD H,A
@@ -123,7 +131,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x6a: ExecuteMain6A(); return; // LD L,D
             case 0x6b: ExecuteMain6B(); return; // LD L,E
             case 0x6c: ExecuteMain6C(); return; // LD L,H
-            case 0x6d: return; // LD L,L
+            case 0x6d: ExecuteMain6D(); return; // LD L,L
             case 0x6e: ExecuteMain6E(); return; // LD L,(HL)
             case 0x6f: ExecuteMain6F(); return; // LD L,A
             case 0x70: ExecuteMain70(); return; // LD (HL),B
@@ -132,6 +140,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x73: ExecuteMain73(); return; // LD (HL),E
             case 0x74: ExecuteMain74(); return; // LD (HL),H
             case 0x75: ExecuteMain75(); return; // LD (HL),L
+            case 0x76: ExecuteMain76(); return; // HALT
             case 0x77: ExecuteMain77(); return; // LD (HL),A
             case 0x78: ExecuteMain78(); return; // LD A,B
             case 0x79: ExecuteMain79(); return; // LD A,C
@@ -140,7 +149,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x7c: ExecuteMain7C(); return; // LD A,H
             case 0x7d: ExecuteMain7D(); return; // LD A,L
             case 0x7e: ExecuteMain7E(); return; // LD A,(HL)
-            case 0x7f: return; // LD A,A
+            case 0x7f: ExecuteMain7F(); return; // LD A,A
             case 0x80: ExecuteMain80(); return; // ADD A,B
             case 0x81: ExecuteMain81(); return; // ADD A,C
             case 0x82: ExecuteMain82(); return; // ADD A,D
@@ -248,6 +257,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xf0: ExecuteMainF0(); return; // RET P
             case 0xf1: ExecuteMainF1(); return; // POP AF
             case 0xf2: ExecuteMainF2(); return; // JP P,nnnn
+            case 0xf3: ExecuteMainF3(); return; // DI
             case 0xf4: ExecuteMainF4(); return; // CALL P,nnnn
             case 0xf5: ExecuteMainF5(); return; // PUSH AF
             case 0xf6: ExecuteMainF6(); return; // OR nn
@@ -255,6 +265,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xf8: ExecuteMainF8(); return; // RET M
             case 0xf9: ExecuteMainF9(); return; // LD SP,HL
             case 0xfa: ExecuteMainFA(); return; // JP M,nnnn
+            case 0xfb: ExecuteMainFB(); return; // EI
             case 0xfc: ExecuteMainFC(); return; // CALL M,nnnn
             case 0xfe: ExecuteMainFE(); return; // CP nn
             case 0xff: ExecuteMainFF(); return; // RST 38
@@ -263,9 +274,16 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain00()
+    {
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain01()
     {
         Registers.BC = ReadPc16();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -273,24 +291,28 @@ public sealed partial class Z80Cpu<TBus>
     {
         bus.Write(Registers.BC, Registers.A);
         Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.BC + 1) & 0xFF));
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain04()
     {
         Registers.B = Inc8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain05()
     {
         Registers.B = Dec8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain06()
     {
         Registers.B = ReadPc();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -298,36 +320,42 @@ public sealed partial class Z80Cpu<TBus>
     {
         Registers.A = bus.Read(Registers.BC);
         Registers.WZ = (ushort)(Registers.BC + 1);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain0C()
     {
         Registers.C = Inc8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain0D()
     {
         Registers.C = Dec8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain0E()
     {
         Registers.C = ReadPc();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain10()
     {
         DecrementJumpNonZero();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain11()
     {
         Registers.DE = ReadPc16();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -335,30 +363,35 @@ public sealed partial class Z80Cpu<TBus>
     {
         bus.Write(Registers.DE, Registers.A);
         Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.DE + 1) & 0xFF));
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain14()
     {
         Registers.D = Inc8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain15()
     {
         Registers.D = Dec8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain16()
     {
         Registers.D = ReadPc();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain18()
     {
         JumpRelative(true);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -366,102 +399,133 @@ public sealed partial class Z80Cpu<TBus>
     {
         Registers.A = bus.Read(Registers.DE);
         Registers.WZ = (ushort)(Registers.DE + 1);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain1C()
     {
         Registers.E = Inc8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain1D()
     {
         Registers.E = Dec8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain1E()
     {
         Registers.E = ReadPc();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain20()
     {
         JumpRelative((Registers.F & Z80Flags.Z) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain21()
     {
         Registers.HL = ReadPc16();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain22()
     {
         StoreWordAbsolute(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain24()
     {
         Registers.H = Inc8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain25()
     {
         Registers.H = Dec8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain26()
     {
         Registers.H = ReadPc();
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain27()
+    {
+        DecimalAdjust();
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain28()
     {
         JumpRelative((Registers.F & Z80Flags.Z) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain2A()
     {
         Registers.HL = LoadWordAbsolute();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain2C()
     {
         Registers.L = Inc8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain2D()
     {
         Registers.L = Dec8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain2E()
     {
         Registers.L = ReadPc();
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain2F()
+    {
+        Complement();
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain30()
     {
         JumpRelative((Registers.F & Z80Flags.C) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain31()
     {
         Registers.SP = ReadPc16();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -470,18 +534,21 @@ public sealed partial class Z80Cpu<TBus>
         var address = ReadPc16();
         bus.Write(address, Registers.A);
         Registers.WZ = (ushort)((Registers.A << 8) | ((address + 1) & 0xFF));
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain34()
     {
         IncMemory(Registers.HL);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain35()
     {
         DecMemory(Registers.HL);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -489,12 +556,21 @@ public sealed partial class Z80Cpu<TBus>
     {
         var value = ReadPc();
         bus.Write(Registers.HL, value);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain37()
+    {
+        SetCarry();
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain38()
     {
         JumpRelative((Registers.F & Z80Flags.C) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -503,1032 +579,1267 @@ public sealed partial class Z80Cpu<TBus>
         var address = ReadPc16();
         Registers.A = bus.Read(address);
         Registers.WZ = (ushort)(address + 1);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain3C()
     {
         Registers.A = Inc8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain3D()
     {
         Registers.A = Dec8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain3E()
     {
         Registers.A = ReadPc();
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain3F()
+    {
+        ComplementCarry();
+        Registers.Q = Registers.F;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain40()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain41()
     {
         Registers.B = Registers.C;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain42()
     {
         Registers.B = Registers.D;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain43()
     {
         Registers.B = Registers.E;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain44()
     {
         Registers.B = Registers.H;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain45()
     {
         Registers.B = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain46()
     {
         Registers.B = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain47()
     {
         Registers.B = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain48()
     {
         Registers.C = Registers.B;
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain49()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4A()
     {
         Registers.C = Registers.D;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4B()
     {
         Registers.C = Registers.E;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4C()
     {
         Registers.C = Registers.H;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4D()
     {
         Registers.C = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4E()
     {
         Registers.C = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain4F()
     {
         Registers.C = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain50()
     {
         Registers.D = Registers.B;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain51()
     {
         Registers.D = Registers.C;
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain52()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain53()
     {
         Registers.D = Registers.E;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain54()
     {
         Registers.D = Registers.H;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain55()
     {
         Registers.D = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain56()
     {
         Registers.D = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain57()
     {
         Registers.D = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain58()
     {
         Registers.E = Registers.B;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain59()
     {
         Registers.E = Registers.C;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain5A()
     {
         Registers.E = Registers.D;
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain5B()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain5C()
     {
         Registers.E = Registers.H;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain5D()
     {
         Registers.E = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain5E()
     {
         Registers.E = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain5F()
     {
         Registers.E = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain60()
     {
         Registers.H = Registers.B;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain61()
     {
         Registers.H = Registers.C;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain62()
     {
         Registers.H = Registers.D;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain63()
     {
         Registers.H = Registers.E;
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain64()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain65()
     {
         Registers.H = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain66()
     {
         Registers.H = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain67()
     {
         Registers.H = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain68()
     {
         Registers.L = Registers.B;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain69()
     {
         Registers.L = Registers.C;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain6A()
     {
         Registers.L = Registers.D;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain6B()
     {
         Registers.L = Registers.E;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain6C()
     {
         Registers.L = Registers.H;
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain6D()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain6E()
     {
         Registers.L = bus.Read(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain6F()
     {
         Registers.L = Registers.A;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain70()
     {
         bus.Write(Registers.HL, Registers.B);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain71()
     {
         bus.Write(Registers.HL, Registers.C);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain72()
     {
         bus.Write(Registers.HL, Registers.D);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain73()
     {
         bus.Write(Registers.HL, Registers.E);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain74()
     {
         bus.Write(Registers.HL, Registers.H);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain75()
     {
         bus.Write(Registers.HL, Registers.L);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain76()
+    {
+        Halt();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain77()
     {
         bus.Write(Registers.HL, Registers.A);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain78()
     {
         Registers.A = Registers.B;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain79()
     {
         Registers.A = Registers.C;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain7A()
     {
         Registers.A = Registers.D;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain7B()
     {
         Registers.A = Registers.E;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain7C()
     {
         Registers.A = Registers.H;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain7D()
     {
         Registers.A = Registers.L;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain7E()
     {
         Registers.A = bus.Read(Registers.HL);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain7F()
+    {
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain80()
     {
         Add8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain81()
     {
         Add8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain82()
     {
         Add8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain83()
     {
         Add8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain84()
     {
         Add8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain85()
     {
         Add8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain86()
     {
         Add8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain87()
     {
         Add8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain88()
     {
         Adc8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain89()
     {
         Adc8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8A()
     {
         Adc8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8B()
     {
         Adc8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8C()
     {
         Adc8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8D()
     {
         Adc8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8E()
     {
         Adc8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain8F()
     {
         Adc8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain90()
     {
         Sub8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain91()
     {
         Sub8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain92()
     {
         Sub8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain93()
     {
         Sub8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain94()
     {
         Sub8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain95()
     {
         Sub8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain96()
     {
         Sub8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain97()
     {
         Sub8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain98()
     {
         Sbc8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain99()
     {
         Sbc8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9A()
     {
         Sbc8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9B()
     {
         Sbc8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9C()
     {
         Sbc8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9D()
     {
         Sbc8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9E()
     {
         Sbc8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMain9F()
     {
         Sbc8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA0()
     {
         And8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA1()
     {
         And8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA2()
     {
         And8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA3()
     {
         And8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA4()
     {
         And8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA5()
     {
         And8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA6()
     {
         And8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA7()
     {
         And8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA8()
     {
         Xor8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainA9()
     {
         Xor8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAA()
     {
         Xor8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAB()
     {
         Xor8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAC()
     {
         Xor8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAD()
     {
         Xor8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAE()
     {
         Xor8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainAF()
     {
         Xor8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB0()
     {
         Or8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB1()
     {
         Or8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB2()
     {
         Or8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB3()
     {
         Or8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB4()
     {
         Or8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB5()
     {
         Or8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB6()
     {
         Or8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB7()
     {
         Or8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB8()
     {
         Cp8(Registers.B);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainB9()
     {
         Cp8(Registers.C);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBA()
     {
         Cp8(Registers.D);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBB()
     {
         Cp8(Registers.E);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBC()
     {
         Cp8(Registers.H);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBD()
     {
         Cp8(Registers.L);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBE()
     {
         Cp8(bus.Read(Registers.HL));
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainBF()
     {
         Cp8(Registers.A);
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC0()
     {
         ReturnConditional((Registers.F & Z80Flags.Z) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC1()
     {
         Registers.BC = Pop();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC2()
     {
         JumpAbsolute((Registers.F & Z80Flags.Z) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC3()
     {
         JumpAbsolute(true);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC4()
     {
         CallAbsolute((Registers.F & Z80Flags.Z) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC5()
     {
         PushWithDelay(Registers.BC);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC6()
     {
         Add8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC7()
     {
         Restart(0x00);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC8()
     {
         ReturnConditional((Registers.F & Z80Flags.Z) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainC9()
     {
         Return();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainCA()
     {
         JumpAbsolute((Registers.F & Z80Flags.Z) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainCC()
     {
         CallAbsolute((Registers.F & Z80Flags.Z) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainCD()
     {
         CallAbsolute(true);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainCE()
     {
         Adc8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainCF()
     {
         Restart(0x08);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD0()
     {
         ReturnConditional((Registers.F & Z80Flags.C) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD1()
     {
         Registers.DE = Pop();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD2()
     {
         JumpAbsolute((Registers.F & Z80Flags.C) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD4()
     {
         CallAbsolute((Registers.F & Z80Flags.C) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD5()
     {
         PushWithDelay(Registers.DE);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD6()
     {
         Sub8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD7()
     {
         Restart(0x10);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD8()
     {
         ReturnConditional((Registers.F & Z80Flags.C) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainDA()
     {
         JumpAbsolute((Registers.F & Z80Flags.C) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainDC()
     {
         CallAbsolute((Registers.F & Z80Flags.C) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainDE()
     {
         Sbc8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainDF()
     {
         Restart(0x18);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE0()
     {
         ReturnConditional((Registers.F & Z80Flags.PV) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE1()
     {
         Registers.HL = Pop();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE2()
     {
         JumpAbsolute((Registers.F & Z80Flags.PV) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE4()
     {
         CallAbsolute((Registers.F & Z80Flags.PV) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE5()
     {
         PushWithDelay(Registers.HL);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE6()
     {
         And8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE7()
     {
         Restart(0x20);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE8()
     {
         ReturnConditional((Registers.F & Z80Flags.PV) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE9()
     {
         Registers.PC = Registers.HL;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainEA()
     {
         JumpAbsolute((Registers.F & Z80Flags.PV) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainEC()
     {
         CallAbsolute((Registers.F & Z80Flags.PV) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainEE()
     {
         Xor8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainEF()
     {
         Restart(0x28);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF0()
     {
         ReturnConditional((Registers.F & Z80Flags.S) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF1()
     {
         Registers.AF = Pop();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF2()
     {
         JumpAbsolute((Registers.F & Z80Flags.S) == 0);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainF3()
+    {
+        Registers.IFF1 = Registers.IFF2 = false;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF4()
     {
         CallAbsolute((Registers.F & Z80Flags.S) == 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF5()
     {
         PushWithDelay(Registers.AF);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF6()
     {
         Or8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF7()
     {
         Restart(0x30);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainF8()
     {
         ReturnConditional((Registers.F & Z80Flags.S) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -1536,29 +1847,41 @@ public sealed partial class Z80Cpu<TBus>
     {
         bus.Internal(Registers.IR, 2);
         Registers.SP = Registers.HL;
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainFA()
     {
         JumpAbsolute((Registers.F & Z80Flags.S) != 0);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainFB()
+    {
+        EnableInterrupts();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainFC()
     {
         CallAbsolute((Registers.F & Z80Flags.S) != 0);
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainFE()
     {
         Cp8(ReadPc());
+        Registers.Q = Registers.F;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainFF()
     {
         Restart(0x38);
+        Registers.Q = 0;
     }
 }

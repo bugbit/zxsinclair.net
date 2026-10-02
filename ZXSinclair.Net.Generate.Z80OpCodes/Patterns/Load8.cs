@@ -22,6 +22,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 internal abstract class Load8Pattern : IPattern
 {
+    public virtual bool WritesFlags(Opcode opcode) => false;
     public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
         && opcode.Mnemonic == "LD" && opcode.Operands.Length == 2
         && Matches(opcode.Operands[0], opcode.Operands[1]);
@@ -110,6 +111,7 @@ internal sealed class StoreIndexedImmediate : Load8Pattern
 
 internal sealed class LoadAccumulatorSpecial : Load8Pattern
 {
+    public override bool WritesFlags(Opcode opcode) => true;
     protected override bool Matches(Operand d, Operand s) => d.Kind == OperandKind.Register8 && d.Text == "A" && s.Kind == OperandKind.SpecialRegister;
     protected override string Emit(Operand d, Operand s, EmitContext context) =>
         $"LoadAFromSpecial({Value(s, context)});";

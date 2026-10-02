@@ -45,7 +45,7 @@ Estado interno, también en el struct:
 - `IFF1`, `IFF2` (bool o byte), `IM` (0, 1, 2).
 - `Halted`.
 - `EiPending`: la instrucción anterior fue `EI`; bloquea INT hasta completar la siguiente instrucción. Los prefijos DD/FD se procesan dentro del mismo paso y no necesitan este estado.
-- `Q`: flags modificados por la última instrucción, necesarios para F3/F5 de `SCF`/`CCF` en el NMOS **(verificar si los tests FUSE lo exigen)**.
+- `Q`: F escrito por la última instrucción que modifica flags, o 0 tras una que no los modifica. Implementado según `spec-instr-control.md`: el generador usa `IPattern.WritesFlags` y SCF/CCF leen Q antes de actualizarlo. INT, NMI y cada M1 de HALT lo ponen a 0. `POP AF` se trata provisionalmente como Q=0; queda su comprobación con z80ccf.
 
 La CPU expone `ref Z80Registers Registers` (campo, no propiedad que copie) para tests, depurador y snapshots.
 
@@ -118,7 +118,7 @@ Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; lo
 - Cada caso llama a métodos pequeños `[AggressiveInlining]` escritos a mano (ALU, rotaciones, `Push`/`Pop`…) o contiene el código directamente.
 - Las cinco tablas de entrada son `data/opcodes_*.dat` (formato FUSE), incrustadas en `ZXSinclair.Net.Generate.Z80OpCodes`. El generador está implementado según `spec-generador-z80.md`, con NOP como patrón piloto; no referencia el Core.
 - Los ficheros generados llevan la cabecera GPL y no se editan a mano.
-- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` como un caso vacío. Las cargas de 8 y 16 bits, los saltos, llamadas y retornos y la ALU de 8 bits también están implementados según `spec-instr-carga-8.md`, `spec-instr-carga-16.md`, `spec-instr-saltos.md` y `spec-instr-alu-8.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
+- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` con cuerpo de patrón vacío y escritura Q=0. Las cargas de 8 y 16 bits, los saltos, llamadas y retornos, la ALU de 8 bits y el grupo de control también están implementados según `spec-instr-carga-8.md`, `spec-instr-carga-16.md`, `spec-instr-saltos.md`, `spec-instr-alu-8.md` y `spec-instr-control.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
 - El archivo provisional se ha eliminado. Se regenera con `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes`; `-- --check` compara sin escribir y detecta diferencias con código 1. Cada opcode completo aún no implementado llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
 
 ## 6. Interrupciones
@@ -157,7 +157,7 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 - El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado incrementa `UnimplementedOpcodes` y guarda el PC actual en `LastUnimplementedAddress`. Esta propiedad solo se escribe en `Unimplemented()` y se limpia en `Reset()`; el caso se cuenta como omitido.
-- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 429 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits, 80 de saltos, llamadas y retornos y 148 de ALU de 8 bits), 0 fallan y 906 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y ya pasa. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 456 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits, 80 de saltos, llamadas y retornos, 148 de ALU de 8 bits y 27 de control), 0 fallan y 879 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y ya pasa. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 - `FuseReport` compara siempre registros, flags, memoria y T-states; también compara los eventos cuando están activados. Muestra el nombre, cuatro bytes desde el PC inicial con vuelta a 64K, las dos líneas del estado inicial y todas las diferencias por sección. AF/AF' se separan en A/F; F se decodifica como `S Z 5 H 3 P/V N C`, y R distingue su bit 7 de los bits bajos. La memoria se agrupa en rangos contiguos (16 por defecto, configurables en `DiffMemory`/`FuseReport`), con el número de rangos omitidos.
@@ -319,16 +319,33 @@ La primera comparación validaba el bucle ALU en `GlobalSetup` y dio 0.7597 ns/T
 
 Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/alu-separate-final-artifacts/` y `alu-shared-final-artifacts/`; las mediciones iniciales se conservan en `alu-separate-artifacts/` y `alu-shared-artifacts/`.
 
+
+### Control y registro Q (2026-10-02)
+
+BenchmarkDotNet 0.15.8, Intel Core i7-14700, Windows 11 (10.0.26300.9550), SDK 10.0.401, .NET 10.0.12 x64 RyuJIT, Release; afinidad 1, 6 iteraciones de calentamiento y 15 de medición. Control medido en este checkout antes de editar Q, con el mismo benchmark.
+
+| Método | Antes de Q | Con Q generado | Error final (IC 99.9%) | Desviación estándar final | Asignaciones |
+|---|---|---|---|---|---|
+| ExecuteFrame, ns/opcode | 2.1257 | 2.1234 | 0.0030 | 0.0023 | 0 B |
+| ExecuteLoopFrame, ns/T-state | 0.6532 | 0.6585 | 0.0026 | 0.0021 | 0 B |
+| ExecuteAluLoopFrame, ns/T-state | 0.6821 | 0.6905 | 0.0103 | 0.0086 | 0 B |
+
+El control tiene errores 0.0095 / 0.0054 / 0.0079 y desviaciones 0.0080 / 0.0045 / 0.0066, respectivamente. Los intervalos se solapan en los tres métodos. Las medias cambian -0.11%, +0.81% y +1.23%; esta comparación no distingue ese coste del ruido de la medición. Se conserva Q al final del cuerpo generado y la salida temprana de NOP; no se activó la alternativa de mover Q dentro de los auxiliares, prevista solo si aparecía una regresión superior al ruido.
+
+NOP equivale a 0.53085 ns/T-state (538× tiempo real a 3.5 MHz), el bucle anterior a 434× y el ALU a 414×. Todas las ejecuciones tienen 0 B asignados. Las instrucciones de control no aparecen en estas cargas: se mide el cambio del despacho y la escritura de Q, sin atribuir estos resultados al coste de DAA. DAA conserva la fórmula; no se justifica comparar una tabla en estas cargas. No mide WebAssembly.
+
+Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/control-before-artifacts/` y `control-q-generated-artifacts/`.
+
 ## 9. Fuera de alcance
 
-- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits, saltos, llamadas y retornos y ALU de 8 bits; se implementan por grupos mediante el generador existente.
+- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits, saltos, llamadas y retornos, ALU de 8 bits y control; se implementan por grupos mediante el generador existente.
 - Z80 CMOS y diferencias NMOS/CMOS más allá de anotarlas.
 - Depurador, desensamblador y snapshots (usarán `Registers` y `Step()`).
 - Integración con la máquina Spectrum (bucle de frame, vídeo).
 
 ## 10. Pendiente de verificar
 
-- Uso de `Q` y MEMPTR en los tests FUSE.
+- Q tras `POP AF`/`EX AF,AF'` con z80ccf (la actualización general de Q está implementada); MEMPTR no forma parte del formato FUSE.
 - Valores de los registros tras reset más allá de PC, I, R, IFF, IM.
 - Temporización exacta de IM 0 con 0xFF en el bus del Spectrum.
 - P/V tras `LD A,I`/`LD A,R` interrumpido.

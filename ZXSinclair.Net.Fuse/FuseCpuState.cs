@@ -32,6 +32,8 @@ public static class FuseCpuState
             IX = a.ix, IY = a.iy, SP = a.sp, PC = a.pc,
             I = (byte)b.i, R = (byte)b.r, IFF1 = b.iff1 != 0,
             IFF2 = b.iff2 != 0, IM = (byte)b.im, Halted = b.halted != 0,
+            // FUSE SCF/CCF assume a preceding flag writer (spec-instr-control.md 5.1).
+            Q = (byte)a.af,
         };
     }
 

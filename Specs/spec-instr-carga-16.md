@@ -38,7 +38,7 @@ Reglas comunes:
 - `PUSH`: primero el ciclo interno y después el byte **alto** en `SP-1` y el **bajo** en `SP-2` (FUSE `c5`). `POP`: primero el bajo (FUSE `f1`).
 - `ir:1` es `bus.Internal(Registers.IR, n)` con R ya incrementada por los M1, como en el grupo 1. En los casos FUSE `c5`, `f9` y `ddf9`, `I = 0` y la dirección de `IR` coincide con `PC`, así que FUSE no distingue entre ambas; se sigue la tabla de la wiki (IR) y los tests propios lo fijan con `I ≠ 0` **(verificar con un caso de hardware si aparece)**.
 - `PUSH`, `POP`, `LD SP,HL` y `LD dd,nn` no tocan WZ.
-- `Q`: este grupo no lo escribe (grupo 5). Valor de `Q` tras `POP AF` **(verificar)**.
+- `Q`: todos los patrones declaran que no escriben flags; el emisor pone Q=0 desde el grupo 5. `POP AF` sigue esta decisión provisional **(verificar con z80ccf)**.
 
 ## 3. Variantes
 
@@ -170,7 +170,7 @@ Comprobar además que ningún test de `Load8Tests` usa opcodes de este grupo com
 - `EX (SP),HL`, `EX DE,HL`, `EX AF,AF'`, `EXX`: grupo 9.
 - `INC`/`DEC`/`ADD`/`ADC`/`SBC` de 16 bits: grupo 6.
 - `CALL`, `RET`, `RST` (usan `Push`/`Pop` con su propia temporización): grupo 3.
-- `Q` tras `POP AF`: grupo 5.
+- Confirmación externa de Q=0 tras `POP AF`: z80ccf, decisión provisional del grupo 5.
 
 ## 8. Pendiente de verificar
 

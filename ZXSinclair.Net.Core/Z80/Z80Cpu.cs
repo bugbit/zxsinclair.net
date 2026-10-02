@@ -70,6 +70,7 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
         Registers.EiPending = false;
         if (Registers.Halted)
         {
+            Registers.Q = 0;
             bus.FetchOpcode(Registers.PC);
             Registers.IncrementR();
             return;

@@ -52,7 +52,7 @@ Un grupo solo se da por cerrado si **ningún caso FUSE falla**. Un caso que fall
 Mismas secciones que `spec-instr-nop.md`:
 
 1. **Fuentes**: capítulo del UM0080, tabla de la Sinclair Wiki, casos FUSE y entradas de `opcodes_*.dat`.
-2. **Semántica por patrón**: tabla con opcodes, longitud, ciclos de bus (`pc:4, hl:3, ir:1 ×2…`), T-states, registros, flags (incluidos F3/F5, `Q` y WZ) y casos límite.
+2. **Semántica por patrón**: indicar cuáles escriben flags (`IPattern.WritesFlags`, Q=F) y cuáles no (Q=0). tabla con opcodes, longitud, ciclos de bus (`pc:4, hl:3, ir:1 ×2…`), T-states, registros, flags (incluidos F3/F5, `Q` y WZ) y casos límite.
 3. **Variantes**: prefijos `DD`/`FD`, `CB`, `ED`, `DDCB`/`FDCB` y no documentadas.
 4. **Implementación**: patrones y plantillas del generador, métodos auxiliares a mano, tablas de flags que se reutilizan (`Z80Flags`) y requisitos de rendimiento del camino caliente.
 5. **Pruebas**:
@@ -80,7 +80,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | 2 | Carga de 16 bits | `spec-instr-carga-16.md` | Implementado | 35 (201 acumulados, 0 fallos; eventos activados) |
 | 3 | Saltos y llamadas | `spec-instr-saltos.md` | Implementado | 79 (280 acumulados, 0 fallos; eventos activados) |
 | 4 | ALU de 8 bits | `spec-instr-alu-8.md` | Implementado | 148 más el caso `10` de DJNZ (429 acumulados, 0 fallos; eventos activados) |
-| 5 | Aritmética general y control | — | Pendiente | — |
+| 5 | Aritmética general y control | `spec-instr-control.md` | Implementado | 27 (456 acumulados, 0 fallos; eventos activados) |
 | 6 | ALU de 16 bits | — | Pendiente | — |
 | 7 | Rotaciones y desplazamientos | — | Pendiente | — |
 | 8 | Bits | — | Pendiente | — |

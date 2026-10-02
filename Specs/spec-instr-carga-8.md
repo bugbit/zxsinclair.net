@@ -38,7 +38,7 @@ Reglas comunes:
 - `ir:1` es `bus.Internal(Registers.IR, 1)`: dirección `I << 8 | R` con R ya incrementada por los dos M1 (FUSE `ed57`).
 - Los ciclos internos de `(ii+d)` usan la dirección del byte `d` (`pc+2`), y los de `LD (ii+d),n` la del byte `n` (`pc+3`), según los eventos de FUSE.
 - Ninguna instrucción del grupo modifica F salvo `LD A,I` / `LD A,R`.
-- `Q` (spec CPU 3): 0 en todas salvo `LD A,I` / `LD A,R`, donde vale el F resultante. Se implementa junto con `SCF`/`CCF` en el grupo 5 **(verificar si los tests lo exigen antes)**; este grupo no escribe `Q`.
+- `Q` (spec CPU 3): 0 en todas salvo `LD A,I` / `LD A,R`, donde vale el F resultante. Implementado por el grupo 5: `LoadAccumulatorSpecial.WritesFlags` devuelve true y el emisor añade Q=F; las demás cargas terminan con Q=0.
 
 ### 2.1 Flags de `LD A,I` y `LD A,R`
 
@@ -188,7 +188,7 @@ Reglas de spec CPU 8.3. Clase `ZXSinclair.Net.Core.Tests/Z80/Instructions/Load8T
 
 - Cargas de 16 bits, `PUSH`/`POP` y `EX`: grupos 2 y 9.
 - Copias no documentadas `DDCB`/`FDCB` (`LD r,RLC (ii+d)`…): grupos 7 y 8.
-- `Q` y la peculiaridad NMOS de P/V tras `LD A,I`/`LD A,R` con INT: grupo 5 y spec CPU 10.
+- La peculiaridad NMOS de P/V tras `LD A,I`/`LD A,R` con INT sigue pendiente (spec CPU 10). Q ya está implementado por el grupo 5.
 
 ## 8. Pendiente de verificar
 

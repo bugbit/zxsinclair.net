@@ -100,16 +100,19 @@ El parser produce, por tabla, 256 entradas `Opcode { Table, Byte, Mnemonic, Oper
 
 - `DispatchEmitter.Generate(tables, catalog)` recibe el catálogo como parámetro; la CLI usa `PatternCatalog.Default`. Los tests pueden inyectar patrones sin modificar el catálogo real.
 - Un **patrón** reconoce un conjunto de opcodes por mnemónico y forma de operandos (por ejemplo, `LD r,r'`, `LD r,(HL)`, `ALU A,r`, `JR cc,offset`) y **emite el cuerpo** del `case`.
-- Los patrones se agrupan por grupo del manual en ficheros del generador: `Patterns/Control.cs` (`NOP`), `Patterns/Load8.cs`, `Patterns/Load16.cs`… Cada spec de grupo enumera sus patrones y su código emitido.
+- Los patrones se agrupan por grupo del manual en ficheros del generador: `Patterns/Control.cs` (`NOP` y control), `Patterns/Load8.cs`, `Patterns/Load16.cs`… Cada spec de grupo enumera sus patrones y su código emitido.
 - Cada opcode encaja **como mucho en un patrón**; si encaja en dos, el generador falla. Si no encaja en ninguno, se emite `Unimplemented()` y cuenta como pendiente (sección 6).
 - Un mismo patrón sirve para la tabla base y para la indexada cuando la forma coincide; los operandos `REGISTER*` se traducen según 2.4.
+
+- `IPattern.WritesFlags(Opcode opcode)` devuelve false por defecto. Cada patrón que escribe flags lo declara explícitamente; `Load8Pattern` lo expone virtual y `LoadAccumulatorSpecial` lo sobrescribe. Los grupos nuevos deben clasificar sus patrones según su spec.
 
 ### 3.3 Código emitido
 
 - Cuerpos cortos: asignaciones directas o llamadas a métodos auxiliares `[MethodImpl(MethodImplOptions.AggressiveInlining)]` escritos a mano en ficheros `partial` de `Z80Cpu<TBus>` del Core (`Z80Cpu.Alu.cs`, `Z80Cpu.Memory.cs`…, que crea cada grupo según lo necesite). Los auxiliares no se generan.
+- Tras el cuerpo del patrón, el emisor añade `Registers.Q = Registers.F;` si `WritesFlags` es true, o `Registers.Q = 0;` en caso contrario. `EmitBody` sigue devolviendo solo la operación; `EmittedOpcode.PatternBody` conserva ese texto y `Body` incluye Q. SCF/CCF leen el Q anterior antes de escribir el nuevo. Los prefijos no reciben cuerpo ni escritura de Q.
 - Los cuerpos se especializan por operandos concretos en tiempo de generación: nada de `switch` sobre el registro en tiempo de ejecución, `ref` elegidos dinámicamente, delegados ni tablas de `Action`.
-- Cada `case` lleva un comentario con el mnemónico original de la tabla: `case 0x41: Registers.B = Registers.C; break; // LD B,C`.
-- Los alias comparten cuerpo apilando etiquetas: `case 0x44: case 0x4c: … case 0x7c: Neg(); break; // NEG`.
+- Cada `case` conserva el mnemónico original en su comentario. La tabla base llama al auxiliar concreto y retorna; en las demás tablas, los cuerpos con operación y Q se emiten en un bloque.
+- Los alias comparten cuerpo y escritura de Q apilando etiquetas: NEG tiene ocho etiquetas; IM 0 tiene cuatro. La agrupación usa el cuerpo final, incluido Q, y el comentario.
 
 ## 4. Salida
 
@@ -125,7 +128,7 @@ Se sustituye `ZXSinclair.Net.Core/Z80/Z80Cpu.Instructions.cs` (despacho provisio
 | `Z80Cpu.Indexed.g.cs` | `ExecuteIndexedOpcode<TIndex>(byte opcode) where TIndex : struct, IIndexRegister` |
 | `Z80Cpu.IndexedCB.g.cs` | `ExecuteIndexedCB<TIndex>(ushort address, byte opcode) where TIndex : struct, IIndexRegister` |
 
-La tabla base emite auxiliares privados `ExecuteMainXX`, con los cuerpos concretos de los patrones y `AggressiveInlining`; los casos implementados retornan directamente. Cuando `00` está implementado con cuerpo vacío, `ExecuteMain` es una entrada pequeña con `AggressiveInlining`: emite `if (opcode == 0) return;` y delega los demás opcodes en `ExecuteMainDispatch`, que contiene el único switch base y también usa `AggressiveInlining`. Esto permite insertar la salida de NOP en `Step` aunque crezca el IL del switch (spec CPU 8.4). Sin NOP vacío, el switch se emite directamente en `ExecuteMain`. El `case 0x00` se conserva para revisar la tabla completa. Las demás tablas conservan los cuerpos en sus casos.
+La tabla base emite auxiliares privados `ExecuteMainXX`, con los cuerpos concretos de los patrones y `AggressiveInlining`; los casos implementados retornan directamente. Cuando `00` está implementado con cuerpo vacío, `ExecuteMain` es una entrada pequeña con `AggressiveInlining`: detecta el cuerpo vacío del patrón, antes de añadir Q, y emite `if (opcode == 0) { Registers.Q = 0; return; }` y delega los demás opcodes en `ExecuteMainDispatch`, que contiene el único switch base y también usa `AggressiveInlining`. Esto permite insertar la salida de NOP en `Step` aunque crezca el IL del switch (spec CPU 8.4). Sin NOP vacío, el switch se emite directamente en `ExecuteMain`. El `case 0x00` se conserva para revisar la tabla completa. Las demás tablas conservan los cuerpos en sus casos.
 
 Las firmas son las actuales; el ciclo de prefijos (`Step`, `ExecuteIndexed`, `FinishIndexed`) sigue escrito a mano en `Z80Cpu.cs`.
 

@@ -30,6 +30,7 @@ public sealed partial class Z80Cpu<TBus>
 
     private void AcceptNmi()
     {
+        Registers.Q = 0;
         ExitHalt();
         nmiPending = false;
         Registers.EiPending = false;
@@ -43,6 +44,7 @@ public sealed partial class Z80Cpu<TBus>
 
     private void AcceptInterrupt()
     {
+        Registers.Q = 0;
         ExitHalt();
         Registers.IFF1 = Registers.IFF2 = false;
         Registers.IncrementR();

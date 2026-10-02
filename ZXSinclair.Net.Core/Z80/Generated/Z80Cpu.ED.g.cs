@@ -27,7 +27,25 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
-            case 0x43: StoreWordAbsolute(Registers.BC); break; // LD (nnnn),BC
+            case 0x43: // LD (nnnn),BC
+            {
+                StoreWordAbsolute(Registers.BC);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x44:
+            case 0x4c:
+            case 0x54:
+            case 0x5c:
+            case 0x64:
+            case 0x6c:
+            case 0x74:
+            case 0x7c: // NEG
+            {
+                Negate();
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0x45:
             case 0x4d:
             case 0x55:
@@ -35,28 +53,103 @@ public sealed partial class Z80Cpu<TBus>
             case 0x65:
             case 0x6d:
             case 0x75:
-            case 0x7d: ReturnFromInterrupt(); break; // RETN
+            case 0x7d: // RETN
+            {
+                ReturnFromInterrupt();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x46:
+            case 0x4e:
+            case 0x66:
+            case 0x6e: // IM 0
+            {
+                Registers.IM = 0;
+                Registers.Q = 0;
+                break;
+            }
             case 0x47: // LD I,A
             {
                 bus.Internal(Registers.IR, 1);
                 Registers.I = Registers.A;
+                Registers.Q = 0;
                 break;
             }
-            case 0x4b: Registers.BC = LoadWordAbsolute(); break; // LD BC,(nnnn)
+            case 0x4b: // LD BC,(nnnn)
+            {
+                Registers.BC = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
             case 0x4f: // LD R,A
             {
                 bus.Internal(Registers.IR, 1);
                 Registers.R = Registers.A;
+                Registers.Q = 0;
                 break;
             }
-            case 0x53: StoreWordAbsolute(Registers.DE); break; // LD (nnnn),DE
-            case 0x57: LoadAFromSpecial(Registers.I); break; // LD A,I
-            case 0x5b: Registers.DE = LoadWordAbsolute(); break; // LD DE,(nnnn)
-            case 0x5f: LoadAFromSpecial(Registers.R); break; // LD A,R
-            case 0x63: StoreWordAbsolute(Registers.HL); break; // LD (nnnn),HL
-            case 0x6b: Registers.HL = LoadWordAbsolute(); break; // LD HL,(nnnn)
-            case 0x73: StoreWordAbsolute(Registers.SP); break; // LD (nnnn),SP
-            case 0x7b: Registers.SP = LoadWordAbsolute(); break; // LD SP,(nnnn)
+            case 0x53: // LD (nnnn),DE
+            {
+                StoreWordAbsolute(Registers.DE);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x56:
+            case 0x76: // IM 1
+            {
+                Registers.IM = 1;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x57: // LD A,I
+            {
+                LoadAFromSpecial(Registers.I);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x5b: // LD DE,(nnnn)
+            {
+                Registers.DE = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x5e:
+            case 0x7e: // IM 2
+            {
+                Registers.IM = 2;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x5f: // LD A,R
+            {
+                LoadAFromSpecial(Registers.R);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x63: // LD (nnnn),HL
+            {
+                StoreWordAbsolute(Registers.HL);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x6b: // LD HL,(nnnn)
+            {
+                Registers.HL = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x73: // LD (nnnn),SP
+            {
+                StoreWordAbsolute(Registers.SP);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x7b: // LD SP,(nnnn)
+            {
+                Registers.SP = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
             default: Unimplemented(); break;
         }
     }

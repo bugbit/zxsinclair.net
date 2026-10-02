@@ -21,7 +21,7 @@ Lo no confirmado se marca **(verificar)**.
 | Registros | Ninguno, salvo `PC += 1` y R (7 bits bajos) `+= 1`, ambos producidos por el fetch |
 | Flags | Sin cambios |
 | WZ (MEMPTR) | Sin cambios |
-| `Q` | 0, porque la instrucción no modifica F **(verificar si se implementa `Q`; spec CPU 3)** |
+| `Q` | 0, porque la instrucción no modifica F (implementado por el grupo 5; spec CPU 3) |
 | IFF1/IFF2/IM/Halted | Sin cambios. `EiPending` lo limpia `Step()` antes de ejecutar, como en cualquier instrucción |
 
 Tras ejecutar `NOP`, la siguiente comprobación de interrupciones de `Step()` puede aceptar INT/NMI con normalidad (no es una instrucción especial como `EI`).

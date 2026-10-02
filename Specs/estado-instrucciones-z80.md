@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **77 de 150 entradas completadas; 73 pendientes**.
+Estado (2026-10-02): **88 de 150 entradas completadas; 62 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -12,7 +12,7 @@ Estado (2026-10-02): **77 de 150 entradas completadas; 73 pendientes**.
 
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
-NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. El soporte del estado HALT, de los modos de interrupción y del reconocimiento de interrupciones no completa las instrucciones HALT ni IM.
+NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. Las 11 entradas restantes de aritmética general y control también están completadas, incluidas HALT e IM 0/1/2.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -127,18 +127,18 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Control de CPU y operaciones generales de AF
 
-- [ ] `DAA` — p. 173.
-- [ ] `CPL` — p. 175.
-- [ ] `NEG` — p. 176.
-- [ ] `CCF` — p. 178.
-- [ ] `SCF` — p. 179.
+- [x] `DAA` — p. 173. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `CPL` — p. 175. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `NEG` — p. 176. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `CCF` — p. 178. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `SCF` — p. 179. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
 - [x] `NOP` — p. 180. [Especificación](spec-instr-nop.md) · [Pruebas](../ZXSinclair.Net.Core.Tests/Z80/Instructions/NopTests.cs).
-- [ ] `HALT` — p. 181.
-- [ ] `DI` — p. 182.
-- [ ] `EI` — p. 183.
-- [ ] `IM 0` — p. 184.
-- [ ] `IM 1` — p. 185.
-- [ ] `IM 2` — p. 186.
+- [x] `HALT` — p. 181. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `DI` — p. 182. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `EI` — p. 183. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `IM 0` — p. 184. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `IM 1` — p. 185. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
+- [x] `IM 2` — p. 186. [Spec](spec-instr-control.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/ControlTests.cs).
 
 ### Aritmética de 16 bits
 

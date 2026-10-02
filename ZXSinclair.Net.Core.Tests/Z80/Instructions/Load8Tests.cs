@@ -234,6 +234,7 @@ public class Load8Tests
         var ir = expected.IR;
         expected.A = value;
         expected.F = flags;
+        expected.Q = flags;
         Check(cpu, state, expected, 9, ("M1", 0, 0xED), ("M1", 1, 0x57), ("Internal", ir, 1));
     }
 
@@ -248,6 +249,7 @@ public class Load8Tests
         var ir = expected.IR;
         expected.A = value;
         expected.F = flags;
+        expected.Q = flags;
         Check(cpu, state, expected, 9, ("M1", 0, 0xED), ("M1", 1, 0x5F), ("Internal", ir, 1));
     }
 

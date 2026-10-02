@@ -27,5 +27,6 @@ internal readonly record struct EmitContext(OpcodeTableKind Table)
 internal interface IPattern
 {
     bool Matches(Opcode opcode);
+    bool WritesFlags(Opcode opcode) => false;
     string EmitBody(Opcode opcode, EmitContext context);
 }

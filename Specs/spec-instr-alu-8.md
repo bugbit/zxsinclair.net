@@ -57,7 +57,7 @@ Fórmulas sin ramas (con `int`):
 
 Reglas comunes:
 - `INC`/`DEC` de 8 bits no tocan C; ninguna instrucción del grupo toca IFF, I ni R salvo los M1.
-- `Q` = F resultante en todas, pero no se escribe hasta el grupo 5 (spec CPU 3).
+- `Q` = F resultante en todas. Desde el grupo 5, los tres patrones declaran `WritesFlags = true` y el emisor añade Q=F al terminar la instrucción (spec CPU 3).
 - `INC (ii+d)` / `DEC (ii+d)` y `op A,(ii+d)` usan `IndexedAddress<TIndex>()` (5 ciclos internos sobre `pc+2` y `WZ = ii + d`).
 
 ## 3. Variantes

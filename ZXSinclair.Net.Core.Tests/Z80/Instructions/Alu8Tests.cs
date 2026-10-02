@@ -257,6 +257,7 @@ public class Alu8Tests
 
         var result = Reference(op, expected.A, operand, expected.F & 1);
         expected.F = result.Flags;
+        expected.Q = result.Flags;
         if (alu) expected.A = result.Result;
         else if (memory)
         {
@@ -351,4 +352,3 @@ public class Alu8Tests
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 }
-

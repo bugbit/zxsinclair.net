@@ -27,336 +27,1369 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
-            case 0x00: break; // NOP
-            case 0x01: Registers.BC = ReadPc16(); break; // LD BC,nnnn
+            case 0x00: Registers.Q = 0; break; // NOP
+            case 0x01: // LD BC,nnnn
+            {
+                Registers.BC = ReadPc16();
+                Registers.Q = 0;
+                break;
+            }
             case 0x02: // LD (BC),A
             {
                 bus.Write(Registers.BC, Registers.A);
                 Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.BC + 1) & 0xFF));
+                Registers.Q = 0;
                 break;
             }
-            case 0x04: Registers.B = Inc8(Registers.B); break; // INC B
-            case 0x05: Registers.B = Dec8(Registers.B); break; // DEC B
-            case 0x06: Registers.B = ReadPc(); break; // LD B,nn
+            case 0x04: // INC B
+            {
+                Registers.B = Inc8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x05: // DEC B
+            {
+                Registers.B = Dec8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x06: // LD B,nn
+            {
+                Registers.B = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
             case 0x0a: // LD A,(BC)
             {
                 Registers.A = bus.Read(Registers.BC);
                 Registers.WZ = (ushort)(Registers.BC + 1);
+                Registers.Q = 0;
                 break;
             }
-            case 0x0c: Registers.C = Inc8(Registers.C); break; // INC C
-            case 0x0d: Registers.C = Dec8(Registers.C); break; // DEC C
-            case 0x0e: Registers.C = ReadPc(); break; // LD C,nn
-            case 0x10: DecrementJumpNonZero(); break; // DJNZ offset
-            case 0x11: Registers.DE = ReadPc16(); break; // LD DE,nnnn
+            case 0x0c: // INC C
+            {
+                Registers.C = Inc8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0d: // DEC C
+            {
+                Registers.C = Dec8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x0e: // LD C,nn
+            {
+                Registers.C = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x10: // DJNZ offset
+            {
+                DecrementJumpNonZero();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x11: // LD DE,nnnn
+            {
+                Registers.DE = ReadPc16();
+                Registers.Q = 0;
+                break;
+            }
             case 0x12: // LD (DE),A
             {
                 bus.Write(Registers.DE, Registers.A);
                 Registers.WZ = (ushort)((Registers.A << 8) | ((Registers.DE + 1) & 0xFF));
+                Registers.Q = 0;
                 break;
             }
-            case 0x14: Registers.D = Inc8(Registers.D); break; // INC D
-            case 0x15: Registers.D = Dec8(Registers.D); break; // DEC D
-            case 0x16: Registers.D = ReadPc(); break; // LD D,nn
-            case 0x18: JumpRelative(true); break; // JR offset
+            case 0x14: // INC D
+            {
+                Registers.D = Inc8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x15: // DEC D
+            {
+                Registers.D = Dec8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x16: // LD D,nn
+            {
+                Registers.D = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x18: // JR offset
+            {
+                JumpRelative(true);
+                Registers.Q = 0;
+                break;
+            }
             case 0x1a: // LD A,(DE)
             {
                 Registers.A = bus.Read(Registers.DE);
                 Registers.WZ = (ushort)(Registers.DE + 1);
+                Registers.Q = 0;
                 break;
             }
-            case 0x1c: Registers.E = Inc8(Registers.E); break; // INC E
-            case 0x1d: Registers.E = Dec8(Registers.E); break; // DEC E
-            case 0x1e: Registers.E = ReadPc(); break; // LD E,nn
-            case 0x20: JumpRelative((Registers.F & Z80Flags.Z) == 0); break; // JR NZ,offset
-            case 0x21: TIndex.Pair(ref Registers) = ReadPc16(); break; // LD REGISTER,nnnn
-            case 0x22: StoreWordAbsolute(TIndex.Pair(ref Registers)); break; // LD (nnnn),REGISTER
-            case 0x24: TIndex.High(ref Registers) = Inc8(TIndex.High(ref Registers)); break; // INC REGISTERH
-            case 0x25: TIndex.High(ref Registers) = Dec8(TIndex.High(ref Registers)); break; // DEC REGISTERH
-            case 0x26: TIndex.High(ref Registers) = ReadPc(); break; // LD REGISTERH,nn
-            case 0x28: JumpRelative((Registers.F & Z80Flags.Z) != 0); break; // JR Z,offset
-            case 0x2a: TIndex.Pair(ref Registers) = LoadWordAbsolute(); break; // LD REGISTER,(nnnn)
-            case 0x2c: TIndex.Low(ref Registers) = Inc8(TIndex.Low(ref Registers)); break; // INC REGISTERL
-            case 0x2d: TIndex.Low(ref Registers) = Dec8(TIndex.Low(ref Registers)); break; // DEC REGISTERL
-            case 0x2e: TIndex.Low(ref Registers) = ReadPc(); break; // LD REGISTERL,nn
-            case 0x30: JumpRelative((Registers.F & Z80Flags.C) == 0); break; // JR NC,offset
-            case 0x31: Registers.SP = ReadPc16(); break; // LD SP,nnnn
+            case 0x1c: // INC E
+            {
+                Registers.E = Inc8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1d: // DEC E
+            {
+                Registers.E = Dec8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x1e: // LD E,nn
+            {
+                Registers.E = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x20: // JR NZ,offset
+            {
+                JumpRelative((Registers.F & Z80Flags.Z) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x21: // LD REGISTER,nnnn
+            {
+                TIndex.Pair(ref Registers) = ReadPc16();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x22: // LD (nnnn),REGISTER
+            {
+                StoreWordAbsolute(TIndex.Pair(ref Registers));
+                Registers.Q = 0;
+                break;
+            }
+            case 0x24: // INC REGISTERH
+            {
+                TIndex.High(ref Registers) = Inc8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x25: // DEC REGISTERH
+            {
+                TIndex.High(ref Registers) = Dec8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x26: // LD REGISTERH,nn
+            {
+                TIndex.High(ref Registers) = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x27: // DAA
+            {
+                DecimalAdjust();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x28: // JR Z,offset
+            {
+                JumpRelative((Registers.F & Z80Flags.Z) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x2a: // LD REGISTER,(nnnn)
+            {
+                TIndex.Pair(ref Registers) = LoadWordAbsolute();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x2c: // INC REGISTERL
+            {
+                TIndex.Low(ref Registers) = Inc8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2d: // DEC REGISTERL
+            {
+                TIndex.Low(ref Registers) = Dec8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x2e: // LD REGISTERL,nn
+            {
+                TIndex.Low(ref Registers) = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x2f: // CPL
+            {
+                Complement();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x30: // JR NC,offset
+            {
+                JumpRelative((Registers.F & Z80Flags.C) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x31: // LD SP,nnnn
+            {
+                Registers.SP = ReadPc16();
+                Registers.Q = 0;
+                break;
+            }
             case 0x32: // LD (nnnn),A
             {
                 var address = ReadPc16();
                 bus.Write(address, Registers.A);
                 Registers.WZ = (ushort)((Registers.A << 8) | ((address + 1) & 0xFF));
+                Registers.Q = 0;
                 break;
             }
-            case 0x34: IncMemory(IndexedAddress<TIndex>()); break; // INC (REGISTER+dd)
-            case 0x35: DecMemory(IndexedAddress<TIndex>()); break; // DEC (REGISTER+dd)
-            case 0x36: StoreIndexedImmediate<TIndex>(); break; // LD (REGISTER+dd),nn
-            case 0x38: JumpRelative((Registers.F & Z80Flags.C) != 0); break; // JR C,offset
+            case 0x34: // INC (REGISTER+dd)
+            {
+                IncMemory(IndexedAddress<TIndex>());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x35: // DEC (REGISTER+dd)
+            {
+                DecMemory(IndexedAddress<TIndex>());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x36: // LD (REGISTER+dd),nn
+            {
+                StoreIndexedImmediate<TIndex>();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x37: // SCF
+            {
+                SetCarry();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x38: // JR C,offset
+            {
+                JumpRelative((Registers.F & Z80Flags.C) != 0);
+                Registers.Q = 0;
+                break;
+            }
             case 0x3a: // LD A,(nnnn)
             {
                 var address = ReadPc16();
                 Registers.A = bus.Read(address);
                 Registers.WZ = (ushort)(address + 1);
+                Registers.Q = 0;
                 break;
             }
-            case 0x3c: Registers.A = Inc8(Registers.A); break; // INC A
-            case 0x3d: Registers.A = Dec8(Registers.A); break; // DEC A
-            case 0x3e: Registers.A = ReadPc(); break; // LD A,nn
-            case 0x40: break; // LD B,B
-            case 0x41: Registers.B = Registers.C; break; // LD B,C
-            case 0x42: Registers.B = Registers.D; break; // LD B,D
-            case 0x43: Registers.B = Registers.E; break; // LD B,E
-            case 0x44: Registers.B = TIndex.High(ref Registers); break; // LD B,REGISTERH
-            case 0x45: Registers.B = TIndex.Low(ref Registers); break; // LD B,REGISTERL
+            case 0x3c: // INC A
+            {
+                Registers.A = Inc8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3d: // DEC A
+            {
+                Registers.A = Dec8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x3e: // LD A,nn
+            {
+                Registers.A = ReadPc();
+                Registers.Q = 0;
+                break;
+            }
+            case 0x3f: // CCF
+            {
+                ComplementCarry();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x40: Registers.Q = 0; break; // LD B,B
+            case 0x41: // LD B,C
+            {
+                Registers.B = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x42: // LD B,D
+            {
+                Registers.B = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x43: // LD B,E
+            {
+                Registers.B = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x44: // LD B,REGISTERH
+            {
+                Registers.B = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x45: // LD B,REGISTERL
+            {
+                Registers.B = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x46: // LD B,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.B = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x47: Registers.B = Registers.A; break; // LD B,A
-            case 0x48: Registers.C = Registers.B; break; // LD C,B
-            case 0x49: break; // LD C,C
-            case 0x4a: Registers.C = Registers.D; break; // LD C,D
-            case 0x4b: Registers.C = Registers.E; break; // LD C,E
-            case 0x4c: Registers.C = TIndex.High(ref Registers); break; // LD C,REGISTERH
-            case 0x4d: Registers.C = TIndex.Low(ref Registers); break; // LD C,REGISTERL
+            case 0x47: // LD B,A
+            {
+                Registers.B = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x48: // LD C,B
+            {
+                Registers.C = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x49: Registers.Q = 0; break; // LD C,C
+            case 0x4a: // LD C,D
+            {
+                Registers.C = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x4b: // LD C,E
+            {
+                Registers.C = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x4c: // LD C,REGISTERH
+            {
+                Registers.C = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x4d: // LD C,REGISTERL
+            {
+                Registers.C = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x4e: // LD C,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.C = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x4f: Registers.C = Registers.A; break; // LD C,A
-            case 0x50: Registers.D = Registers.B; break; // LD D,B
-            case 0x51: Registers.D = Registers.C; break; // LD D,C
-            case 0x52: break; // LD D,D
-            case 0x53: Registers.D = Registers.E; break; // LD D,E
-            case 0x54: Registers.D = TIndex.High(ref Registers); break; // LD D,REGISTERH
-            case 0x55: Registers.D = TIndex.Low(ref Registers); break; // LD D,REGISTERL
+            case 0x4f: // LD C,A
+            {
+                Registers.C = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x50: // LD D,B
+            {
+                Registers.D = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x51: // LD D,C
+            {
+                Registers.D = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x52: Registers.Q = 0; break; // LD D,D
+            case 0x53: // LD D,E
+            {
+                Registers.D = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x54: // LD D,REGISTERH
+            {
+                Registers.D = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x55: // LD D,REGISTERL
+            {
+                Registers.D = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x56: // LD D,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.D = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x57: Registers.D = Registers.A; break; // LD D,A
-            case 0x58: Registers.E = Registers.B; break; // LD E,B
-            case 0x59: Registers.E = Registers.C; break; // LD E,C
-            case 0x5a: Registers.E = Registers.D; break; // LD E,D
-            case 0x5b: break; // LD E,E
-            case 0x5c: Registers.E = TIndex.High(ref Registers); break; // LD E,REGISTERH
-            case 0x5d: Registers.E = TIndex.Low(ref Registers); break; // LD E,REGISTERL
+            case 0x57: // LD D,A
+            {
+                Registers.D = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x58: // LD E,B
+            {
+                Registers.E = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x59: // LD E,C
+            {
+                Registers.E = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x5a: // LD E,D
+            {
+                Registers.E = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x5b: Registers.Q = 0; break; // LD E,E
+            case 0x5c: // LD E,REGISTERH
+            {
+                Registers.E = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x5d: // LD E,REGISTERL
+            {
+                Registers.E = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x5e: // LD E,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.E = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x5f: Registers.E = Registers.A; break; // LD E,A
-            case 0x60: TIndex.High(ref Registers) = Registers.B; break; // LD REGISTERH,B
-            case 0x61: TIndex.High(ref Registers) = Registers.C; break; // LD REGISTERH,C
-            case 0x62: TIndex.High(ref Registers) = Registers.D; break; // LD REGISTERH,D
-            case 0x63: TIndex.High(ref Registers) = Registers.E; break; // LD REGISTERH,E
-            case 0x64: break; // LD REGISTERH,REGISTERH
-            case 0x65: TIndex.High(ref Registers) = TIndex.Low(ref Registers); break; // LD REGISTERH,REGISTERL
+            case 0x5f: // LD E,A
+            {
+                Registers.E = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x60: // LD REGISTERH,B
+            {
+                TIndex.High(ref Registers) = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x61: // LD REGISTERH,C
+            {
+                TIndex.High(ref Registers) = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x62: // LD REGISTERH,D
+            {
+                TIndex.High(ref Registers) = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x63: // LD REGISTERH,E
+            {
+                TIndex.High(ref Registers) = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x64: Registers.Q = 0; break; // LD REGISTERH,REGISTERH
+            case 0x65: // LD REGISTERH,REGISTERL
+            {
+                TIndex.High(ref Registers) = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x66: // LD H,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.H = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x67: TIndex.High(ref Registers) = Registers.A; break; // LD REGISTERH,A
-            case 0x68: TIndex.Low(ref Registers) = Registers.B; break; // LD REGISTERL,B
-            case 0x69: TIndex.Low(ref Registers) = Registers.C; break; // LD REGISTERL,C
-            case 0x6a: TIndex.Low(ref Registers) = Registers.D; break; // LD REGISTERL,D
-            case 0x6b: TIndex.Low(ref Registers) = Registers.E; break; // LD REGISTERL,E
-            case 0x6c: TIndex.Low(ref Registers) = TIndex.High(ref Registers); break; // LD REGISTERL,REGISTERH
-            case 0x6d: break; // LD REGISTERL,REGISTERL
+            case 0x67: // LD REGISTERH,A
+            {
+                TIndex.High(ref Registers) = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x68: // LD REGISTERL,B
+            {
+                TIndex.Low(ref Registers) = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x69: // LD REGISTERL,C
+            {
+                TIndex.Low(ref Registers) = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x6a: // LD REGISTERL,D
+            {
+                TIndex.Low(ref Registers) = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x6b: // LD REGISTERL,E
+            {
+                TIndex.Low(ref Registers) = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x6c: // LD REGISTERL,REGISTERH
+            {
+                TIndex.Low(ref Registers) = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x6d: Registers.Q = 0; break; // LD REGISTERL,REGISTERL
             case 0x6e: // LD L,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.L = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x6f: TIndex.Low(ref Registers) = Registers.A; break; // LD REGISTERL,A
+            case 0x6f: // LD REGISTERL,A
+            {
+                TIndex.Low(ref Registers) = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
             case 0x70: // LD (REGISTER+dd),B
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.B);
+                Registers.Q = 0;
                 break;
             }
             case 0x71: // LD (REGISTER+dd),C
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.C);
+                Registers.Q = 0;
                 break;
             }
             case 0x72: // LD (REGISTER+dd),D
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.D);
+                Registers.Q = 0;
                 break;
             }
             case 0x73: // LD (REGISTER+dd),E
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.E);
+                Registers.Q = 0;
                 break;
             }
             case 0x74: // LD (REGISTER+dd),H
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.H);
+                Registers.Q = 0;
                 break;
             }
             case 0x75: // LD (REGISTER+dd),L
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.L);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x76: // HALT
+            {
+                Halt();
+                Registers.Q = 0;
                 break;
             }
             case 0x77: // LD (REGISTER+dd),A
             {
                 var address = IndexedAddress<TIndex>();
                 bus.Write(address, Registers.A);
+                Registers.Q = 0;
                 break;
             }
-            case 0x78: Registers.A = Registers.B; break; // LD A,B
-            case 0x79: Registers.A = Registers.C; break; // LD A,C
-            case 0x7a: Registers.A = Registers.D; break; // LD A,D
-            case 0x7b: Registers.A = Registers.E; break; // LD A,E
-            case 0x7c: Registers.A = TIndex.High(ref Registers); break; // LD A,REGISTERH
-            case 0x7d: Registers.A = TIndex.Low(ref Registers); break; // LD A,REGISTERL
+            case 0x78: // LD A,B
+            {
+                Registers.A = Registers.B;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x79: // LD A,C
+            {
+                Registers.A = Registers.C;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x7a: // LD A,D
+            {
+                Registers.A = Registers.D;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x7b: // LD A,E
+            {
+                Registers.A = Registers.E;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x7c: // LD A,REGISTERH
+            {
+                Registers.A = TIndex.High(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x7d: // LD A,REGISTERL
+            {
+                Registers.A = TIndex.Low(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
             case 0x7e: // LD A,(REGISTER+dd)
             {
                 var address = IndexedAddress<TIndex>();
                 Registers.A = bus.Read(address);
+                Registers.Q = 0;
                 break;
             }
-            case 0x7f: break; // LD A,A
-            case 0x80: Add8(Registers.B); break; // ADD A,B
-            case 0x81: Add8(Registers.C); break; // ADD A,C
-            case 0x82: Add8(Registers.D); break; // ADD A,D
-            case 0x83: Add8(Registers.E); break; // ADD A,E
-            case 0x84: Add8(TIndex.High(ref Registers)); break; // ADD A,REGISTERH
-            case 0x85: Add8(TIndex.Low(ref Registers)); break; // ADD A,REGISTERL
-            case 0x86: Add8(bus.Read(IndexedAddress<TIndex>())); break; // ADD A,(REGISTER+dd)
-            case 0x87: Add8(Registers.A); break; // ADD A,A
-            case 0x88: Adc8(Registers.B); break; // ADC A,B
-            case 0x89: Adc8(Registers.C); break; // ADC A,C
-            case 0x8a: Adc8(Registers.D); break; // ADC A,D
-            case 0x8b: Adc8(Registers.E); break; // ADC A,E
-            case 0x8c: Adc8(TIndex.High(ref Registers)); break; // ADC A,REGISTERH
-            case 0x8d: Adc8(TIndex.Low(ref Registers)); break; // ADC A,REGISTERL
-            case 0x8e: Adc8(bus.Read(IndexedAddress<TIndex>())); break; // ADC A,(REGISTER+dd)
-            case 0x8f: Adc8(Registers.A); break; // ADC A,A
-            case 0x90: Sub8(Registers.B); break; // SUB A,B
-            case 0x91: Sub8(Registers.C); break; // SUB A,C
-            case 0x92: Sub8(Registers.D); break; // SUB A,D
-            case 0x93: Sub8(Registers.E); break; // SUB A,E
-            case 0x94: Sub8(TIndex.High(ref Registers)); break; // SUB A,REGISTERH
-            case 0x95: Sub8(TIndex.Low(ref Registers)); break; // SUB A,REGISTERL
-            case 0x96: Sub8(bus.Read(IndexedAddress<TIndex>())); break; // SUB A,(REGISTER+dd)
-            case 0x97: Sub8(Registers.A); break; // SUB A,A
-            case 0x98: Sbc8(Registers.B); break; // SBC A,B
-            case 0x99: Sbc8(Registers.C); break; // SBC A,C
-            case 0x9a: Sbc8(Registers.D); break; // SBC A,D
-            case 0x9b: Sbc8(Registers.E); break; // SBC A,E
-            case 0x9c: Sbc8(TIndex.High(ref Registers)); break; // SBC A,REGISTERH
-            case 0x9d: Sbc8(TIndex.Low(ref Registers)); break; // SBC A,REGISTERL
-            case 0x9e: Sbc8(bus.Read(IndexedAddress<TIndex>())); break; // SBC A,(REGISTER+dd)
-            case 0x9f: Sbc8(Registers.A); break; // SBC A,A
-            case 0xa0: And8(Registers.B); break; // AND A,B
-            case 0xa1: And8(Registers.C); break; // AND A,C
-            case 0xa2: And8(Registers.D); break; // AND A,D
-            case 0xa3: And8(Registers.E); break; // AND A,E
-            case 0xa4: And8(TIndex.High(ref Registers)); break; // AND A,REGISTERH
-            case 0xa5: And8(TIndex.Low(ref Registers)); break; // AND A,REGISTERL
-            case 0xa6: And8(bus.Read(IndexedAddress<TIndex>())); break; // AND A,(REGISTER+dd)
-            case 0xa7: And8(Registers.A); break; // AND A,A
-            case 0xa8: Xor8(Registers.B); break; // XOR A,B
-            case 0xa9: Xor8(Registers.C); break; // XOR A,C
-            case 0xaa: Xor8(Registers.D); break; // XOR A,D
-            case 0xab: Xor8(Registers.E); break; // XOR A,E
-            case 0xac: Xor8(TIndex.High(ref Registers)); break; // XOR A,REGISTERH
-            case 0xad: Xor8(TIndex.Low(ref Registers)); break; // XOR A,REGISTERL
-            case 0xae: Xor8(bus.Read(IndexedAddress<TIndex>())); break; // XOR A,(REGISTER+dd)
-            case 0xaf: Xor8(Registers.A); break; // XOR A,A
-            case 0xb0: Or8(Registers.B); break; // OR A,B
-            case 0xb1: Or8(Registers.C); break; // OR A,C
-            case 0xb2: Or8(Registers.D); break; // OR A,D
-            case 0xb3: Or8(Registers.E); break; // OR A,E
-            case 0xb4: Or8(TIndex.High(ref Registers)); break; // OR A,REGISTERH
-            case 0xb5: Or8(TIndex.Low(ref Registers)); break; // OR A,REGISTERL
-            case 0xb6: Or8(bus.Read(IndexedAddress<TIndex>())); break; // OR A,(REGISTER+dd)
-            case 0xb7: Or8(Registers.A); break; // OR A,A
-            case 0xb8: Cp8(Registers.B); break; // CP B
-            case 0xb9: Cp8(Registers.C); break; // CP C
-            case 0xba: Cp8(Registers.D); break; // CP D
-            case 0xbb: Cp8(Registers.E); break; // CP E
-            case 0xbc: Cp8(TIndex.High(ref Registers)); break; // CP A,REGISTERH
-            case 0xbd: Cp8(TIndex.Low(ref Registers)); break; // CP A,REGISTERL
-            case 0xbe: Cp8(bus.Read(IndexedAddress<TIndex>())); break; // CP A,(REGISTER+dd)
-            case 0xbf: Cp8(Registers.A); break; // CP A
-            case 0xc0: ReturnConditional((Registers.F & Z80Flags.Z) == 0); break; // RET NZ
-            case 0xc1: Registers.BC = Pop(); break; // POP BC
-            case 0xc2: JumpAbsolute((Registers.F & Z80Flags.Z) == 0); break; // JP NZ,nnnn
-            case 0xc3: JumpAbsolute(true); break; // JP nnnn
-            case 0xc4: CallAbsolute((Registers.F & Z80Flags.Z) == 0); break; // CALL NZ,nnnn
-            case 0xc5: PushWithDelay(Registers.BC); break; // PUSH BC
-            case 0xc6: Add8(ReadPc()); break; // ADD A,nn
-            case 0xc7: Restart(0x00); break; // RST 00
-            case 0xc8: ReturnConditional((Registers.F & Z80Flags.Z) != 0); break; // RET Z
-            case 0xc9: Return(); break; // RET
-            case 0xca: JumpAbsolute((Registers.F & Z80Flags.Z) != 0); break; // JP Z,nnnn
-            case 0xcc: CallAbsolute((Registers.F & Z80Flags.Z) != 0); break; // CALL Z,nnnn
-            case 0xcd: CallAbsolute(true); break; // CALL nnnn
-            case 0xce: Adc8(ReadPc()); break; // ADC A,nn
-            case 0xcf: Restart(0x08); break; // RST 8
-            case 0xd0: ReturnConditional((Registers.F & Z80Flags.C) == 0); break; // RET NC
-            case 0xd1: Registers.DE = Pop(); break; // POP DE
-            case 0xd2: JumpAbsolute((Registers.F & Z80Flags.C) == 0); break; // JP NC,nnnn
-            case 0xd4: CallAbsolute((Registers.F & Z80Flags.C) == 0); break; // CALL NC,nnnn
-            case 0xd5: PushWithDelay(Registers.DE); break; // PUSH DE
-            case 0xd6: Sub8(ReadPc()); break; // SUB nn
-            case 0xd7: Restart(0x10); break; // RST 10
-            case 0xd8: ReturnConditional((Registers.F & Z80Flags.C) != 0); break; // RET C
-            case 0xda: JumpAbsolute((Registers.F & Z80Flags.C) != 0); break; // JP C,nnnn
-            case 0xdc: CallAbsolute((Registers.F & Z80Flags.C) != 0); break; // CALL C,nnnn
-            case 0xde: Sbc8(ReadPc()); break; // SBC A,nn
-            case 0xdf: Restart(0x18); break; // RST 18
-            case 0xe0: ReturnConditional((Registers.F & Z80Flags.PV) == 0); break; // RET PO
-            case 0xe1: TIndex.Pair(ref Registers) = Pop(); break; // POP REGISTER
-            case 0xe2: JumpAbsolute((Registers.F & Z80Flags.PV) == 0); break; // JP PO,nnnn
-            case 0xe4: CallAbsolute((Registers.F & Z80Flags.PV) == 0); break; // CALL PO,nnnn
-            case 0xe5: PushWithDelay(TIndex.Pair(ref Registers)); break; // PUSH REGISTER
-            case 0xe6: And8(ReadPc()); break; // AND nn
-            case 0xe7: Restart(0x20); break; // RST 20
-            case 0xe8: ReturnConditional((Registers.F & Z80Flags.PV) != 0); break; // RET PE
-            case 0xe9: Registers.PC = TIndex.Pair(ref Registers); break; // JP REGISTER
-            case 0xea: JumpAbsolute((Registers.F & Z80Flags.PV) != 0); break; // JP PE,nnnn
-            case 0xec: CallAbsolute((Registers.F & Z80Flags.PV) != 0); break; // CALL PE,nnnn
-            case 0xee: Xor8(ReadPc()); break; // XOR A,nn
-            case 0xef: Restart(0x28); break; // RST 28
-            case 0xf0: ReturnConditional((Registers.F & Z80Flags.S) == 0); break; // RET P
-            case 0xf1: Registers.AF = Pop(); break; // POP AF
-            case 0xf2: JumpAbsolute((Registers.F & Z80Flags.S) == 0); break; // JP P,nnnn
-            case 0xf4: CallAbsolute((Registers.F & Z80Flags.S) == 0); break; // CALL P,nnnn
-            case 0xf5: PushWithDelay(Registers.AF); break; // PUSH AF
-            case 0xf6: Or8(ReadPc()); break; // OR nn
-            case 0xf7: Restart(0x30); break; // RST 30
-            case 0xf8: ReturnConditional((Registers.F & Z80Flags.S) != 0); break; // RET M
+            case 0x7f: Registers.Q = 0; break; // LD A,A
+            case 0x80: // ADD A,B
+            {
+                Add8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x81: // ADD A,C
+            {
+                Add8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x82: // ADD A,D
+            {
+                Add8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x83: // ADD A,E
+            {
+                Add8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x84: // ADD A,REGISTERH
+            {
+                Add8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x85: // ADD A,REGISTERL
+            {
+                Add8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x86: // ADD A,(REGISTER+dd)
+            {
+                Add8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x87: // ADD A,A
+            {
+                Add8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x88: // ADC A,B
+            {
+                Adc8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x89: // ADC A,C
+            {
+                Adc8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8a: // ADC A,D
+            {
+                Adc8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8b: // ADC A,E
+            {
+                Adc8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8c: // ADC A,REGISTERH
+            {
+                Adc8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8d: // ADC A,REGISTERL
+            {
+                Adc8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8e: // ADC A,(REGISTER+dd)
+            {
+                Adc8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x8f: // ADC A,A
+            {
+                Adc8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x90: // SUB A,B
+            {
+                Sub8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x91: // SUB A,C
+            {
+                Sub8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x92: // SUB A,D
+            {
+                Sub8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x93: // SUB A,E
+            {
+                Sub8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x94: // SUB A,REGISTERH
+            {
+                Sub8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x95: // SUB A,REGISTERL
+            {
+                Sub8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x96: // SUB A,(REGISTER+dd)
+            {
+                Sub8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x97: // SUB A,A
+            {
+                Sub8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x98: // SBC A,B
+            {
+                Sbc8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x99: // SBC A,C
+            {
+                Sbc8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9a: // SBC A,D
+            {
+                Sbc8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9b: // SBC A,E
+            {
+                Sbc8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9c: // SBC A,REGISTERH
+            {
+                Sbc8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9d: // SBC A,REGISTERL
+            {
+                Sbc8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9e: // SBC A,(REGISTER+dd)
+            {
+                Sbc8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x9f: // SBC A,A
+            {
+                Sbc8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa0: // AND A,B
+            {
+                And8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa1: // AND A,C
+            {
+                And8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa2: // AND A,D
+            {
+                And8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa3: // AND A,E
+            {
+                And8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa4: // AND A,REGISTERH
+            {
+                And8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa5: // AND A,REGISTERL
+            {
+                And8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa6: // AND A,(REGISTER+dd)
+            {
+                And8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa7: // AND A,A
+            {
+                And8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa8: // XOR A,B
+            {
+                Xor8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa9: // XOR A,C
+            {
+                Xor8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xaa: // XOR A,D
+            {
+                Xor8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xab: // XOR A,E
+            {
+                Xor8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xac: // XOR A,REGISTERH
+            {
+                Xor8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xad: // XOR A,REGISTERL
+            {
+                Xor8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xae: // XOR A,(REGISTER+dd)
+            {
+                Xor8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xaf: // XOR A,A
+            {
+                Xor8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb0: // OR A,B
+            {
+                Or8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb1: // OR A,C
+            {
+                Or8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb2: // OR A,D
+            {
+                Or8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb3: // OR A,E
+            {
+                Or8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb4: // OR A,REGISTERH
+            {
+                Or8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb5: // OR A,REGISTERL
+            {
+                Or8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb6: // OR A,(REGISTER+dd)
+            {
+                Or8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb7: // OR A,A
+            {
+                Or8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb8: // CP B
+            {
+                Cp8(Registers.B);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb9: // CP C
+            {
+                Cp8(Registers.C);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xba: // CP D
+            {
+                Cp8(Registers.D);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbb: // CP E
+            {
+                Cp8(Registers.E);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbc: // CP A,REGISTERH
+            {
+                Cp8(TIndex.High(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbd: // CP A,REGISTERL
+            {
+                Cp8(TIndex.Low(ref Registers));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbe: // CP A,(REGISTER+dd)
+            {
+                Cp8(bus.Read(IndexedAddress<TIndex>()));
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbf: // CP A
+            {
+                Cp8(Registers.A);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xc0: // RET NZ
+            {
+                ReturnConditional((Registers.F & Z80Flags.Z) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc1: // POP BC
+            {
+                Registers.BC = Pop();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc2: // JP NZ,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.Z) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc3: // JP nnnn
+            {
+                JumpAbsolute(true);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc4: // CALL NZ,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.Z) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc5: // PUSH BC
+            {
+                PushWithDelay(Registers.BC);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc6: // ADD A,nn
+            {
+                Add8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xc7: // RST 00
+            {
+                Restart(0x00);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc8: // RET Z
+            {
+                ReturnConditional((Registers.F & Z80Flags.Z) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xc9: // RET
+            {
+                Return();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xca: // JP Z,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.Z) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xcc: // CALL Z,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.Z) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xcd: // CALL nnnn
+            {
+                CallAbsolute(true);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xce: // ADC A,nn
+            {
+                Adc8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xcf: // RST 8
+            {
+                Restart(0x08);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd0: // RET NC
+            {
+                ReturnConditional((Registers.F & Z80Flags.C) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd1: // POP DE
+            {
+                Registers.DE = Pop();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd2: // JP NC,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.C) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd4: // CALL NC,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.C) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd5: // PUSH DE
+            {
+                PushWithDelay(Registers.DE);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd6: // SUB nn
+            {
+                Sub8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xd7: // RST 10
+            {
+                Restart(0x10);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xd8: // RET C
+            {
+                ReturnConditional((Registers.F & Z80Flags.C) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xda: // JP C,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.C) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xdc: // CALL C,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.C) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xde: // SBC A,nn
+            {
+                Sbc8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xdf: // RST 18
+            {
+                Restart(0x18);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe0: // RET PO
+            {
+                ReturnConditional((Registers.F & Z80Flags.PV) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe1: // POP REGISTER
+            {
+                TIndex.Pair(ref Registers) = Pop();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe2: // JP PO,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.PV) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe4: // CALL PO,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.PV) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe5: // PUSH REGISTER
+            {
+                PushWithDelay(TIndex.Pair(ref Registers));
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe6: // AND nn
+            {
+                And8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xe7: // RST 20
+            {
+                Restart(0x20);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe8: // RET PE
+            {
+                ReturnConditional((Registers.F & Z80Flags.PV) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xe9: // JP REGISTER
+            {
+                Registers.PC = TIndex.Pair(ref Registers);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xea: // JP PE,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.PV) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xec: // CALL PE,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.PV) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xee: // XOR A,nn
+            {
+                Xor8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xef: // RST 28
+            {
+                Restart(0x28);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf0: // RET P
+            {
+                ReturnConditional((Registers.F & Z80Flags.S) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf1: // POP AF
+            {
+                Registers.AF = Pop();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf2: // JP P,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.S) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf3: // DI
+            {
+                Registers.IFF1 = Registers.IFF2 = false;
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf4: // CALL P,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.S) == 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf5: // PUSH AF
+            {
+                PushWithDelay(Registers.AF);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf6: // OR nn
+            {
+                Or8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xf7: // RST 30
+            {
+                Restart(0x30);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xf8: // RET M
+            {
+                ReturnConditional((Registers.F & Z80Flags.S) != 0);
+                Registers.Q = 0;
+                break;
+            }
             case 0xf9: // LD SP,REGISTER
             {
                 bus.Internal(Registers.IR, 2);
                 Registers.SP = TIndex.Pair(ref Registers);
+                Registers.Q = 0;
                 break;
             }
-            case 0xfa: JumpAbsolute((Registers.F & Z80Flags.S) != 0); break; // JP M,nnnn
-            case 0xfc: CallAbsolute((Registers.F & Z80Flags.S) != 0); break; // CALL M,nnnn
-            case 0xfe: Cp8(ReadPc()); break; // CP nn
-            case 0xff: Restart(0x38); break; // RST 38
+            case 0xfa: // JP M,nnnn
+            {
+                JumpAbsolute((Registers.F & Z80Flags.S) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xfb: // EI
+            {
+                EnableInterrupts();
+                Registers.Q = 0;
+                break;
+            }
+            case 0xfc: // CALL M,nnnn
+            {
+                CallAbsolute((Registers.F & Z80Flags.S) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xfe: // CP nn
+            {
+                Cp8(ReadPc());
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xff: // RST 38
+            {
+                Restart(0x38);
+                Registers.Q = 0;
+                break;
+            }
             default: Unimplemented(); break;
         }
     }

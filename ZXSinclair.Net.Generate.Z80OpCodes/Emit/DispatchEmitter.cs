@@ -21,7 +21,7 @@ using ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 namespace ZXSinclair.Net.Generate.Z80OpCodes.Emit;
 
-internal sealed record EmittedOpcode(Opcode Opcode, bool Implemented, string Body);
+internal sealed record EmittedOpcode(Opcode Opcode, bool Implemented, string Body, string PatternBody = "");
 internal sealed record GeneratedDispatch(OpcodeTableKind Table, string FileName, string Text, EmittedOpcode[] Opcodes);
 
 internal static class DispatchEmitter
@@ -55,7 +55,11 @@ internal static class DispatchEmitter
             }
             var pattern = catalog.Resolve(opcode);
             var body = pattern is null ? "" : SourceFormat.Normalize(pattern.EmitBody(opcode, new(table))).Trim();
-            emitted.Add(new(opcode, pattern is not null, body));
+            var patternBody = body;
+            if (pattern is not null)
+                body = (body.Length == 0 ? "" : body + "\n")
+                    + (pattern.WritesFlags(opcode) ? "Registers.Q = Registers.F;" : "Registers.Q = 0;");
+            emitted.Add(new(opcode, pattern is not null, body, patternBody));
         }
         var lines = new StringBuilder();
         lines.AppendLine(SourceFormat.Normalize(SourceFormat.LicenseHeader).Replace("\n", Environment.NewLine));
@@ -73,9 +77,14 @@ internal static class DispatchEmitter
         lines.AppendLine($"    private void {signature}");
         lines.AppendLine("    {");
         // Keep the empty NOP path independent of the growing jump table.
-        if (table == OpcodeTableKind.Base && emitted.Any(e => e.Opcode.Byte == 0 && e.Implemented && e.Body.Length == 0))
+        if (table == OpcodeTableKind.Base && emitted.Any(e => e.Opcode.Byte == 0 && e.Implemented
+            && e.PatternBody.Length == 0 && e.Body == "Registers.Q = 0;"))
         {
-            lines.AppendLine("        if (opcode == 0) return;");
+            lines.AppendLine("        if (opcode == 0)");
+            lines.AppendLine("        {");
+            lines.AppendLine("            Registers.Q = 0;");
+            lines.AppendLine("            return;");
+            lines.AppendLine("        }");
             lines.AppendLine("        ExecuteMainDispatch(opcode);");
             lines.AppendLine("    }");
             lines.AppendLine();

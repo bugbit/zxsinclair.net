@@ -38,7 +38,7 @@ Reglas comunes:
 - **Operandos de un salto no tomado** (`JR cc`, `JP cc`, `CALL cc`, `DJNZ` con `B = 0`): el Z80 real lee los bytes igualmente, pero FUSE los modela con `contend_read` y registra solo `MC`, sin `MR` (casos `20_2`, `c2_2`, `c4_2`…). La CPU los lee con `bus.ReadDiscarded` (spec de buses 9.2), que en `SpectrumBus` es igual que `Read` y en `FuseTestBus` no registra `MR`. `JP cc`/`CALL cc` no tomados siguen usando el valor leído para `WZ = nn`.
 - `DJNZ` decrementa B **antes** de leer `e` y el decremento no toca flags; con `B = 1` no salta y deja `B = 0`; con `B = 0` da la vuelta a `0xFF` y salta.
 - Las condiciones leen F a través de `Z80Flags` (`OperandEmitter` ya las traduce: `(Registers.F & Z80Flags.Z) == 0` para NZ).
-- `Q`: el grupo no lo escribe (grupo 5).
+- `Q`: ninguno de sus patrones escribe flags; el emisor pone Q=0 desde el grupo 5, incluidos RETN/RETI.
 
 ### 2.1 `RETN`, `RETI` y alias de ED
 
