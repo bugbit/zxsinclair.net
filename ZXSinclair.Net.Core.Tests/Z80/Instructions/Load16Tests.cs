@@ -353,7 +353,7 @@ public class Load16Tests
         Assert.Equal((byte)1, state.Memory[0x9ABA]);
         Assert.Equal((byte)0, state.Memory[0x9ABB]);
         Assert.Equal(new[] { ("M1", (ushort)0, 0xF9), ("Internal", (ushort)0x4292, 2),
-            ("Ack", (ushort)0, 0xFF), ("Write", (ushort)0x9ABB, 0), ("Write", (ushort)0x9ABA, 1) }, state.Accesses);
+            ("Ack", (ushort)0, 0xFF), ("Internal", (ushort)0x4293, 1), ("Write", (ushort)0x9ABB, 0), ("Write", (ushort)0x9ABA, 1) }, state.Accesses);
     }
 
     [Theory]

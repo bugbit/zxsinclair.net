@@ -77,7 +77,7 @@ public struct FuseTestBus : IZ80Bus
 
     public byte AcknowledgeInterrupt()
     {
-        state.Cycles += 7;
+        state.Cycles += 6;
         return 0xFF;
     }
 

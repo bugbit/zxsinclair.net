@@ -289,15 +289,18 @@ public class FuseReportTests
     }
 
     [Theory]
-    [InlineData(new byte[] { 0xED, 0 }, 0, 2)]
-    [InlineData(new byte[] { 0xDD, 0xED, 0 }, 0, 3)]
-    [InlineData(new byte[] { 0xED, 0x00 }, 0xFFFE, 0)]
-    public void LastUnimplementedAddress_TracksFetchAndReset(byte[] program, ushort start, ushort end)
+    [InlineData(0)]
+    [InlineData(0x1234)]
+    [InlineData(0xFFFF)]
+    public void LastUnimplementedAddress_TracksFetchAndReset(ushort start)
     {
         var state = new TestBusState();
-        for (var i = 0; i < program.Length; i++) state.Memory[(ushort)(start + i)] = program[i];
+        state.IntActive = true;
+        state.InterruptData = 0xCD;
         var cpu = new Z80Cpu<TestBus>(new(state));
         cpu.Registers.PC = start;
+        cpu.Registers.IFF1 = true;
+        var end = start;
         cpu.Step();
         Assert.Equal(1, cpu.UnimplementedOpcodes);
         Assert.Equal(end, cpu.LastUnimplementedAddress);

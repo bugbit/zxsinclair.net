@@ -31,6 +31,7 @@ public sealed partial class Z80Cpu<TBus>
     private void AcceptNmi()
     {
         Registers.Q = 0;
+        Registers.SpecialLoadPending = false;
         ExitHalt();
         nmiPending = false;
         Registers.EiPending = false;
@@ -45,6 +46,9 @@ public sealed partial class Z80Cpu<TBus>
     private void AcceptInterrupt()
     {
         Registers.Q = 0;
+        if (Registers.SpecialLoadPending)
+            Registers.F &= unchecked((byte)~Z80Flags.PV);
+        Registers.SpecialLoadPending = false;
         ExitHalt();
         Registers.IFF1 = Registers.IFF2 = false;
         Registers.IncrementR();
@@ -52,20 +56,18 @@ public sealed partial class Z80Cpu<TBus>
         switch (Registers.IM)
         {
             case 0:
-                // Only RST responses are supported until instruction generation exists.
-                if ((data & 0xC7) != 0xC7)
-                {
+                if (IsIm0SingleByte(data))
+                    ExecuteMain(data);
+                else
                     Unimplemented();
-                    return;
-                }
-                Push(Registers.PC);
-                Registers.PC = (ushort)(data & 0x38);
-                break;
+                return;
             case 1:
+                bus.Internal(Registers.IR, 1);
                 Push(Registers.PC);
                 Registers.PC = 0x0038;
                 break;
             case 2:
+                bus.Internal(Registers.IR, 1);
                 Push(Registers.PC);
                 var vector = (ushort)((Registers.I << 8) | data);
                 var low = bus.Read(vector);

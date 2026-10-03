@@ -305,7 +305,7 @@ public class JumpTests
         Assert.Equal(27, state.Cycles);
         Assert.Equal(new (string, ushort, int)[] {
             ("M1", 0x8000, 0xED), ("M1", 0x8001, 0x45), ("Read", 0x9000, 0x34), ("Read", 0x9001, 0x12),
-            ("Ack", 0, 0xFF), ("Write", 0x9001, 0x12), ("Write", 0x9000, 0x34) }, state.Accesses);
+            ("Ack", 0, 0xFF), ("Internal", 0x4294, 1), ("Write", 0x9001, 0x12), ("Write", 0x9000, 0x34) }, state.Accesses);
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
@@ -451,7 +451,7 @@ public class JumpTests
         state.Accesses.Clear();
         state.Cycles = 0;
         state.IntActive = true;
-        Verify(cpu, state, expected, 13, ("Ack", 0, 0xFF),
+        Verify(cpu, state, expected, 13, ("Ack", 0, 0xFF), ("Internal", expected.IR, 1),
             ("Write", (ushort)(sp - 1), pc >> 8), ("Write", (ushort)(sp - 2), (byte)pc));
         Assert.True(cycles > 0);
     }

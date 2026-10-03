@@ -123,7 +123,7 @@ public class FuseTestBusTests
         }, state.Events!);
         Assert.False(bus.IntActive);
         Assert.Equal((byte)0xFF, bus.AcknowledgeInterrupt());
-        Assert.Equal(15, state.Cycles);
+        Assert.Equal(14, state.Cycles);
         bus.Reset();
         Assert.Equal(0, bus.Cycles);
         Assert.Equal((byte)0x42, state.Memory[0x8000]);

@@ -197,12 +197,26 @@ public class SpectrumBusTests
     }
 
     [Fact]
-    public void AcknowledgeInterrupt_ReturnsFFAndTakesSevenTStates()
+    public void AcknowledgeInterrupt_ReturnsFFAndTakesSixTStates()
     {
         var machine = At(0);
 
         Assert.Equal(0xFF, machine.Bus.AcknowledgeInterrupt());
-        Assert.Equal(7, machine.TStates);
+        Assert.Equal(6, machine.TStates);
+    }
+
+    [Theory]
+    [InlineData(0x42, 19)]
+    [InlineData(0x80, 13)]
+    public void InterruptInternalCycle_UsesIrContention(byte i, int elapsed)
+    {
+        var machine = At(14329);
+        // The ULA's frame INT is inactive here; the same emitted bus sequence is exercised directly.
+        machine.Bus.AcknowledgeInterrupt();
+        machine.Bus.Internal((ushort)((i << 8) | 1), 1);
+        machine.Bus.Write(0x8FFF, 0x80);
+        machine.Bus.Write(0x8FFE, 0);
+        Assert.Equal(14329 + elapsed, machine.TStates);
     }
 
     [Fact]

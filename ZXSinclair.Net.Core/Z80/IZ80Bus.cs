@@ -43,6 +43,6 @@ public interface IZ80Bus : IBus, IBusData<ushort, byte>, IBusIo<ushort, byte>
     /// <summary>True while the INT line is active.</summary>
     bool IntActive { get; }
 
-    /// <summary>Interrupt acknowledge cycle (M1 with IORQ). Returns the byte on the data bus.</summary>
+    /// <summary>Interrupt acknowledge cycle: 6 T-states (M1 with IORQ and two wait states). Returns the byte on the data bus.</summary>
     byte AcknowledgeInterrupt();
 }

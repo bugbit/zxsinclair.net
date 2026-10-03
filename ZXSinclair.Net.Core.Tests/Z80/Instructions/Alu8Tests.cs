@@ -347,7 +347,7 @@ public class Alu8Tests
         Assert.False(cpu.Registers.IFF2);
         Assert.Equal(cycles + 13, state.Cycles);
         Assert.Equal((byte)(refresh + 1), cpu.Registers.R);
-        Assert.Equal(new[] { ("Ack", (ushort)0, 0xFF),
+        Assert.Equal(new[] { ("Ack", (ushort)0, 0xFF), ("Internal", (ushort)0x4293, 1),
             ("Write", (ushort)0x8FFF, pc >> 8), ("Write", (ushort)0x8FFE, pc & 0xFF) }, state.Accesses);
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }

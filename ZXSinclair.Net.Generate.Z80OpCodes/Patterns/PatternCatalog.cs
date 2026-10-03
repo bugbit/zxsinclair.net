@@ -23,6 +23,7 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
 {
     public static PatternCatalog Default { get; } = new(
         new NopPattern(),
+        new EdHolePattern(),
         new LoadRegisterRegister(),
         new LoadRegisterImmediate(),
         new LoadRegisterIndirect(),

@@ -235,6 +235,7 @@ public class Load8Tests
         expected.A = value;
         expected.F = flags;
         expected.Q = flags;
+        expected.SpecialLoadPending = true;
         Check(cpu, state, expected, 9, ("M1", 0, 0xED), ("M1", 1, 0x57), ("Internal", ir, 1));
     }
 
@@ -250,6 +251,7 @@ public class Load8Tests
         expected.A = value;
         expected.F = flags;
         expected.Q = flags;
+        expected.SpecialLoadPending = true;
         Check(cpu, state, expected, 9, ("M1", 0, 0xED), ("M1", 1, 0x5F), ("Internal", ir, 1));
     }
 
@@ -477,7 +479,7 @@ public class Load8Tests
         cpu.Step();
         Assert.Equal(expected, cpu.Registers);
         Assert.Equal(26, state.Cycles);
-        Assert.Equal(new[] { ("Ack", (ushort)0, 0xFF), ("Write", (ushort)0x8FFF, 0),
+        Assert.Equal(new[] { ("Ack", (ushort)0, 0xFF), ("Internal", (ushort)0x4293, 1), ("Write", (ushort)0x8FFF, 0),
             ("Write", (ushort)0x8FFE, 3) }, state.Accesses);
         Assert.Equal(3, state.Memory[0x8FFE]);
         Assert.Equal(0, state.Memory[0x8FFF]);

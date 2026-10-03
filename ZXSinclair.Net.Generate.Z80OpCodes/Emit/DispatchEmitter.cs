@@ -95,7 +95,8 @@ internal static class DispatchEmitter
         }
         lines.AppendLine("        switch (opcode)");
         lines.AppendLine("        {");
-        var groups = emitted.Where(e => e.Implemented).GroupBy(e => (e.Body, e.Opcode.Comment))
+        var groups = emitted.Where(e => e.Implemented).GroupBy(e => (e.Body,
+            Comment: e.Opcode.Kind == OpcodeKind.Hole ? "ED hole: two NOPs" : e.Opcode.Comment))
             .OrderBy(g => g.Min(e => e.Opcode.Byte));
         foreach (var group in groups)
         {

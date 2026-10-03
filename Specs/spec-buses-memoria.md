@@ -234,7 +234,7 @@ Operaciones mínimas que la CPU necesita (nombres orientativos):
 | `Write(addr, value)` | escritura | 3 T |
 | `Internal(addr, n)` | ciclos internos con dirección en el bus | n × 1 T |
 | `In(port)` / `Out(port, value)` | E/S con TW automático | 4 T |
-| `AcknowledgeInterrupt()` | M1 con IORQ | según modo |
+| `AcknowledgeInterrupt()` | M1 con IORQ y dos TW | 6 T; la extensión se emite con `Internal(IR, 1)` |
 
 - `ReadDiscarded` es, en el bus real, idéntica a `Read` (mismo ciclo, contención, coste y dato devuelto); `SpectrumBus` la implementa llamando a `Read`. Existe para que un bus de pruebas pueda seguir a FUSE, que modela ese ciclo como `contend_read` y lo registra solo como `MC`, sin `MR`.
 - **El contador de T-states pasa al bus/máquina**, no a la CPU: quien conoce la contención es la ULA. La CPU solo emite ciclos.
@@ -272,7 +272,7 @@ Decisiones:
 - **Contención sin ramas**: los flags de contención por página son máscaras 0x00/0xFF y el retraso se aplica como `t += table[t] & mask`. Con la rama `if (contended)`, el benchmark daba entre 3.8 y 5 ns con mucha variación por fallos de predicción.
 - **Contador de T-states leído y escrito una vez por ciclo** (en una variable local). El coste restante del bus (~3.4 ns frente a ~1 ns) viene sobre todo de la cadena de dependencia del contador a través de memoria; reducirlo exigiría que la CPU mantenga el contador en un registro y lo pase al bus, decisión a tomar al diseñar `Z80Cpu<TBus>`.
 - La tabla de contención y la de bus flotante tienen `ContentionTable.Margin` (256) entradas tras el frame; la máquina debe llamar a `EndFrame()` antes de agotarlas (comprobado con `Debug.Assert`).
-- Valores tomados de FUSE y pendientes de verificar, aislados en constantes: INT de 36 T en 128K (`MachineTiming.Spectrum128`), reconocimiento de interrupción de 7 T con vector 0xFF (`SpectrumMachine.InterruptAcknowledgeTStates`), lectura de 0x7FFD = bus flotante, contención de E/S según la página del byte alto (incluida la ranura 3 en 128K).
+- Valores tomados de FUSE y pendientes de verificar, aislados en constantes: INT de 36 T en 128K (`MachineTiming.Spectrum128`), reconocimiento de interrupción de 6 T con vector 0xFF (`SpectrumMachine.InterruptAcknowledgeTStates`), lectura de 0x7FFD = bus flotante, contención de E/S según la página del byte alto (incluida la ranura 3 en 128K).
 
 ### 9.5 Validación
 
@@ -288,3 +288,10 @@ Decisiones:
 - Patrón y tabla exactos del +2A/+3.
 - Lectura de 0x8000–0xFFFF en el 16K: hoy devuelve 0xFF; en el hardware real es el bus flotante.
 - Variantes de memoria del ZX81 (RAM packs, 8K en 0x2000) y bus/temporización del ZX81.
+
+
+### Reconocimiento de INT (grupo 11)
+
+`AcknowledgeInterrupt` consume 6 T, sin contención. IM 1 e IM 2 añaden `Internal(IR, 1)` antes de apilar; en IM 0 la extensión sale del cuerpo de la instrucción. Se conservan 13/19 T para IM 1/2 y 13 para RST.
+
+Se aplica contención al T interno cuando IR está en una página contenida. Es una inferencia de los ciclos `ir:1` de RST/PUSH y de la regla de la ULA de los modelos 16K/48K/128K/+2, descritos en [Sinclair Wiki, Contended memory](https://sinclair.wiki.zxnet.co.uk/wiki/Contended_memory). Esa fuente no desglosa el reconocimiento de INT; falta contrastar ese T concreto con hardware. `SpectrumBusTests.InterruptInternalCycle_UsesIrContention` verifica la secuencia elegida dentro y fuera de memoria contenida, con 6 T de retraso al comienzo de la ventana de contención.

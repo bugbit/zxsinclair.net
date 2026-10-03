@@ -38,7 +38,7 @@ public class Z80CpuTests
         {
             AF = 1, BC = 2, DE = 3, HL = 4, AF_ = 5, BC_ = 6, DE_ = 7, HL_ = 8,
             IX = 9, IY = 10, SP = 11, PC = 12, WZ = 13, IR = 14,
-            IFF1 = true, IFF2 = true, IM = 2, Halted = true, EiPending = true, Q = 0xFF,
+            IFF1 = true, IFF2 = true, IM = 2, Halted = true, EiPending = true, Q = 0xFF, SpecialLoadPending = true,
         };
         cpu.RequestNmi();
         cpu.Reset();
@@ -58,7 +58,7 @@ public class Z80CpuTests
     [InlineData(new byte[] { 0xDD, 0xFD, 0xED, 0x00 }, 16, 4)]
     [InlineData(new byte[] { 0xFD, 0xDD, 0xED, 0x00 }, 16, 4)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
-    public void UnimplementedDispatchCountsFetches(byte[] program, int cycles, byte refresh)
+    public void EdHoleDispatchCountsFetches(byte[] program, int cycles, byte refresh)
     {
         var (cpu, state) = Create(program);
         cpu.Registers.R = 0x80;
@@ -66,7 +66,7 @@ public class Z80CpuTests
         Assert.Equal(cycles, state.Cycles);
         Assert.Equal((ushort)program.Length, cpu.Registers.PC);
         Assert.Equal((byte)(0x80 | refresh), cpu.Registers.R);
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class Z80CpuTests
         Assert.Equal(262144, state.Cycles);
         Assert.Equal((ushort)1, cpu.Registers.PC);
         Assert.Equal((byte)0x80, cpu.Registers.R);
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Fact]
@@ -176,12 +176,11 @@ public class Z80CpuTests
         Assert.Equal((byte)0x80, cpu.Registers.R);
         Assert.False(cpu.Registers.IFF1);
         Assert.False(cpu.Registers.IFF2);
-        Assert.Equal(new[] { "Ack", "Write", "Write" }, state.Accesses.Select(a => a.Kind));
+        Assert.Equal(new[] { "Ack", "Internal", "Write", "Write" }, state.Accesses.Select(a => a.Kind));
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Theory]
-    [InlineData(0x00)]
     [InlineData(0xCD)]
     [InlineData(0xCB)]
     [InlineData(0xDD)]
@@ -195,7 +194,7 @@ public class Z80CpuTests
         state.IntActive = true;
         state.InterruptData = data;
         cpu.Step();
-        Assert.Equal(7, state.Cycles);
+        Assert.Equal(6, state.Cycles);
         Assert.Equal((ushort)0x1234, cpu.Registers.PC);
         Assert.Equal((ushort)0x8000, cpu.Registers.SP);
         Assert.Equal((ushort)0xABCD, cpu.Registers.WZ);
@@ -225,7 +224,7 @@ public class Z80CpuTests
         Assert.Equal(19, state.Cycles);
         Assert.Equal((ushort)0x5678, cpu.Registers.PC);
         Assert.Equal((ushort)0x5678, cpu.Registers.WZ);
-        Assert.Equal(new ushort[] { 0, 0x8FFF, 0x8FFE, vector, unchecked((ushort)(vector + 1)) },
+        Assert.Equal(new ushort[] { 0, cpu.Registers.IR, 0x8FFF, 0x8FFE, vector, unchecked((ushort)(vector + 1)) },
             state.Accesses.Select(a => a.Address));
         Assert.Equal((byte)0x12, state.Memory[0x8FFF]);
         Assert.Equal((byte)0x34, state.Memory[0x8FFE]);

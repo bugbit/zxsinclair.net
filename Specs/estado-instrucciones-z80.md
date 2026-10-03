@@ -223,4 +223,4 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 - [x] `OUTD` — p. 313. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
 - [x] `OTDR` — p. 315. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
 
-El recuento corresponde a las 150 entradas del manual. Incluye las variantes no documentadas previstas en sus specs; los 178 huecos de ED y las respuestas arbitrarias de IM 0 siguen en el grupo 11.
+El recuento corresponde a las 150 entradas del manual. Incluye las variantes no documentadas previstas en sus specs; los 178 huecos de ED y las respuestas IM 0 de un byte están implementados y probados en [RestTests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/RestTests.cs), según [la spec de restos](spec-instr-restos.md). Los huecos no añaden entradas al recuento del manual. IM 0 de varios bytes/prefijos sigue fuera de alcance.

@@ -26,6 +26,12 @@ internal sealed class NopPattern : IPattern
     public string EmitBody(Opcode opcode, EmitContext context) => "";
 }
 
+internal sealed class EdHolePattern : IPattern
+{
+    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED && opcode.Kind == OpcodeKind.Hole;
+    public string EmitBody(Opcode opcode, EmitContext context) => "";
+}
+
 
 internal sealed class DecimalAdjustPattern : IPattern
 {

@@ -27,7 +27,7 @@ Por dependencias y por casos FUSE que desbloquea cada paso.
 | 8 | `spec-instr-bits.md` | `BIT`/`SET`/`RES`. | Incluye MEMPTR en `BIT n,(HL)`. |
 | 9 | `spec-instr-bloques.md` | Intercambio, transferencia y búsqueda en bloque (`EX`, `EXX`, `LDI`/`LDIR`, `CPI`/`CPIR`…). | Temporización de las repeticiones. |
 | 10 | `spec-instr-io.md` | Entrada/salida, incluidas las de bloque. | |
-| 11 | `spec-instr-restos.md` | Huecos de la tabla ED, IM 0 con instrucciones arbitrarias y lo que no encaje en otro grupo. | Cierre. |
+| 11 | `spec-instr-restos.md` | Huecos de la tabla ED, IM 0 con instrucciones de un byte y peculiaridad P/V tras LD A,I/R. | Cierre del alcance; IM 0 de varios bytes/prefijos queda pendiente. |
 
 `NOP` ya está implementado como piloto (`spec-instr-nop.md`); su spec se mantiene y el grupo 5 la referencia en lugar de repetirla.
 
@@ -86,10 +86,12 @@ Mismas secciones que `spec-instr-nop.md`:
 | 8 | Bits | `spec-instr-bits.md` | Implementado | 584 (1270 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
 | 9 | Intercambio y bloques | `spec-instr-bloques.md` | Implementado | 14 (1284 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
 | 10 | Entrada/salida | `spec-instr-io.md` | Implementado | 51 (1335 acumulados, 0 fallos y 0 omitidos; eventos activados; 8 con convención BIT (HL)) |
-| 11 | Restos | — | Pendiente | — |
+| 11 | Restos | `spec-instr-restos.md` | Implementado | Sin casos nuevos; 1335/0/0, eventos activados |
 
 Total de casos FUSE: 1335. Estados: Pendiente → Especificado → Planificado → Implementado.
 
 ## 7. Después de las instrucciones
 
 Cuando estén los grupos 1–4, valorar añadir z80test (y opcionalmente ZEXDOC/ZEXALL) como test lento opcional, y SingleStepTests en xUnit (ver `Docs/benchmarks-maquinas-reales.md`, con sus licencias).
+
+Grupos 0–11 implementados. ED, CB y DD-FDCB cubren los 256 valores; los prefijos base/DD-FD los resuelve el bucle de CPU. IM 0 admite opcodes base de un byte; las respuestas de varios bytes y los puntos pendientes de hardware se documentan en la spec de restos.

@@ -1,6 +1,6 @@
 # Especificación: CPU base y CPU Z80
 
-Especificación del núcleo de CPU de `ZXSinclair.Net.Core`: el contrato genérico de cualquier CPU y la CPU Z80 (registros, ciclo de ejecución, prefijos, interrupciones, HALT, reset) **con NOP como primera instrucción implementada** (ver `Specs/spec-instr-nop.md`). Las instrucciones se generarán con un generador nuevo (`ZXSinclair.Net.Generate.Z80OpCodes`) en una especificación posterior; aquí se fija el esqueleto que ese código rellenará.
+Especificación del núcleo de CPU de `ZXSinclair.Net.Core`: el contrato genérico de cualquier CPU y la CPU Z80 (registros, ciclo de ejecución, prefijos, interrupciones, HALT, reset) con todos los grupos de instrucciones implementados. Los cinco despachos y la tabla IM 0 los produce `ZXSinclair.Net.Generate.Z80OpCodes`; las respuestas IM 0 de varios bytes o prefijos quedan fuera de alcance.
 
 Se apoya en `Specs/spec-buses-memoria.md`: la CPU solo habla con un bus `IZ80Bus` y no sabe nada de la ULA, la contención ni la memoria. El rendimiento es el requisito principal del proyecto (ver `README.md`).
 
@@ -44,6 +44,7 @@ Reglas (sección 9 de la spec de buses):
 Estado interno, también en el struct:
 - `IFF1`, `IFF2` (bool o byte), `IM` (0, 1, 2).
 - `Halted`.
+- `SpecialLoadPending`: la instrucción anterior fue `LD A,I` o `LD A,R`; una INT inmediata limpia P/V en el modelo NMOS. Se borra al comenzar la siguiente instrucción, aceptar INT/NMI o hacer reset.
 - `EiPending`: la instrucción anterior fue `EI`; bloquea INT hasta completar la siguiente instrucción. Los prefijos DD/FD se procesan dentro del mismo paso y no necesitan este estado.
 - `Q`: F escrito por la última instrucción que modifica flags, o 0 tras una que no los modifica. Implementado según `spec-instr-control.md`: el generador usa `IPattern.WritesFlags` y SCF/CCF leen Q antes de actualizarlo. INT, NMI y cada M1 de HALT lo ponen a 0. `POP AF` se trata provisionalmente como Q=0; queda su comprobación con z80ccf.
 
@@ -78,7 +79,7 @@ Tablas precalculadas de 256 entradas en `Z80Flags` (como `mTablePV` y `mTableZS5
 si NMI pendiente                       → aceptar NMI (6.2)
 si no, si INT activa (bus.IntActive) y IFF1 y no EiPending → aceptar INT (6.3)
 si no:
-    EiPending = false
+    EiPending = SpecialLoadPending = false
     si Halted → M1 sobre PC sin avanzarlo (NOP interno), R++
     si no     → opcode = M1(PC++); ejecutar(opcode)
 ```
@@ -90,7 +91,7 @@ M1 = `bus.FetchOpcode(PC)` + incremento de los 7 bits bajos de R. El incremento 
 | Prefijo | Comportamiento |
 |---|---|
 | `CB` | Segundo M1; la tabla CB. |
-| `ED` | Segundo M1; la tabla ED. Los huecos sin instrucción actúan como dos NOP (8 T). |
+| `ED` | Segundo M1; la tabla ED. Los 178 huecos sin instrucción están implementados como dos NOP (8 T), con Q=0. |
 | `DD` / `FD` | M1 propio (4 T, R++). El siguiente opcode se ejecuta con IX/IY en lugar de HL (y IXH/IXL en lugar de H/L, `(IX+d)` en lugar de `(HL)`). Si el opcode no usa HL, se ejecuta como sin prefijo. Una cadena `DD DD …` o `DD FD …` vale solo por el último prefijo; INT no se acepta entre un prefijo y su instrucción. |
 | `DD CB d op` / `FD CB d op` | `d` y `op` se leen con `Read` (no M1, R no se incrementa con ellos): `pc:4, pc+1:4, pc+2:3, pc+3:3, pc+3:1 ×2` y el acceso a `(IX+d)`/`(IY+d)`. `FinishIndexed` guarda `WZ = ii + d` antes del despacho CB indexado. |
 
@@ -118,7 +119,7 @@ Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; lo
 - Cada caso llama a métodos pequeños `[AggressiveInlining]` escritos a mano (ALU, rotaciones, `Push`/`Pop`…) o contiene el código directamente.
 - Las cinco tablas de entrada son `data/opcodes_*.dat` (formato FUSE), incrustadas en `ZXSinclair.Net.Generate.Z80OpCodes`. El generador está implementado según `spec-generador-z80.md`, con NOP como patrón piloto; no referencia el Core.
 - Los ficheros generados llevan la cabecera GPL y no se editan a mano.
-- Los cinco despachos se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` con cuerpo de patrón vacío y escritura Q=0. Las cargas de 8 y 16 bits, los saltos, llamadas y retornos, las ALU de 8 y 16 bits, el grupo de control, las rotaciones y desplazamientos, las operaciones de bit el intercambio y bloques y la E/S también están implementados según `spec-instr-carga-8.md`, `spec-instr-carga-16.md`, `spec-instr-saltos.md`, `spec-instr-alu-8.md`, `spec-instr-control.md`, `spec-instr-alu-16.md`, `spec-instr-rotaciones.md`, `spec-instr-bits.md`, `spec-instr-bloques.md` y `spec-instr-io.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
+- Los cinco despachos y la tabla de clasificación IM 0 se generan en `ZXSinclair.Net.Core/Z80/Generated/` (`Z80Cpu.Main.g.cs`, `Z80Cpu.CB.g.cs`, `Z80Cpu.ED.g.cs`, `Z80Cpu.Indexed.g.cs`, `Z80Cpu.IndexedCB.g.cs`). `00` (NOP) está implementado en `ExecuteMain` y `ExecuteIndexedOpcode<TIndex>` con cuerpo de patrón vacío y escritura Q=0. Las cargas de 8 y 16 bits, los saltos, llamadas y retornos, las ALU de 8 y 16 bits, el grupo de control, las rotaciones y desplazamientos, las operaciones de bit el intercambio y bloques y la E/S también están implementados según `spec-instr-carga-8.md`, `spec-instr-carga-16.md`, `spec-instr-saltos.md`, `spec-instr-alu-8.md`, `spec-instr-control.md`, `spec-instr-alu-16.md`, `spec-instr-rotaciones.md`, `spec-instr-bits.md`, `spec-instr-bloques.md` y `spec-instr-io.md`; el resto queda como "no implementado" (ver 8). El despacho principal y sus cuerpos auxiliares generados usan `AggressiveInlining`; sus casos implementados terminan con `return` para reducir el tamaño del IL.
 - El archivo provisional se ha eliminado. Se regenera con `dotnet run --project ZXSinclair.Net.Generate.Z80OpCodes`; `-- --check` compara sin escribir y detecta diferencias con código 1. Cada opcode completo aún no implementado llama a `Unimplemented()`: incrementa `UnimplementedOpcodes` y no modifica registros ni emite más ciclos. Solo se han consumido los accesos de fetch/prefijos. `Reset()` limpia el contador.
 
 ## 6. Interrupciones
@@ -128,7 +129,7 @@ Las tablas de la wiki y los eventos `MC` de los tests FUSE son la referencia; lo
 - Se comprueban al final de cada instrucción completa (nunca entre un prefijo y su instrucción, ni justo después de `EI`).
 - Si la CPU está en HALT, aceptar la interrupción la saca de HALT y `PC` apunta a la instrucción siguiente a `HALT` antes de apilarlo.
 - El ciclo de reconocimiento incrementa R (es un M1).
-- Tras `LD A,I` / `LD A,R`, si se acepta una INT justo después, el NMOS deja P/V a 0 **(verificar con FUSE; afecta a juegos que detectan el modelo)**.
+- Tras `LD A,I` / `LD A,R`, una INT inmediata limpia P/V antes de ejecutar la respuesta; `SpecialLoadPending` conserva ese estado hasta la comprobación de interrupciones. NMI conserva P/V según la decisión provisional de `spec-instr-restos.md` 2.3. FUSE no prueba interrupciones.
 
 ### 6.2 NMI
 
@@ -136,19 +137,23 @@ Flanco (`RequestNmi()`), prioridad sobre INT, ignora IFF1. M1 normal de 5 T con 
 
 ### 6.3 INT
 
-Nivel (`bus.IntActive`); se acepta si `IFF1` y no `EiPending`. `IFF1 = IFF2 = 0`. Reconocimiento con `bus.AcknowledgeInterrupt()` (7 T en el Spectrum, devuelve el byte del bus) y después:
+Nivel (`bus.IntActive`); se acepta si `IFF1` y no `EiPending`. `IFF1 = IFF2 = 0`. Reconocimiento con `bus.AcknowledgeInterrupt()` (6 T en el Spectrum, devuelve el byte del bus) y después:
 
 | Modo | Acción | T-states en el Spectrum |
 |---|---|---|
-| IM 0 | Ejecuta la instrucción del bus; en el Spectrum es 0xFF = `RST 38h` | 13 **(verificar)** |
-| IM 1 | Apila PC (`sp-1:3`, `sp-2:3`) y salta a `0x0038` | 7 + 6 = 13 |
-| IM 2 | Apila PC, lee el vector en `(I << 8) | byte del bus` (`2 × 3`) y salta | 7 + 6 + 6 = 19 |
+| IM 0 | Ejecuta la instrucción del bus; en el Spectrum es 0xFF = `RST 38h` | Duración normal + 2; RST = 13 |
+| IM 1 | Apila PC (`sp-1:3`, `sp-2:3`) y salta a `0x0038` | 6 + 1 + 6 = 13 |
+| IM 2 | Apila PC, lee el vector en `(I << 8) | byte del bus` (`2 × 3`) y salta | 6 + 1 + 6 + 6 = 19 |
 
-En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de 7 T). Los otros bytes incrementan `UnimplementedOpcodes`, sin apilar PC ni cambiar PC/WZ tras salir de HALT. IFF1/IFF2 y R sí reflejan el reconocimiento realizado. No es su ejecución real: queda pendiente junto con las instrucciones. Zilog UM0080, apartado CPU Response / Mode 0, confirma que el dispositivo puede proporcionar cualquier instrucción.
+IM 0 ejecuta los opcodes base de un byte mediante `ExecuteMain`, sin fetch adicional ni avance de PC. La tabla de 256 bits `Z80Cpu.Im0.g.cs` se genera desde los operandos del modelo; incluye RST, HALT y EI. WZ y Q los fija la instrucción. Los opcodes de varios bytes y los prefijos incrementan `UnimplementedOpcodes` tras el reconocimiento, sin cambiar PC, SP o WZ (salvo la salida previa de HALT).
+
+En IM 1 e IM 2 se emite `Internal(IR, 1)` tras el reconocimiento y antes de apilar. En IM 0 lo emite el cuerpo cuando corresponde: RST/PUSH/RET cc tienen uno; INC ss/LD SP,HL tienen dos. La decisión de contención y sus límites se documentan en la spec de restos 2.2.1.
+
+HALT recibido por IM 0 deja PC=P-1 en la representación actual; los M1 de espera usan P-1. Al aceptar otra interrupción, `ExitHalt` restaura P, la dirección interrumpida que se apila. Los tests incluyen P=0000. La dirección física de estos M1 sigue pendiente de contraste con hardware.
 
 ## 7. Reset
 
-`Reset()` deja: `PC = 0`, `I = R = 0`, `IFF1 = IFF2 = 0`, `IM = 0`, `Halted = false`, `EiPending = false`, `AF = SP = 0xFFFF` (valor del hardware real según Young) y el resto de registros a 0 **(verificar valores no garantizados)**. No resetea el bus ni la máquina.
+`Reset()` deja: `PC = 0`, `I = R = 0`, `IFF1 = IFF2 = 0`, `IM = 0`, `Halted = false`, `EiPending = SpecialLoadPending = false`, `AF = SP = 0xFFFF` (valor del hardware real según Young) y el resto de registros a 0 **(verificar valores no garantizados)**. No resetea el bus ni la máquina.
 
 ## 8. Pruebas
 
@@ -158,7 +163,7 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado incrementa `UnimplementedOpcodes` y guarda el PC actual en `LastUnimplementedAddress`. Esta propiedad solo se escribe en `Unimplemented()` y se limpia en `Reset()`; el caso se cuenta como omitido.
 - El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 1335 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits, 80 de saltos, llamadas y retornos, 148 de ALU de 8 bits, 27 de control, 32 de ALU de 16 bits, 198 de rotaciones y desplazamientos, 584 de bits, 14 de intercambio y bloques y 51 de E/S), 0 fallan y 0 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y ya pasa. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
-- `FuseConventions` declara los ocho casos `BIT b,(HL)` que ignoran solo F5/F3 de F (máscara 0x28): los fixtures usan el valor leído y la CPU usa MEMPTR. El runner informa de las diferencias ignoradas (cuatro en estos fixtures), muestra F esperado y real con `--verbose` y cuenta `pasados con convención: 8`. Los tests propios verifican F5/F3 de WZ y que la convención no afecte al resto de datos. Core: 2605 tests pasados; generador: 154; build: 0 warnings y 0 errores; `--check`: 0 (2026-10-03).
+- `FuseConventions` declara los ocho casos `BIT b,(HL)` que ignoran solo F5/F3 de F (máscara 0x28): los fixtures usan el valor leído y la CPU usa MEMPTR. El runner informa de las diferencias ignoradas (cuatro en estos fixtures), muestra F esperado y real con `--verbose` y cuenta `pasados con convención: 8`. Los tests propios verifican F5/F3 de WZ y que la convención no afecte al resto de datos. Core: 2832 tests pasados; generador: 156; build: 0 warnings y 0 errores; `--check`: 0 (2026-10-03).
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 - `FuseReport` compara siempre registros, flags, memoria y T-states; también compara los eventos cuando están activados. Muestra el nombre, cuatro bytes desde el PC inicial con vuelta a 64K, las dos líneas del estado inicial y todas las diferencias por sección. AF/AF' se separan en A/F; F se decodifica como `S Z 5 H 3 P/V N C`, y R distingue su bit 7 de los bits bajos. La memoria se agrupa en rangos contiguos (16 por defecto, configurables en `DiffMemory`/`FuseReport`), con el número de rangos omitidos.
@@ -421,9 +426,28 @@ No había ROM local configurada, por lo que el arranque real queda sin medir. Se
 
 Reproducir los cuatro benchmarks: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Para el arranque, fijar `ZX_ROM_48K` a una ruta absoluta y usar `--filter '*ExecuteRomBootFrames*'` con los mismos parámetros. Informes locales: `ZXSinclair.Net.Benchmarks/bin/io-before-artifacts/`, `io-after-artifacts/` e `io-rom-smoke-artifacts/`.
 
+### Grupo 11: restos y estado pendiente (2026-10-03)
+
+Mismo SDK/runtime, afinidad 1, 6 warmups y 15 iteraciones. Se midió antes, después, la alternativa de limpieza conjunta, una repetición de la versión final y el commit anterior 280d6d3 en una copia aislada bajo bin. Esa copia se retiró tras medir; los informes se conservan fuera de ella. BDN Error es la semiamplitud del intervalo del 99.9%.
+
+| Método | Antes inicial | Control anterior repetido | Final repetido | Error control / final | StdDev control / final | Asignaciones |
+|---|---:|---:|---:|---:|---:|---:|
+| ExecuteFrame, ns/opcode | 2.2701 | 2.1925 | 2.1993 | 0.0267 / 0.0119 | 0.0237 / 0.0099 | 0 B |
+| ExecuteLoopFrame, ns/T-state | 0.6865 | 0.6786 | 0.6669 | 0.0045 / 0.0030 | 0.0037 / 0.0025 | 0 B |
+| ExecuteAluLoopFrame, ns/T-state | 0.7567 | 0.7202 | 0.7000 | 0.0045 / 0.0125 | 0.0035 / 0.0111 | 0 B |
+| ExecuteBlockCopyFrame, ns/T-state | 0.5213 | 0.5211 | 0.5277 | 0.0068 / 0.0013 | 0.0060 / 0.0012 | 0 B |
+
+NOP y LDIR se solapan con el control repetido; saltos y ALU tienen medias menores. No se confirma una regresión fuera de la variación entre ejecuciones. El primer después dio 2.1893/0.6591/0.9313/0.5313, con errores 0.0295/0.0029/0.1362/0.0014; ALU mostró mucha variación y LDIR fue más lento que el primer control. Por eso se repitieron ambos lados.
+
+La alternativa prevista en el plan, dos bool contiguos borrados con una sola escritura de ushort, dio 3.2447/0.6758/0.6892/0.5228 (errores 0.7787/0.0048/0.0069/0.0021). Empeoró NOP y se descartó; no se atribuye la causa al JIT sin un análisis de ensamblado. Se conservan los offsets anteriores de EiPending/Q y SpecialLoadPending en 34, con escrituras separadas.
+
+La nueva clasificación IM 0 usa ReadOnlySpan sobre 32 bytes estáticos, sin asignación por reconocimiento. Los benchmarks son cargas de escritorio; no miden WebAssembly, contención durante INT ni una ROM real. ExecuteRomBootFrames se omitió porque no hay ROM configurada.
+
+Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/rest-before-artifacts`, `rest-after-artifacts`, `rest-combined-artifacts`, `rest-repeat-artifacts` y `rest-control-repeat-artifacts`.
+
 ## 9. Fuera de alcance
 
-- Los huecos de ED y las respuestas de IM 0 con instrucciones distintas de RST; se implementan por grupos mediante el generador existente.
+- Respuestas de IM 0 de varios bytes o prefijos; ver spec de restos 2.2.4.
 - Z80 CMOS y diferencias NMOS/CMOS más allá de anotarlas.
 - Depurador, desensamblador y snapshots (usarán `Registers` y `Step()`).
 - Integración con la máquina Spectrum (bucle de frame, vídeo).
@@ -432,5 +456,5 @@ Reproducir los cuatro benchmarks: `dotnet run -c Release --project ZXSinclair.Ne
 
 - Q tras `POP AF`/`EX AF,AF'` con z80ccf (la actualización general de Q está implementada); MEMPTR no forma parte del formato FUSE.
 - Valores de los registros tras reset más allá de PC, I, R, IFF, IM.
-- Temporización exacta de IM 0 con 0xFF en el bus del Spectrum.
-- P/V tras `LD A,I`/`LD A,R` interrumpido.
+- Confirmación con hardware de la contención del T interno del reconocimiento y de la dirección de los M1 tras HALT recibido en IM 0.
+- P/V tras `LD A,I`/`LD A,R` seguido de NMI; con INT está implementado y probado.

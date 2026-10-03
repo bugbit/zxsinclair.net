@@ -68,6 +68,7 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
             return;
         }
         Registers.EiPending = false;
+        Registers.SpecialLoadPending = false;
         if (Registers.Halted)
         {
             Registers.Q = 0;

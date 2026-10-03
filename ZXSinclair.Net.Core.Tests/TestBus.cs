@@ -73,7 +73,7 @@ internal struct TestBus : IZ80Bus
     public byte AcknowledgeInterrupt()
     {
         state.Accesses.Add(("Ack", 0, state.InterruptData));
-        state.Cycles += 7;
+        state.Cycles += 6;
         return state.InterruptData;
     }
 }

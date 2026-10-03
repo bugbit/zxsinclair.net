@@ -57,7 +57,7 @@ internal static class GeneratorApplication
             var dispatches = DispatchEmitter.Generate(OpcodeTableReader.ReadAll(), PatternCatalog.Default);
             CoverageReport.Write(dispatches, output, verbose);
             var different = false;
-            foreach (var dispatch in dispatches)
+            foreach (var dispatch in Im0TableEmitter.Sources(dispatches))
             {
                 var path = Path.Combine(target, dispatch.FileName);
                 var existing = File.Exists(path) ? File.ReadAllText(path) : null;

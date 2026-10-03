@@ -34,6 +34,7 @@ public static class FuseCpuState
             IFF2 = b.iff2 != 0, IM = (byte)b.im, Halted = b.halted != 0,
             // FUSE SCF/CCF assume a preceding flag writer (spec-instr-control.md 5.1).
             Q = (byte)a.af,
+            SpecialLoadPending = false,
         };
     }
 

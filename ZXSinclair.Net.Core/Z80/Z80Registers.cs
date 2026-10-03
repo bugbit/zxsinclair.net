@@ -57,6 +57,7 @@ public struct Z80Registers
     [FieldOffset(31)] public bool Halted;
     [FieldOffset(32)] public bool EiPending;
     [FieldOffset(33)] public byte Q;
+    [FieldOffset(34)] public bool SpecialLoadPending;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void IncrementR() => R = (byte)((R & 0x80) | ((R + 1) & 0x7F));

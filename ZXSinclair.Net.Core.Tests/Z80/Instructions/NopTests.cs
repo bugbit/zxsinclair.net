@@ -65,9 +65,9 @@ public class NopTests
         cpu.Step();
         Assert.Equal(0, cpu.UnimplementedOpcodes);
         cpu.Step();
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
         cpu.Step();
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Theory]
@@ -174,7 +174,7 @@ public class NopTests
         Assert.Equal((byte)1, state.Memory[0x8FFE]);
         Assert.Equal((byte)0, state.Memory[0x8FFF]);
         Assert.Equal(new[] { ("M1", (ushort)0, 0), ("Ack", (ushort)0, 0xFF),
-            ("Write", (ushort)0x8FFF, 0), ("Write", (ushort)0x8FFE, 1) }, state.Accesses);
+            ("Internal", (ushort)0x4293, 1), ("Write", (ushort)0x8FFF, 0), ("Write", (ushort)0x8FFE, 1) }, state.Accesses);
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 

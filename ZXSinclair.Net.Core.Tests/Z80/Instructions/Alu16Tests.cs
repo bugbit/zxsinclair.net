@@ -285,7 +285,11 @@ public class Alu16Tests
             events.Add(("M1", returnPc, 0));
             events.Add(("Internal", ir, 1));
         }
-        else events.Add(("Ack", 0, 0xFF));
+        else
+        {
+            events.Add(("Ack", 0, 0xFF));
+            events.Add(("Internal", ir, 1));
+        }
         events.Add(("Write", (ushort)(oldSp - 1), returnPc >> 8));
         events.Add(("Write", (ushort)(oldSp - 2), returnPc & 0xFF));
         Assert.Equal(events, state.Accesses);

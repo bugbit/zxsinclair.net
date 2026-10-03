@@ -432,6 +432,7 @@ public class ControlTests
         else
         {
             events.Add(("Ack", 0, 0xFF));
+            events.Add(("Internal", expected.IR, 1));
             state.IntActive = true;
         }
         events.Add(("Write", 0x8FFF, returnPc >> 8));
