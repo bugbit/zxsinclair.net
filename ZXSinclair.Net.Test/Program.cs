@@ -51,6 +51,7 @@ var selected = testsIn.Where(t => filter is null || t.Base.Name.StartsWith(filte
 Console.WriteLine($"FUSE: {testsIn.Count} tests loaded, {testsExpected.Count} expected results, {testsExpected.Values.Sum(t => t.Events.Length)} bus events.");
 if (filter is not null) Console.WriteLine($"FUSE filter '{filter}': {selected.Length} selected.");
 var passed = 0;
+var passedWithConvention = 0;
 var failed = 0;
 var skipped = 0;
 var failuresBySection = new Dictionary<FuseMismatchKind, int>();
@@ -95,10 +96,16 @@ foreach (var test in selected)
         continue;
     }
     var report = new FuseReport(expected, in cpu.Registers, state.Cycles, initialMemory,
-        address => state.Memory[address], state.Events);
+        address => state.Memory[address], state.Events, convention: FuseConventions.ForCase(test.Base.Name));
     if (!report.Failed)
     {
         passed++;
+        if (report.Convention is not null)
+        {
+            passedWithConvention++;
+            if (report.IgnoredFlagsDiffer || verbose)
+                Console.WriteLine(report.ConventionSummary(test.Base.Name, verbose));
+        }
         continue;
     }
     failed++;
@@ -110,6 +117,7 @@ foreach (var test in selected)
         : report.Summary(test.Base.Name));
 }
 Console.WriteLine($"FUSE: {passed} passed / {failed} failed / {skipped} skipped");
+Console.WriteLine($"FUSE pasados con convención: {passedWithConvention}");
 Console.WriteLine("FUSE failures by section: " + string.Join(", ",
     new[] { FuseMismatchKind.Register, FuseMismatchKind.Flags, FuseMismatchKind.Memory, FuseMismatchKind.Event, FuseMismatchKind.TStates }
         .Select(kind => $"{kind}={failuresBySection.GetValueOrDefault(kind)}")));

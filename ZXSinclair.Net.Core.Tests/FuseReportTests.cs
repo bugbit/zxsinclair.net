@@ -23,6 +23,75 @@ namespace ZXSinclair.Net.Core.Tests;
 public class FuseReportTests
 {
     [Fact]
+    public void Convention_IgnoresOnlyDeclaredFlagBits()
+    {
+        var expected = FuseTestFile.LoadExpected()["cb4e"].Base;
+        var actual = FuseCpuState.Load(expected);
+        actual.F ^= 0x28;
+        var convention = FuseConventions.ForCase("cb4e")!;
+        Assert.NotEmpty(FuseCpuState.Diff(expected, in actual, expected.Line2.endtstates));
+        Assert.Empty(FuseCpuState.Diff(expected, in actual, expected.Line2.endtstates, convention.IgnoredFlags));
+        foreach (var bit in new byte[] { 1, 2, 4, 0x10, 0x40, 0x80 })
+        {
+            var changed = actual;
+            changed.F ^= bit;
+            Assert.Contains(FuseCpuState.Diff(expected, in changed, expected.Line2.endtstates,
+                convention.IgnoredFlags), m => m.Field == "F");
+        }
+        actual.A ^= 1;
+        actual.AF_ ^= 0x28;
+        actual.BC ^= 1;
+        var differences = FuseCpuState.Diff(expected, in actual, expected.Line2.endtstates + 1,
+            convention.IgnoredFlags);
+        Assert.Contains(differences, m => m.Field == "A");
+        Assert.Contains(differences, m => m.Field == "F'");
+        Assert.Contains(differences, m => m.Field == "BC");
+        Assert.Contains(differences, m => m.Kind == FuseMismatchKind.TStates);
+    }
+
+    [Fact]
+    public void Convention_IsReportedInOutput()
+    {
+        var input = FuseTestFile.LoadInputs().Single(t => t.Base.Name == "cb4e");
+        var expected = FuseTestFile.LoadExpected()["cb4e"];
+        var memory = new byte[65536];
+        foreach (var block in input.Base.Memories) block.Data.CopyTo(memory, block.Address);
+        var state = new FuseTestBusState { Events = new() };
+        memory.CopyTo(state.Memory, 0);
+        var cpu = new Z80Cpu<FuseTestBus>(new(state)) { Registers = FuseCpuState.Load(input.Base) };
+        cpu.Execute(input.Base.Line2.endtstates);
+        var report = new FuseReport(expected, in cpu.Registers, state.Cycles, memory,
+            a => state.Memory[a], state.Events, convention: FuseConventions.ForCase("cb4e"));
+        Assert.False(report.Failed);
+        Assert.True(report.IgnoredFlagsDiffer);
+        Assert.Contains("convención aplicada: cb4e", report.ConventionSummary("cb4e"));
+        var output = report.Format(input, expected, memory, state.Events, true);
+        Assert.StartsWith("PASS cb4e", output);
+        Assert.Contains("F esperado=18, real=10", output);
+        Assert.Contains("F5/F3 esperado=08, real=00", output);
+        state.Memory[0x1234] ^= 1;
+        state.Events!.RemoveAt(0);
+        var wrong = new FuseReport(expected, in cpu.Registers, state.Cycles, memory,
+            a => state.Memory[a], state.Events, convention: FuseConventions.ForCase("cb4e"));
+        Assert.True(wrong.Failed);
+        Assert.Contains(wrong.Mismatches, m => m.Kind == FuseMismatchKind.Memory);
+        Assert.Contains(wrong.Mismatches, m => m.Kind == FuseMismatchKind.Event);
+        Assert.Contains("convención aplicada: cb4e", wrong.Summary("cb4e"));
+    }
+
+    [Fact]
+    public void Conventions_ListOnlyBitHlCases()
+    {
+        Assert.Equal(new[] { "cb46", "cb4e", "cb56", "cb5e", "cb66", "cb6e", "cb76", "cb7e" },
+            FuseConventions.Cases.Keys.OrderBy(n => n, StringComparer.Ordinal));
+        Assert.All(FuseConventions.Cases.Values, c => Assert.Equal(0x28, c.IgnoredFlags));
+        Assert.Null(FuseConventions.ForCase("cb40"));
+        Assert.Null(FuseConventions.ForCase("ddcb46"));
+        Assert.Null(FuseConventions.ForCase("fdcb46"));
+        Assert.Null(FuseConventions.ForCase("cb4e_1"));
+    }
+
+    [Fact]
     public void StateDiff_ReturnsEveryMismatchIncludingAlternateFlags()
     {
         var expected = new clsTestBase();
@@ -222,7 +291,7 @@ public class FuseReportTests
     [Theory]
     [InlineData(new byte[] { 0xD3 }, 0, 1)]
     [InlineData(new byte[] { 0xDD, 0xD3 }, 0, 2)]
-    [InlineData(new byte[] { 0xDD, 0xCB, 0, 0x86 }, 0, 4)]
+    [InlineData(new byte[] { 0xDD, 0xED, 0 }, 0, 3)]
     [InlineData(new byte[] { 0xED, 0x00 }, 0xFFFE, 0)]
     public void LastUnimplementedAddress_TracksFetchAndReset(byte[] program, ushort start, ushort end)
     {

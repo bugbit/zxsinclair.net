@@ -52,15 +52,12 @@ public class Z80CpuTests
 
     [Theory]
     [InlineData(new byte[] { 0xD3 }, 4, 1)]
-    [InlineData(new byte[] { 0xCB, 0x80 }, 8, 2)]
     [InlineData(new byte[] { 0xED, 0x12 }, 8, 2)]
     [InlineData(new byte[] { 0xDD, 0xD3 }, 8, 2)]
     [InlineData(new byte[] { 0xFD, 0xD3 }, 8, 2)]
     [InlineData(new byte[] { 0xDD, 0xFD, 0xD3 }, 12, 3)]
     [InlineData(new byte[] { 0xFD, 0xDD, 0xD3 }, 12, 3)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xCB, 0xFE, 0x86 }, 16, 2)]
-    [InlineData(new byte[] { 0xDD, 0xCB, 0x80, 0x86 }, 16, 2)]
     public void UnimplementedDispatchCountsFetches(byte[] program, int cycles, byte refresh)
     {
         var (cpu, state) = Create(program);
@@ -70,8 +67,6 @@ public class Z80CpuTests
         Assert.Equal((ushort)program.Length, cpu.Registers.PC);
         Assert.Equal((byte)(0x80 | refresh), cpu.Registers.R);
         Assert.Equal(1, cpu.UnimplementedOpcodes);
-        if (program.Contains((byte)0xCB) && program[0] is 0xDD or 0xFD)
-            Assert.Equal(("Internal", (ushort)3, 2), state.Accesses[^1]);
     }
 
     [Fact]

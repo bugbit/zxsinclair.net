@@ -24,12 +24,21 @@ public sealed class FuseReport
 {
     public IReadOnlyList<FuseMismatch> Mismatches { get; }
     public bool Failed => Mismatches.Count != 0;
+    public FuseConvention? Convention { get; }
+    public bool IgnoredFlagsDiffer { get; }
+    private readonly byte expectedFlags;
+    private readonly byte actualFlags;
 
     public FuseReport(clsTestExpected expected, in Z80Registers actual, int cycles,
-        byte[] initialMemory, Func<ushort, byte> read, IReadOnlyList<Z80BusEvent>? events, int maxMemoryRanges = 16)
+        byte[] initialMemory, Func<ushort, byte> read, IReadOnlyList<Z80BusEvent>? events,
+        int maxMemoryRanges = 16, FuseConvention? convention = null)
     {
         var differences = new List<FuseMismatch>();
-        differences.AddRange(FuseCpuState.Diff(expected.Base, in actual, cycles));
+        Convention = convention;
+        expectedFlags = (byte)expected.Base.Line1.af;
+        actualFlags = actual.F;
+        IgnoredFlagsDiffer = ((expectedFlags ^ actualFlags) & (convention?.IgnoredFlags ?? 0)) != 0;
+        differences.AddRange(FuseCpuState.Diff(expected.Base, in actual, cycles, convention?.IgnoredFlags ?? 0));
         differences.AddRange(FuseComparison.DiffMemory(FuseComparison.ExpectedMemory(initialMemory, expected), read, maxMemoryRanges));
         if (events is not null) differences.AddRange(FuseComparison.DiffEvents(expected, events));
         Mismatches = differences;
@@ -39,7 +48,9 @@ public sealed class FuseReport
         IReadOnlyList<Z80BusEvent>? events, bool verbose = false)
     {
         var result = new StringBuilder();
-        result.AppendLine($"FAIL {input.Base.Name}");
+        result.AppendLine($"{(Failed ? "FAIL" : "PASS")} {input.Base.Name}");
+        if (Convention is not null)
+            result.AppendLine(ConventionSummary(input.Base.Name, verbose));
         var pc = input.Base.Line1.pc;
         var bytes = Enumerable.Range(0, 4).Select(i => initialMemory[(ushort)(pc + i)].ToString("x2"));
         result.AppendLine($"Programa en PC={pc:x4}: {string.Join(" ", bytes)}");
@@ -80,5 +91,11 @@ public sealed class FuseReport
     }
 
     public string Summary(string name) => $"FAIL {name}: " + string.Join(", ",
-        Mismatches.Select(m => m.Kind is FuseMismatchKind.State ? FuseMismatchKind.Register : m.Kind).Distinct());
+        Mismatches.Select(m => m.Kind is FuseMismatchKind.State ? FuseMismatchKind.Register : m.Kind).Distinct())
+        + (Convention is null ? "" : "; " + ConventionSummary(name));
+
+    public string ConventionSummary(string name, bool verbose = false) => Convention is null ? "" :
+        $"convención aplicada: {name} — F5/F3 ignorados (máscara {Convention.IgnoredFlags:X2}; {Convention.Reason})"
+        + (verbose ? $"; F esperado={expectedFlags:X2}, real={actualFlags:X2}; "
+            + $"F5/F3 esperado={expectedFlags & Convention.IgnoredFlags:X2}, real={actualFlags & Convention.IgnoredFlags:X2}" : "");
 }

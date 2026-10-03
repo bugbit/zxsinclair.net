@@ -120,7 +120,8 @@ internal static class DispatchEmitter
                 lines.AppendLine("            }");
             }
         }
-        lines.AppendLine("            default: Unimplemented(); break;");
+        if (emitted.Any(e => !e.Implemented))
+            lines.AppendLine("            default: Unimplemented(); break;");
         lines.AppendLine("        }");
         lines.AppendLine("    }");
         if (table == OpcodeTableKind.Base)

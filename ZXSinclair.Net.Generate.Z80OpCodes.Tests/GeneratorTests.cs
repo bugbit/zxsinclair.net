@@ -323,14 +323,15 @@ public class GeneratorTests
             {
                 OpcodeTableKind.Base or OpcodeTableKind.DDFD => 246,
                 OpcodeTableKind.ED => 46,
-                OpcodeTableKind.CB or OpcodeTableKind.DDFDCB => 64,
+                OpcodeTableKind.CB or OpcodeTableKind.DDFDCB => 256,
                 _ => 0,
             };
             Assert.Equal(expected, dispatch.Opcodes.Count(o => o.Implemented));
             Assert.Equal(dispatch.Table is OpcodeTableKind.Base or OpcodeTableKind.DDFD ? 1 : 0,
                 dispatch.Text.Split(dispatch.Table == OpcodeTableKind.Base
                     ? "case 0x00: ExecuteMain00(); return; // NOP" : "case 0x00: Registers.Q = 0; break; // NOP").Length - 1);
-            Assert.Contains("default: Unimplemented(); break;", dispatch.Text);
+            Assert.Equal(dispatch.Opcodes.Any(o => !o.Implemented),
+                dispatch.Text.Contains("default: Unimplemented(); break;", StringComparison.Ordinal));
         }
     }
 
@@ -449,7 +450,7 @@ public class GeneratorTests
         var text = output.ToString();
         Assert.Contains("246 implemented / 6 pending / 4 prefixes", text);
         Assert.Contains("46 implemented / 32 pending", text);
-        Assert.Equal(2, text.Split("64 implemented / 192 pending").Length - 1);
+        Assert.Equal(2, text.Split("256 implemented / 0 pending").Length - 1);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
         Assert.DoesNotContain("0x00 NOP", text);
@@ -552,7 +553,7 @@ public class GeneratorTests
                 ? tables[OpcodeTableKind.Base][original.Byte] with { Table = table } : original;
             var pattern = PatternCatalog.Default.Resolve(opcode);
             if (pattern is null) continue;
-            var expected = table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB ? opcode.Byte < 0x40
+            var expected = table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB ? opcode.Byte < 0x80
                 : table == OpcodeTableKind.ED
                 ? opcode.Byte is 0x67 or 0x6F or 0x42 or 0x4A or 0x52 or 0x5A or 0x62 or 0x6A or 0x72 or 0x7A or 0x57 or 0x5F or 0x44 or 0x4C or 0x54 or 0x5C or 0x64 or 0x6C or 0x74 or 0x7C
                 : flags.Contains(opcode.Byte);
@@ -654,5 +655,54 @@ public class GeneratorTests
         IPattern[] patterns = [new RotateAccumulatorPattern(), new RotateRegisterPattern(),
             new RotateMemoryPattern(), new RotateMemoryCopyPattern(), new RotateDigitPattern()];
         Assert.All(patterns, pattern => Assert.False(pattern.Matches(opcode)));
+    }
+
+    [Fact]
+    public void Output_OmitsDefaultWhenTableComplete()
+    {
+        foreach (var dispatch in Generate())
+            Assert.Equal(dispatch.Table is not (OpcodeTableKind.CB or OpcodeTableKind.DDFDCB),
+                dispatch.Text.Contains("default: Unimplemented(); break;", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(1, 0x7F, "BitTest(0x80, Registers.A);")]
+    [InlineData(1, 0x46, "var value = bus.Read(Registers.HL);\nbus.Internal(Registers.HL, 1);\nBitTestMemory(0x01, value);")]
+    [InlineData(4, 0x40, "var value = bus.Read(address);\nbus.Internal(address, 1);\nBitTestMemory(0x01, value);")]
+    [InlineData(1, 0xD9, "Registers.C = (byte)(Registers.C | 0x08);")]
+    [InlineData(1, 0xBE, "var value = bus.Read(Registers.HL);\nbus.Internal(Registers.HL, 1);\nvalue = (byte)(value & 0x7F);\nbus.Write(Registers.HL, value);")]
+    [InlineData(4, 0xCD, "var value = bus.Read(address);\nbus.Internal(address, 1);\nvalue = (byte)(value | 0x02);\nbus.Write(address, value);\nRegisters.L = value;")]
+    public void BitPatterns_EmitExpectedBodies(int table, int value, string expected)
+    {
+        var opcode = Tables()[(OpcodeTableKind)table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new(opcode.Table)));
+    }
+
+    [Fact]
+    public void BitPatterns_AreDisjointFromRotations()
+    {
+        var bits = new PatternCatalog(new BitTestRegisterPattern(), new BitTestMemoryPattern(),
+            new SetResRegisterPattern(), new SetResMemoryPattern(), new SetResMemoryCopyPattern());
+        var rotations = new PatternCatalog(new RotateAccumulatorPattern(), new RotateRegisterPattern(),
+            new RotateMemoryPattern(), new RotateMemoryCopyPattern(), new RotateDigitPattern());
+        foreach (var opcode in Tables().Values.SelectMany(t => t))
+        {
+            if (bits.Resolve(opcode) is not null) Assert.Null(rotations.Resolve(opcode));
+            if (rotations.Resolve(opcode) is not null) Assert.Null(bits.Resolve(opcode));
+        }
+    }
+
+    [Fact]
+    public void BitAliases_ShareOneBodyPerBit()
+    {
+        var indexed = Generate().Single(d => d.Table == OpcodeTableKind.DDFDCB);
+        for (var bit = 0; bit < 8; bit++)
+        {
+            var body = $"var value = bus.Read(address);\nbus.Internal(address, 1);\nBitTestMemory(0x{1 << bit:X2}, value);";
+            Assert.Equal(8, indexed.Opcodes.Count(o => o.PatternBody == body));
+            Assert.Equal(1, indexed.Text.Split($"BitTestMemory(0x{1 << bit:X2}, value);").Length - 1);
+        }
     }
 }

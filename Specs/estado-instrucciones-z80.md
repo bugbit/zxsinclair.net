@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-02): **115 de 150 entradas completadas; 35 pendientes**.
+Estado (2026-10-03): **124 de 150 entradas completadas; 26 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -13,6 +13,8 @@ Estado (2026-10-02): **115 de 150 entradas completadas; 35 pendientes**.
 Hay una casilla por entrada del manual, no por opcode concreto. Las formas que el manual describe por separado mantienen casillas separadas. Una entrada con `s`, `m`, registros o condiciones simbólicas cubre todas sus variantes documentadas.
 
 NOP, las 21 entradas de carga de 8 bits, las 20 de carga de 16 bits y pila, las 18 de saltos, llamadas y retornos y las 17 de ALU de 8 bits están completadas. El caso FUSE `10` de DJNZ también pasa tras implementar `INC C`. Las 11 entradas restantes de aritmética general y control también están completadas, incluidas HALT e IM 0/1/2. Las 11 entradas de aritmética de 16 bits también están completadas. Las 16 entradas de rotaciones y desplazamientos están completadas; SLL y las copias DDCB/FDCB también están implementadas y quedan fuera del recuento del manual.
+
+Las 9 entradas de operaciones de bit están completadas; incluyen los alias BIT y las copias SET/RES de DDCB/FDCB. FUSE compara todos los datos salvo F5/F3 en los ocho casos BIT (HL), según la convención declarada; los tests propios comprueban MEMPTR.
 
 Las instrucciones no documentadas, los alias de opcodes y los huecos ED quedan fuera de este recuento.
 
@@ -175,15 +177,15 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Bits
 
-- [ ] `BIT b, r` — p. 243.
-- [ ] `BIT b, (HL)` — p. 245.
-- [ ] `BIT b, (IX+d)` — p. 247.
-- [ ] `BIT b, (IY+d)` — p. 249.
-- [ ] `SET b, r` — p. 251.
-- [ ] `SET b, (HL)` — p. 253.
-- [ ] `SET b, (IX+d)` — p. 255.
-- [ ] `SET b, (IY+d)` — p. 257.
-- [ ] `RES b, m` — p. 259.
+- [x] `BIT b, r` — p. 243. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `BIT b, (HL)` — p. 245. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `BIT b, (IX+d)` — p. 247. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `BIT b, (IY+d)` — p. 249. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `SET b, r` — p. 251. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `SET b, (HL)` — p. 253. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `SET b, (IX+d)` — p. 255. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `SET b, (IY+d)` — p. 257. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
+- [x] `RES b, m` — p. 259. [Spec](spec-instr-bits.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BitTests.cs).
 
 ### Saltos, llamadas y retornos
 

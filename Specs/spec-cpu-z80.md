@@ -157,7 +157,8 @@ En este esqueleto IM0 solo admite respuestas `RST n` (13 T con reconocimiento de
 - El runner usa un bus de pruebas, `FuseTestBus : struct, IZ80Bus` (en la librería `ZXSinclair.Net.Fuse`, compartida con los tests xUnit junto con el parser `FuseTestFile`, `FuseCpuState` y `FuseComparison`): memoria plana de 64K, contador de T-states, sin contención real, que **registra los eventos de bus** con la semántica de FUSE: `MC` al empezar cada ciclo de memoria y `MR`/`MW` al terminarlo; un `MC` por T-state en `Internal`; `PC`/`PR`/`PW` siguiendo la tabla de contención de E/S del 48K (byte alto 0x40–0x7F). Así la CPU del Core no necesita instrumentación ni `#if` de test.
 - Se ejecuta `Z80Cpu<FuseTestBus>` hasta `end_tstates` y se comparan registros (incluidos AF', BC', DE', HL'), `I`, `R`, `IFF1`, `IFF2`, `IM`, `halted`, T-states, memoria y la secuencia completa de eventos.
 - Un opcode no implementado incrementa `UnimplementedOpcodes` y guarda el PC actual en `LastUnimplementedAddress`. Esta propiedad solo se escribe en `Unimplemented()` y se limpia en `Reset()`; el caso se cuenta como omitido.
-- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 686 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits, 80 de saltos, llamadas y retornos, 148 de ALU de 8 bits, 27 de control 32 de ALU de 16 bits y 198 de rotaciones y desplazamientos), 0 fallan y 649 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y ya pasa. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- El runner está conectado a `Z80Cpu<FuseTestBus>`: en Debug o Release carga y ejecuta los 1335 casos, actualmente 1270 pasan (3 de NOP, 163 del grupo de carga de 8 bits, 35 del de carga de 16 bits, 80 de saltos, llamadas y retornos, 148 de ALU de 8 bits, 27 de control, 32 de ALU de 16 bits, 198 de rotaciones y desplazamientos y 584 de bits), 0 fallan y 65 se omiten por instrucciones pendientes, con comparación de eventos activada. El caso `10` de DJNZ también ejecuta `INC C` y ya pasa. `--no-events` desactiva el registro y comparación de eventos. Devuelve código 1 si hay fallos. Un fichero FUSE mal formado lanza `FormatException` con el nombre del test.
+- `FuseConventions` declara los ocho casos `BIT b,(HL)` que ignoran solo F5/F3 de F (máscara 0x28): los fixtures usan el valor leído y la CPU usa MEMPTR. El runner informa de las diferencias ignoradas (cuatro en estos fixtures), muestra F esperado y real con `--verbose` y cuenta `pasados con convención: 8`. Los tests propios verifican F5/F3 de WZ y que la convención no afecte al resto de datos. Core: 2485 tests pasados; generador: 126; build: 0 warnings y 0 errores; `--check`: 0 (2026-10-03).
 - Tests xUnit contrastan directamente los ciclos del bus con los fixtures `00`, `ddcb00`, `d3*` y `db*`, y verifican la detección de discrepancias en registros, memoria, ciclos y eventos aun cuando el runner omite instrucciones.
 
 - `FuseReport` compara siempre registros, flags, memoria y T-states; también compara los eventos cuando están activados. Muestra el nombre, cuatro bytes desde el PC inicial con vuelta a 64K, las dos líneas del estado inicial y todas las diferencias por sección. AF/AF' se separan en A/F; F se decodifica como `S Z 5 H 3 P/V N C`, y R distingue su bit 7 de los bits bajos. La memoria se agrupa en rangos contiguos (16 por defecto, configurables en `DiffMemory`/`FuseReport`), con el número de rangos omitidos.
@@ -168,7 +169,7 @@ Opciones del runner:
 | Opción | Efecto |
 |---|---|
 | `--filter <prefijo>` | Selecciona nombres que empiezan por ese prefijo, sin distinguir mayúsculas. `--filter 20_2` selecciona ese caso; `--filter dd` selecciona 343 casos. |
-| `--verbose` | Añade todos los eventos esperados y reales de los fallos con detalle. |
+| `--verbose` | Añade todos los eventos esperados y reales de los fallos con detalle, y los valores de F y F5/F3 en los casos con convención. |
 | `--max-failures <n>` | Detalle de los primeros n fallos; los demás siguen contando y se muestran en una línea. Por defecto 10; 0 muestra solo líneas breves. |
 | `--list-skipped` | Muestra el último opcode pendiente y cuatro bytes de contexto anteriores al PC guardado, incluidos los posibles prefijos. El contexto puede contener bytes anteriores a la instrucción y procede de la memoria al terminar el caso. |
 | `--no-events` | Desactiva únicamente el registro y la comparación de eventos. |
@@ -370,9 +371,23 @@ Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filt
 
 Hito tras el grupo 7: arranque de la ROM 48K sin verificar; siguen pendientes E/S e intercambios (base 08, D3, D9, DB, E3, EB). Se mantiene la carga de ROM como pendiente para el grupo 10. No se presentan estos bucles sintéticos como una medida de una máquina real.
 
+### Operaciones de bit (2026-10-03)
+
+BenchmarkDotNet 0.15.8, Intel Core i7-14700, Windows 11 (10.0.26300.9550), SDK 10.0.401, .NET 10.0.12 x64 RyuJIT, Release; afinidad 1, 6 iteraciones de calentamiento y 15 de medición. Control medido antes de añadir el grupo 8; mismos programas y parámetros.
+
+| Método | Antes | Grupo 8 | Error antes / después (IC 99.9%) | Desviación antes / después | Asignaciones |
+|---|---|---|---|---|---|
+| ExecuteFrame, ns/opcode | 2.3214 | 2.4982 | 0.1871 / 0.0329 | 0.1659 / 0.0292 | 0 B |
+| ExecuteLoopFrame, ns/T-state | 0.6889 | 0.6926 | 0.0106 / 0.0085 | 0.0094 / 0.0071 | 0 B |
+| ExecuteAluLoopFrame, ns/T-state | 0.7201 | 0.7370 | 0.0227 / 0.0101 | 0.0177 / 0.0084 | 0 B |
+
+Los intervalos se solapan en los tres métodos; esta comparación no confirma una regresión superior al ruido. Las medias cambian +7.62%, +0.54% y +2.35%. El control NOP tiene un intervalo amplio, por lo que no permite concluir que su coste sea idéntico. Las cargas no incluyen BIT/SET/RES ni el camino DDCB; miden los programas sintéticos anteriores y no WebAssembly. No hay asignaciones.
+
+Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes locales excluidos de git: `ZXSinclair.Net.Benchmarks/bin/bits-before-artifacts/` y `bits-after-artifacts/`.
+
 ## 9. Fuera de alcance
 
-- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits, saltos, llamadas y retornos, ALU de 8 y 16 bits control y rotaciones/desplazamientos; se implementan por grupos mediante el generador existente.
+- Las instrucciones distintas de NOP y de los grupos de carga de 8 y 16 bits, saltos, llamadas y retornos, ALU de 8 y 16 bits control, rotaciones/desplazamientos y operaciones de bit; se implementan por grupos mediante el generador existente.
 - Z80 CMOS y diferencias NMOS/CMOS más allá de anotarlas.
 - Depurador, desensamblador y snapshots (usarán `Registers` y `Step()`).
 - Integración con la máquina Spectrum (bucle de frame, vídeo).

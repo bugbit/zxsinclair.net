@@ -38,7 +38,8 @@ public static class FuseCpuState
     }
 
     /// <summary>All fields represented by FUSE; WZ, Q and EI delay are absent from its format.</summary>
-    public static IReadOnlyList<FuseMismatch> Diff(clsTestBase expected, in Z80Registers actual, int cycles)
+    public static IReadOnlyList<FuseMismatch> Diff(clsTestBase expected, in Z80Registers actual, int cycles,
+        byte ignoredFlags = 0)
     {
         var e = Load(expected);
         var result = new List<FuseMismatch>();
@@ -59,7 +60,8 @@ public static class FuseCpuState
                     $"Difieren: {DecodeFlags((byte)(wanted ^ found))}"));
         }
         Register("A", e.A, actual.A, 2);
-        Flags("F", e.F, actual.F);
+        if (((e.F ^ actual.F) & ~ignoredFlags) != 0)
+            Flags("F", e.F, actual.F);
         Register("BC", e.BC, actual.BC);
         Register("DE", e.DE, actual.DE);
         Register("HL", e.HL, actual.HL);

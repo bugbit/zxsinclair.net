@@ -69,7 +69,12 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new RotateRegisterPattern(),
         new RotateMemoryPattern(),
         new RotateMemoryCopyPattern(),
-        new RotateDigitPattern());
+        new RotateDigitPattern(),
+        new BitTestRegisterPattern(),
+        new BitTestMemoryPattern(),
+        new SetResRegisterPattern(),
+        new SetResMemoryPattern(),
+        new SetResMemoryCopyPattern());
 
     public IPattern? Resolve(Opcode opcode)
     {
