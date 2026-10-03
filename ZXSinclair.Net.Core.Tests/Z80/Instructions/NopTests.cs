@@ -61,7 +61,7 @@ public class NopTests
     [Fact]
     public void Nop_DoesNotCountAsUnimplemented()
     {
-        var (cpu, _) = Create(0, 0xD3, 0);
+        var (cpu, _) = Create(0, 0xED, 0, 0);
         cpu.Step();
         Assert.Equal(0, cpu.UnimplementedOpcodes);
         cpu.Step();

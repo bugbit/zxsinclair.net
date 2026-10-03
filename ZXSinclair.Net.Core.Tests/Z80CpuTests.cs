@@ -51,12 +51,12 @@ public class Z80CpuTests
     }
 
     [Theory]
-    [InlineData(new byte[] { 0xD3 }, 4, 1)]
+    [InlineData(new byte[] { 0xED, 0x00 }, 8, 2)]
     [InlineData(new byte[] { 0xED, 0x12 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0xD3 }, 8, 2)]
-    [InlineData(new byte[] { 0xFD, 0xD3 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0xFD, 0xD3 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xDD, 0xD3 }, 12, 3)]
+    [InlineData(new byte[] { 0xDD, 0xED, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xFD, 0xED, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xDD, 0xFD, 0xED, 0x00 }, 16, 4)]
+    [InlineData(new byte[] { 0xFD, 0xDD, 0xED, 0x00 }, 16, 4)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
     public void UnimplementedDispatchCountsFetches(byte[] program, int cycles, byte refresh)
     {
@@ -73,13 +73,15 @@ public class Z80CpuTests
     public void LongAlternatingPrefixChainUsesConstantStackSpace()
     {
         var (cpu, state) = Create();
-        for (var i = 0; i < 65535; i++)
+        cpu.Registers.PC = 1;
+        for (var i = 1; i < 65535; i++)
             state.Memory[i] = (byte)((i & 1) == 0 ? 0xDD : 0xFD);
-        state.Memory[0xFFFF] = 0xD3;
+        state.Memory[0xFFFF] = 0xED;
+        state.Memory[0] = 0x00;
         cpu.Registers.R = 0x80;
         cpu.Step();
         Assert.Equal(262144, state.Cycles);
-        Assert.Equal((ushort)0, cpu.Registers.PC);
+        Assert.Equal((ushort)1, cpu.Registers.PC);
         Assert.Equal((byte)0x80, cpu.Registers.R);
         Assert.Equal(1, cpu.UnimplementedOpcodes);
     }

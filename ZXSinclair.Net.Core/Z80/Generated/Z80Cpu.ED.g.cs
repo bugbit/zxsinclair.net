@@ -27,6 +27,18 @@ public sealed partial class Z80Cpu<TBus>
     {
         switch (opcode)
         {
+            case 0x40: // IN B,(C)
+            {
+                Registers.B = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x41: // OUT (C),B
+            {
+                OutRegister(Registers.B);
+                Registers.Q = 0;
+                break;
+            }
             case 0x42: // SBC HL,BC
             {
                 Sbc16(Registers.BC);
@@ -81,6 +93,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0x48: // IN C,(C)
+            {
+                Registers.C = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x49: // OUT (C),C
+            {
+                OutRegister(Registers.C);
+                Registers.Q = 0;
+                break;
+            }
             case 0x4a: // ADC HL,BC
             {
                 Adc16(Registers.BC);
@@ -97,6 +121,18 @@ public sealed partial class Z80Cpu<TBus>
             {
                 bus.Internal(Registers.IR, 1);
                 Registers.R = Registers.A;
+                Registers.Q = 0;
+                break;
+            }
+            case 0x50: // IN D,(C)
+            {
+                Registers.D = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x51: // OUT (C),D
+            {
+                OutRegister(Registers.D);
                 Registers.Q = 0;
                 break;
             }
@@ -125,6 +161,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0x58: // IN E,(C)
+            {
+                Registers.E = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x59: // OUT (C),E
+            {
+                OutRegister(Registers.E);
+                Registers.Q = 0;
+                break;
+            }
             case 0x5a: // ADC HL,DE
             {
                 Adc16(Registers.DE);
@@ -150,6 +198,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0x60: // IN H,(C)
+            {
+                Registers.H = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x61: // OUT (C),H
+            {
+                OutRegister(Registers.H);
+                Registers.Q = 0;
+                break;
+            }
             case 0x62: // SBC HL,HL
             {
                 Sbc16(Registers.HL);
@@ -166,6 +226,18 @@ public sealed partial class Z80Cpu<TBus>
             {
                 Rrd();
                 Registers.Q = Registers.F;
+                break;
+            }
+            case 0x68: // IN L,(C)
+            {
+                Registers.L = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x69: // OUT (C),L
+            {
+                OutRegister(Registers.L);
+                Registers.Q = 0;
                 break;
             }
             case 0x6a: // ADC HL,HL
@@ -186,6 +258,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0x70: // IN F,(C)
+            {
+                InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x71: // OUT (C),0
+            {
+                OutRegister(0);
+                Registers.Q = 0;
+                break;
+            }
             case 0x72: // SBC HL,SP
             {
                 Sbc16(Registers.SP);
@@ -195,6 +279,18 @@ public sealed partial class Z80Cpu<TBus>
             case 0x73: // LD (nnnn),SP
             {
                 StoreWordAbsolute(Registers.SP);
+                Registers.Q = 0;
+                break;
+            }
+            case 0x78: // IN A,(C)
+            {
+                Registers.A = InRegister();
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0x79: // OUT (C),A
+            {
+                OutRegister(Registers.A);
                 Registers.Q = 0;
                 break;
             }
@@ -222,6 +318,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0xa2: // INI
+            {
+                BlockIn(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa3: // OUTI
+            {
+                BlockOut(1);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0xa8: // LDD
             {
                 BlockLoad(-1);
@@ -231,6 +339,18 @@ public sealed partial class Z80Cpu<TBus>
             case 0xa9: // CPD
             {
                 BlockCompare(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xaa: // IND
+            {
+                BlockIn(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xab: // OUTD
+            {
+                BlockOut(-1);
                 Registers.Q = Registers.F;
                 break;
             }
@@ -246,6 +366,18 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0xb2: // INIR
+            {
+                BlockInRepeat(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb3: // OTIR
+            {
+                BlockOutRepeat(1);
+                Registers.Q = Registers.F;
+                break;
+            }
             case 0xb8: // LDDR
             {
                 BlockLoadRepeat(-1);
@@ -255,6 +387,18 @@ public sealed partial class Z80Cpu<TBus>
             case 0xb9: // CPDR
             {
                 BlockCompareRepeat(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xba: // INDR
+            {
+                BlockInRepeat(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xbb: // OTDR
+            {
+                BlockOutRepeat(-1);
                 Registers.Q = Registers.F;
                 break;
             }

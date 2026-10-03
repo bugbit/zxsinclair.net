@@ -78,7 +78,12 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new ExchangeRegistersPattern(),
         new ExchangeStackPattern(),
         new BlockLoadPattern(),
-        new BlockComparePattern());
+        new BlockComparePattern(),
+        new InImmediatePattern(),
+        new OutImmediatePattern(),
+        new InRegisterPattern(),
+        new OutRegisterPattern(),
+        new BlockIoPattern());
 
     public IPattern? Resolve(Opcode opcode)
     {

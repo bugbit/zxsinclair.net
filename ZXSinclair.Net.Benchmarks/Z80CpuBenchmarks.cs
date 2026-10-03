@@ -36,6 +36,9 @@ public class Z80CpuBenchmarks
     private Z80Cpu<SpectrumBus> aluCpu = null!;
     private SpectrumMachine blockMachine = null!;
     private Z80Cpu<SpectrumBus> blockCpu = null!;
+    private const int RomBootFrames = 200;
+    private SpectrumMachine romMachine = null!;
+    private Z80Cpu<SpectrumBus> romCpu = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -115,6 +118,42 @@ public class Z80CpuBenchmarks
         cpu.Execute(machine.Timing.TStatesPerFrame);
         machine.EndFrame();
         return cpu.Registers.PC;
+    }
+
+    [GlobalSetup(Target = nameof(ExecuteRomBootFrames))]
+    public void SetupRom()
+    {
+        var path = Environment.GetEnvironmentVariable("ZX_ROM_48K")
+            ?? throw new InvalidOperationException("ZX_ROM_48K is required.");
+        var rom = File.ReadAllBytes(path);
+        if (rom.Length != 0x4000)
+            throw new InvalidDataException("ZX_ROM_48K must contain exactly 16384 bytes.");
+        romMachine = new SpectrumMachine(SpectrumModel.Spectrum48K);
+        romMachine.LoadRom(0, rom);
+        romCpu = new Z80Cpu<SpectrumBus>(romMachine.Bus);
+        Console.WriteLine($"ROM: {Path.GetFullPath(path)}; SHA256 {Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(rom))}; {RomBootFrames} frames.");
+    }
+
+    [GlobalCleanup(Target = nameof(ExecuteRomBootFrames))]
+    public void ValidateRom()
+    {
+        if (romCpu.UnimplementedOpcodes != 0)
+            throw new InvalidOperationException("ROM benchmark executed an unimplemented opcode.");
+    }
+
+    // ns/frame; frames/s = 1e9 / mean; real-time factor = frames/s / 50.08.
+    [Benchmark(OperationsPerInvoke = RomBootFrames)]
+    public int ExecuteRomBootFrames()
+    {
+        romMachine.Reset();
+        romCpu.Reset();
+        romMachine.Memory.GetRegionSpan(ZXSinclair.Net.Core.Machines.Layouts.SpectrumRam).Clear();
+        for (var frame = 0; frame < RomBootFrames; frame++)
+        {
+            romCpu.Execute(romMachine.Timing.TStatesPerFrame);
+            romMachine.EndFrame();
+        }
+        return romCpu.Registers.PC;
     }
 
     [Benchmark(OperationsPerInvoke = 69888)]

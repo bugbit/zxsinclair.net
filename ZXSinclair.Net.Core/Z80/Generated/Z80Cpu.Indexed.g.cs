@@ -1277,6 +1277,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0xd3: // OUT (nn),A
+            {
+                OutAccumulator();
+                Registers.Q = 0;
+                break;
+            }
             case 0xd4: // CALL NC,nnnn
             {
                 CallAbsolute((Registers.F & Z80Flags.C) == 0);
@@ -1316,6 +1322,12 @@ public sealed partial class Z80Cpu<TBus>
             case 0xda: // JP C,nnnn
             {
                 JumpAbsolute((Registers.F & Z80Flags.C) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xdb: // IN A,(nn)
+            {
+                InAccumulator();
                 Registers.Q = 0;
                 break;
             }

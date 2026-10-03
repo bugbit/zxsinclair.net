@@ -26,6 +26,7 @@ internal sealed class TestBusState
     public bool IntActive;
     public int IntAfterCycle = int.MaxValue;
     public byte InterruptData = 0xFF;
+    public Queue<byte> InputData { get; } = new();
     public List<(string Kind, ushort Address, int Value)> Accesses { get; } = new();
 }
 
@@ -59,10 +60,16 @@ internal struct TestBus : IZ80Bus
     }
     public byte In(ushort port)
     {
+        var value = state.InputData.Count != 0 ? state.InputData.Dequeue() : (byte)(port >> 8);
+        state.Accesses.Add(("In", port, value));
         state.Cycles += 4;
-        return (byte)(port >> 8);
+        return value;
     }
-    public void Out(ushort port, byte data) => state.Cycles += 4;
+    public void Out(ushort port, byte data)
+    {
+        state.Accesses.Add(("Out", port, data));
+        state.Cycles += 4;
+    }
     public byte AcknowledgeInterrupt()
     {
         state.Accesses.Add(("Ack", 0, state.InterruptData));

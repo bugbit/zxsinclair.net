@@ -289,8 +289,7 @@ public class FuseReportTests
     }
 
     [Theory]
-    [InlineData(new byte[] { 0xD3 }, 0, 1)]
-    [InlineData(new byte[] { 0xDD, 0xD3 }, 0, 2)]
+    [InlineData(new byte[] { 0xED, 0 }, 0, 2)]
     [InlineData(new byte[] { 0xDD, 0xED, 0 }, 0, 3)]
     [InlineData(new byte[] { 0xED, 0x00 }, 0xFFFE, 0)]
     public void LastUnimplementedAddress_TracksFetchAndReset(byte[] program, ushort start, ushort end)

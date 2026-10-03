@@ -321,8 +321,8 @@ public class GeneratorTests
         {
             var expected = dispatch.Table switch
             {
-                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 250,
-                OpcodeTableKind.ED => 54,
+                OpcodeTableKind.Base or OpcodeTableKind.DDFD => 252,
+                OpcodeTableKind.ED => 78,
                 OpcodeTableKind.CB or OpcodeTableKind.DDFDCB => 256,
                 _ => 0,
             };
@@ -448,8 +448,9 @@ public class GeneratorTests
         var output = new StringWriter();
         CoverageReport.Write(Generate(), output, true);
         var text = output.ToString();
-        Assert.Contains("250 implemented / 2 pending / 4 prefixes", text);
-        Assert.Contains("54 implemented / 24 pending", text);
+        Assert.Contains("252 implemented / 0 pending / 4 prefixes", text);
+        Assert.Contains("78 implemented / 0 pending", text);
+        Assert.Contains("178 holes (178 pending)", text);
         Assert.Equal(2, text.Split("256 implemented / 0 pending").Length - 1);
         Assert.Contains("178 holes (178 pending) / 19 aliases", text);
         Assert.Contains("0xFB slttrap [Hole]", text);
@@ -555,7 +556,7 @@ public class GeneratorTests
             if (pattern is null) continue;
             var expected = table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB ? opcode.Byte < 0x80
                 : table == OpcodeTableKind.ED
-                ? opcode.Byte is 0xA0 or 0xA1 or 0xA8 or 0xA9 or 0xB0 or 0xB1 or 0xB8 or 0xB9 or 0x67 or 0x6F or 0x42 or 0x4A or 0x52 or 0x5A or 0x62 or 0x6A or 0x72 or 0x7A or 0x57 or 0x5F or 0x44 or 0x4C or 0x54 or 0x5C or 0x64 or 0x6C or 0x74 or 0x7C
+                ? opcode.Byte is 0x40 or 0x48 or 0x50 or 0x58 or 0x60 or 0x68 or 0x70 or 0x78 or 0xA2 or 0xAA or 0xB2 or 0xBA or 0xA3 or 0xAB or 0xB3 or 0xBB or 0xA0 or 0xA1 or 0xA8 or 0xA9 or 0xB0 or 0xB1 or 0xB8 or 0xB9 or 0x67 or 0x6F or 0x42 or 0x4A or 0x52 or 0x5A or 0x62 or 0x6A or 0x72 or 0x7A or 0x57 or 0x5F or 0x44 or 0x4C or 0x54 or 0x5C or 0x64 or 0x6C or 0x74 or 0x7C
                 : flags.Contains(opcode.Byte);
             Assert.Equal(expected, pattern.WritesFlags(opcode));
         }
@@ -709,6 +710,31 @@ public class GeneratorTests
     [InlineData(2, 0xB1, "BlockCompareRepeat(1);", true)]
     [InlineData(2, 0xB9, "BlockCompareRepeat(-1);", true)]
     public void BlockPatterns_EmitExpectedBodies(int table, int value, string expected, bool flags)
+    {
+        var opcode = Tables()[(OpcodeTableKind)table][value];
+        var pattern = PatternCatalog.Default.Resolve(opcode);
+        Assert.NotNull(pattern);
+        Assert.Equal(expected, pattern.EmitBody(opcode, new(opcode.Table)));
+        Assert.Equal(flags, pattern.WritesFlags(opcode));
+    }
+
+    [Theory]
+    [InlineData(0, 0xDB, "InAccumulator();", false)]
+    [InlineData(0, 0xD3, "OutAccumulator();", false)]
+    [InlineData(2, 0x40, "Registers.B = InRegister();", true)]
+    [InlineData(2, 0x48, "Registers.C = InRegister();", true)]
+    [InlineData(2, 0x70, "InRegister();", true)]
+    [InlineData(2, 0x71, "OutRegister(0);", false)]
+    [InlineData(2, 0x41, "OutRegister(Registers.B);", false)]
+    [InlineData(2, 0xA2, "BlockIn(1);", true)]
+    [InlineData(2, 0xAA, "BlockIn(-1);", true)]
+    [InlineData(2, 0xB2, "BlockInRepeat(1);", true)]
+    [InlineData(2, 0xBA, "BlockInRepeat(-1);", true)]
+    [InlineData(2, 0xA3, "BlockOut(1);", true)]
+    [InlineData(2, 0xAB, "BlockOut(-1);", true)]
+    [InlineData(2, 0xB3, "BlockOutRepeat(1);", true)]
+    [InlineData(2, 0xBB, "BlockOutRepeat(-1);", true)]
+    public void IoPatterns_EmitExpectedBodies(int table, int value, string expected, bool flags)
     {
         var opcode = Tables()[(OpcodeTableKind)table][value];
         var pattern = PatternCatalog.Default.Resolve(opcode);

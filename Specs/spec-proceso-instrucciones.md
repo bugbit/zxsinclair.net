@@ -85,7 +85,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | 7 | Rotaciones y desplazamientos | `spec-instr-rotaciones.md` | Implementado | 198 (686 acumulados, 0 fallos; eventos activados) |
 | 8 | Bits | `spec-instr-bits.md` | Implementado | 584 (1270 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
 | 9 | Intercambio y bloques | `spec-instr-bloques.md` | Implementado | 14 (1284 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
-| 10 | Entrada/salida | — | Pendiente | — |
+| 10 | Entrada/salida | `spec-instr-io.md` | Implementado | 51 (1335 acumulados, 0 fallos y 0 omitidos; eventos activados; 8 con convención BIT (HL)) |
 | 11 | Restos | — | Pendiente | — |
 
 Total de casos FUSE: 1335. Estados: Pendiente → Especificado → Planificado → Implementado.

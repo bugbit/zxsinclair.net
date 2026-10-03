@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-03): **138 de 150 entradas completadas; 12 pendientes**.
+Estado (2026-10-03): **150 de 150 entradas completadas; 0 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -210,15 +210,17 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Entrada/salida
 
-- [ ] `IN A, (n)` — p. 295.
-- [ ] `IN r, (C)` — p. 296.
-- [ ] `INI` — p. 298.
-- [ ] `INIR` — p. 300.
-- [ ] `IND` — p. 302.
-- [ ] `INDR` — p. 304.
-- [ ] `OUT (n), A` — p. 306.
-- [ ] `OUT (C), r` — p. 307.
-- [ ] `OUTI` — p. 309.
-- [ ] `OTIR` — p. 311.
-- [ ] `OUTD` — p. 313.
-- [ ] `OTDR` — p. 315.
+- [x] `IN A, (n)` — p. 295. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `IN r, (C)` — p. 296. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `INI` — p. 298. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `INIR` — p. 300. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `IND` — p. 302. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `INDR` — p. 304. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OUT (n), A` — p. 306. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OUT (C), r` — p. 307. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OUTI` — p. 309. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OTIR` — p. 311. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OUTD` — p. 313. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+- [x] `OTDR` — p. 315. [Spec](spec-instr-io.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/IoTests.cs).
+
+El recuento corresponde a las 150 entradas del manual. Incluye las variantes no documentadas previstas en sus specs; los 178 huecos de ED y las respuestas arbitrarias de IM 0 siguen en el grupo 11.

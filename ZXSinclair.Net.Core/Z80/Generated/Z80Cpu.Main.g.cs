@@ -249,6 +249,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xd0: ExecuteMainD0(); return; // RET NC
             case 0xd1: ExecuteMainD1(); return; // POP DE
             case 0xd2: ExecuteMainD2(); return; // JP NC,nnnn
+            case 0xd3: ExecuteMainD3(); return; // OUT (nn),A
             case 0xd4: ExecuteMainD4(); return; // CALL NC,nnnn
             case 0xd5: ExecuteMainD5(); return; // PUSH DE
             case 0xd6: ExecuteMainD6(); return; // SUB nn
@@ -256,6 +257,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xd8: ExecuteMainD8(); return; // RET C
             case 0xd9: ExecuteMainD9(); return; // EXX
             case 0xda: ExecuteMainDA(); return; // JP C,nnnn
+            case 0xdb: ExecuteMainDB(); return; // IN A,(nn)
             case 0xdc: ExecuteMainDC(); return; // CALL C,nnnn
             case 0xde: ExecuteMainDE(); return; // SBC A,nn
             case 0xdf: ExecuteMainDF(); return; // RST 18
@@ -1773,6 +1775,13 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD3()
+    {
+        OutAccumulator();
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainD4()
     {
         CallAbsolute((Registers.F & Z80Flags.C) == 0);
@@ -1818,6 +1827,13 @@ public sealed partial class Z80Cpu<TBus>
     private void ExecuteMainDA()
     {
         JumpAbsolute((Registers.F & Z80Flags.C) != 0);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainDB()
+    {
+        InAccumulator();
         Registers.Q = 0;
     }
 
