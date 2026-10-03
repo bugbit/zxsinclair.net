@@ -2,7 +2,7 @@
 
 Fuente: [Z80 CPU User Manual, Zilog UM008011-0816](../Docs/z80cpu_um.pdf), apartado **Z80 Instruction Description**. Las páginas indicadas son las impresas en el manual; su número en el visor PDF es 14 mayor.
 
-Estado (2026-10-03): **124 de 150 entradas completadas; 26 pendientes**.
+Estado (2026-10-03): **138 de 150 entradas completadas; 12 pendientes**.
 
 ## Cómo marcar el avance
 
@@ -92,20 +92,20 @@ La notación sigue la tabla 4 (p. 39) y las descripciones de cada instrucción.
 
 ### Intercambio y bloques
 
-- [ ] `EX DE, HL` — p. 124.
-- [ ] `EX AF, AF'` — p. 125.
-- [ ] `EXX` — p. 126.
-- [ ] `EX (SP), HL` — p. 127.
-- [ ] `EX (SP), IX` — p. 128.
-- [ ] `EX (SP), IY` — p. 129.
-- [ ] `LDI` — p. 130.
-- [ ] `LDIR` — p. 132.
-- [ ] `LDD` — p. 134.
-- [ ] `LDDR` — p. 136.
-- [ ] `CPI` — p. 138.
-- [ ] `CPIR` — p. 139.
-- [ ] `CPD` — p. 141.
-- [ ] `CPDR` — p. 142.
+- [x] `EX DE, HL` — p. 124. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `EX AF, AF'` — p. 125. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `EXX` — p. 126. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `EX (SP), HL` — p. 127. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `EX (SP), IX` — p. 128. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `EX (SP), IY` — p. 129. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `LDI` — p. 130. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `LDIR` — p. 132. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `LDD` — p. 134. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `LDDR` — p. 136. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `CPI` — p. 138. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `CPIR` — p. 139. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `CPD` — p. 141. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
+- [x] `CPDR` — p. 142. [Spec](spec-instr-bloques.md) · [Tests](../ZXSinclair.Net.Core.Tests/Z80/Instructions/BlockTests.cs).
 
 ### Aritmética y lógica de 8 bits
 

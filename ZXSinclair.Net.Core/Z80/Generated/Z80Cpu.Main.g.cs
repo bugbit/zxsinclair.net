@@ -47,6 +47,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0x05: ExecuteMain05(); return; // DEC B
             case 0x06: ExecuteMain06(); return; // LD B,nn
             case 0x07: ExecuteMain07(); return; // RLCA
+            case 0x08: ExecuteMain08(); return; // EX AF,AF'
             case 0x09: ExecuteMain09(); return; // ADD HL,BC
             case 0x0a: ExecuteMain0A(); return; // LD A,(BC)
             case 0x0b: ExecuteMain0B(); return; // DEC BC
@@ -253,6 +254,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xd6: ExecuteMainD6(); return; // SUB nn
             case 0xd7: ExecuteMainD7(); return; // RST 10
             case 0xd8: ExecuteMainD8(); return; // RET C
+            case 0xd9: ExecuteMainD9(); return; // EXX
             case 0xda: ExecuteMainDA(); return; // JP C,nnnn
             case 0xdc: ExecuteMainDC(); return; // CALL C,nnnn
             case 0xde: ExecuteMainDE(); return; // SBC A,nn
@@ -260,6 +262,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xe0: ExecuteMainE0(); return; // RET PO
             case 0xe1: ExecuteMainE1(); return; // POP HL
             case 0xe2: ExecuteMainE2(); return; // JP PO,nnnn
+            case 0xe3: ExecuteMainE3(); return; // EX (SP),HL
             case 0xe4: ExecuteMainE4(); return; // CALL PO,nnnn
             case 0xe5: ExecuteMainE5(); return; // PUSH HL
             case 0xe6: ExecuteMainE6(); return; // AND nn
@@ -267,6 +270,7 @@ public sealed partial class Z80Cpu<TBus>
             case 0xe8: ExecuteMainE8(); return; // RET PE
             case 0xe9: ExecuteMainE9(); return; // JP HL
             case 0xea: ExecuteMainEA(); return; // JP PE,nnnn
+            case 0xeb: ExecuteMainEB(); return; // EX DE,HL
             case 0xec: ExecuteMainEC(); return; // CALL PE,nnnn
             case 0xee: ExecuteMainEE(); return; // XOR A,nn
             case 0xef: ExecuteMainEF(); return; // RST 28
@@ -344,6 +348,13 @@ public sealed partial class Z80Cpu<TBus>
     {
         Rlca();
         Registers.Q = Registers.F;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMain08()
+    {
+        Registers.ExchangeAF();
+        Registers.Q = 0;
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -1797,6 +1808,13 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainD9()
+    {
+        Registers.Exx();
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainDA()
     {
         JumpAbsolute((Registers.F & Z80Flags.C) != 0);
@@ -1846,6 +1864,13 @@ public sealed partial class Z80Cpu<TBus>
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainE3()
+    {
+        Registers.HL = ExchangeStack(Registers.HL);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private void ExecuteMainE4()
     {
         CallAbsolute((Registers.F & Z80Flags.PV) == 0);
@@ -1891,6 +1916,13 @@ public sealed partial class Z80Cpu<TBus>
     private void ExecuteMainEA()
     {
         JumpAbsolute((Registers.F & Z80Flags.PV) != 0);
+        Registers.Q = 0;
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMainEB()
+    {
+        (Registers.DE, Registers.HL) = (Registers.HL, Registers.DE);
         Registers.Q = 0;
     }
 

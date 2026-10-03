@@ -84,7 +84,7 @@ Mismas secciones que `spec-instr-nop.md`:
 | 6 | ALU de 16 bits | `spec-instr-alu-16.md` | Implementado | 32 (488 acumulados, 0 fallos; eventos activados) |
 | 7 | Rotaciones y desplazamientos | `spec-instr-rotaciones.md` | Implementado | 198 (686 acumulados, 0 fallos; eventos activados) |
 | 8 | Bits | `spec-instr-bits.md` | Implementado | 584 (1270 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
-| 9 | Intercambio y bloques | — | Pendiente | — |
+| 9 | Intercambio y bloques | `spec-instr-bloques.md` | Implementado | 14 (1284 acumulados, 0 fallos; eventos activados; 8 con convención F5/F3 de BIT (HL)) |
 | 10 | Entrada/salida | — | Pendiente | — |
 | 11 | Restos | — | Pendiente | — |
 

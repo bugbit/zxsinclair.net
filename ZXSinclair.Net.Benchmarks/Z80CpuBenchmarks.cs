@@ -34,6 +34,8 @@ public class Z80CpuBenchmarks
     private Z80Cpu<SpectrumBus> cpu = null!;
     private SpectrumMachine aluMachine = null!;
     private Z80Cpu<SpectrumBus> aluCpu = null!;
+    private SpectrumMachine blockMachine = null!;
+    private Z80Cpu<SpectrumBus> blockCpu = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -84,6 +86,19 @@ public class Z80CpuBenchmarks
             aluMachine.Memory.Write((ushort)(0x8000 + i), aluProgram[i]);
         aluMachine.Memory.Write(0x9000, 0x7F);
         aluMachine.Memory.Write(0x9105, 0x23);
+        blockMachine = new SpectrumMachine(SpectrumModel.Spectrum48K);
+        blockCpu = new Z80Cpu<SpectrumBus>(blockMachine.Bus);
+        byte[] blockProgram = [
+            0x21, 0x00, 0x90,             // LD HL,9000
+            0x11, 0x00, 0xA0,             // LD DE,A000
+            0x01, 0x00, 0x10,             // LD BC,1000
+            0xED, 0xB0,                   // LDIR
+            0x18, 0xF3,                   // JR 8000
+        ];
+        for (var i = 0; i < blockProgram.Length; i++)
+            blockMachine.Memory.Write((ushort)(0x8000 + i), blockProgram[i]);
+        for (var i = 0; i < 0x1000; i++)
+            blockMachine.Memory.Write((ushort)(0x9000 + i), (byte)(i * 37 + 1));
     }
 
     [GlobalCleanup(Target = nameof(ExecuteAluLoopFrame))]
@@ -124,5 +139,26 @@ public class Z80CpuBenchmarks
         aluCpu.Execute(aluMachine.Timing.TStatesPerFrame);
         aluMachine.EndFrame();
         return aluCpu.Registers.PC;
+    }
+
+    [GlobalCleanup(Target = nameof(ExecuteBlockCopyFrame))]
+    public void ValidateBlockCopy()
+    {
+        if (blockCpu.UnimplementedOpcodes != 0)
+            throw new InvalidOperationException("Block benchmark executed an unimplemented opcode.");
+        // One frame transfers over 3000 bytes before restarting the program.
+        for (var i = 0; i < 3000; i++)
+            if (blockMachine.Memory.Read((ushort)(0xA000 + i)) != (byte)(i * 37 + 1))
+                throw new InvalidOperationException("Block benchmark did not copy the expected data.");
+    }
+
+    [Benchmark(OperationsPerInvoke = 69888)]
+    public int ExecuteBlockCopyFrame()
+    {
+        blockCpu.Registers.PC = 0x8000;
+        blockCpu.Registers.IFF1 = false;
+        blockCpu.Execute(blockMachine.Timing.TStatesPerFrame);
+        blockMachine.EndFrame();
+        return blockCpu.Registers.PC;
     }
 }

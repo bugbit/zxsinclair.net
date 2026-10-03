@@ -210,6 +210,54 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0xa0: // LDI
+            {
+                BlockLoad(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa1: // CPI
+            {
+                BlockCompare(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa8: // LDD
+            {
+                BlockLoad(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xa9: // CPD
+            {
+                BlockCompare(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb0: // LDIR
+            {
+                BlockLoadRepeat(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb1: // CPIR
+            {
+                BlockCompareRepeat(1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb8: // LDDR
+            {
+                BlockLoadRepeat(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
+            case 0xb9: // CPDR
+            {
+                BlockCompareRepeat(-1);
+                Registers.Q = Registers.F;
+                break;
+            }
             default: Unimplemented(); break;
         }
     }

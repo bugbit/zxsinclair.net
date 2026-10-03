@@ -74,7 +74,11 @@ internal sealed class PatternCatalog(params IPattern[] patterns)
         new BitTestMemoryPattern(),
         new SetResRegisterPattern(),
         new SetResMemoryPattern(),
-        new SetResMemoryCopyPattern());
+        new SetResMemoryCopyPattern(),
+        new ExchangeRegistersPattern(),
+        new ExchangeStackPattern(),
+        new BlockLoadPattern(),
+        new BlockComparePattern());
 
     public IPattern? Resolve(Opcode opcode)
     {

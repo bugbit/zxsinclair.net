@@ -72,6 +72,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = Registers.F;
                 break;
             }
+            case 0x08: // EX AF,AF'
+            {
+                Registers.ExchangeAF();
+                Registers.Q = 0;
+                break;
+            }
             case 0x09: // ADD REGISTER,BC
             {
                 TIndex.Pair(ref Registers) = Add16(TIndex.Pair(ref Registers), Registers.BC);
@@ -1301,6 +1307,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0xd9: // EXX
+            {
+                Registers.Exx();
+                Registers.Q = 0;
+                break;
+            }
             case 0xda: // JP C,nnnn
             {
                 JumpAbsolute((Registers.F & Z80Flags.C) != 0);
@@ -1343,6 +1355,12 @@ public sealed partial class Z80Cpu<TBus>
                 Registers.Q = 0;
                 break;
             }
+            case 0xe3: // EX (SP),REGISTER
+            {
+                TIndex.Pair(ref Registers) = ExchangeStack(TIndex.Pair(ref Registers));
+                Registers.Q = 0;
+                break;
+            }
             case 0xe4: // CALL PO,nnnn
             {
                 CallAbsolute((Registers.F & Z80Flags.PV) == 0);
@@ -1382,6 +1400,12 @@ public sealed partial class Z80Cpu<TBus>
             case 0xea: // JP PE,nnnn
             {
                 JumpAbsolute((Registers.F & Z80Flags.PV) != 0);
+                Registers.Q = 0;
+                break;
+            }
+            case 0xeb: // EX DE,HL
+            {
+                (Registers.DE, Registers.HL) = (Registers.HL, Registers.DE);
                 Registers.Q = 0;
                 break;
             }
