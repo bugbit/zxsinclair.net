@@ -24,7 +24,7 @@ internal abstract class JumpPattern : IPattern
 {
     protected abstract string Mnemonic { get; }
     protected abstract bool Matches(Operand[] operands);
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == Mnemonic && Matches(opcode.Operands);
     public abstract string EmitBody(Opcode opcode, EmitContext context);
 
@@ -87,7 +87,7 @@ internal sealed class ReturnConditionalPattern : JumpPattern
 
 internal sealed class ReturnFromInterruptPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && (opcode.Mnemonic is "RETN" or "RETI") && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => "ReturnFromInterrupt();";
 }

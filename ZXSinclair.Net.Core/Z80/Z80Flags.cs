@@ -23,21 +23,29 @@ public static class Z80Flags
 {
     public const byte C = 0x01, N = 0x02, PV = 0x04, F3 = 0x08,
         H = 0x10, F5 = 0x20, Z = 0x40, S = 0x80;
-    public static readonly byte[] SZ53 = new byte[256];
-    public static readonly byte[] SZ53P = new byte[256];
-    public static readonly byte[] Parity = new byte[256];
-    public static readonly byte[] Inc = new byte[256];
-    public static readonly byte[] Dec = new byte[256];
+    // Private arrays exposed as read-only spans so no code can corrupt the shared tables
+    // (Specs/spec-correcciones-revision-2.md 4).
+    private static readonly byte[] sz53 = new byte[256];
+    private static readonly byte[] sz53P = new byte[256];
+    private static readonly byte[] parity = new byte[256];
+    private static readonly byte[] inc = new byte[256];
+    private static readonly byte[] dec = new byte[256];
+
+    public static ReadOnlySpan<byte> SZ53 => sz53;
+    public static ReadOnlySpan<byte> SZ53P => sz53P;
+    public static ReadOnlySpan<byte> Parity => parity;
+    public static ReadOnlySpan<byte> Inc => inc;
+    public static ReadOnlySpan<byte> Dec => dec;
 
     static Z80Flags()
     {
         for (var value = 0; value < 256; value++)
         {
-            SZ53[value] = (byte)((value & (S | F5 | F3)) | (value == 0 ? Z : 0));
-            Parity[value] = (byte)((BitOperations.PopCount((uint)value) & 1) == 0 ? PV : 0);
-            SZ53P[value] = (byte)(SZ53[value] | Parity[value]);
-            Inc[value] = (byte)(SZ53[value] | ((value & 0x0F) == 0 ? H : 0) | (value == 0x80 ? PV : 0));
-            Dec[value] = (byte)(SZ53[value] | N | ((value & 0x0F) == 0x0F ? H : 0) | (value == 0x7F ? PV : 0));
+            sz53[value] = (byte)((value & (S | F5 | F3)) | (value == 0 ? Z : 0));
+            parity[value] = (byte)((BitOperations.PopCount((uint)value) & 1) == 0 ? PV : 0);
+            sz53P[value] = (byte)(sz53[value] | parity[value]);
+            inc[value] = (byte)(sz53[value] | ((value & 0x0F) == 0 ? H : 0) | (value == 0x80 ? PV : 0));
+            dec[value] = (byte)(sz53[value] | N | ((value & 0x0F) == 0x0F ? H : 0) | (value == 0x7F ? PV : 0));
         }
     }
 }

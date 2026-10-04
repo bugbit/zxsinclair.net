@@ -98,7 +98,7 @@ Por eso las respuestas de varios bytes (`CALL nn`, `JP nn`, `LD r,n`…) y los p
 
 ### 3.2 Tabla IM 0 en el generador
 
-El generador emite un fichero más, `ZXSinclair.Net.Core/Z80/Generated/Z80Cpu.Im0.g.cs`, con una tabla de 256 bits (`ReadOnlySpan<byte>` de 32 bytes) que marca los opcodes base **implementados de un byte**: sin operandos `nn`, `nnnn`, `offset`, `(nn)`, `(nnnn)` ni `(REGISTER+dd)`, y que no son prefijo. Incluye `RST p`. La tabla sale del modelo del generador, no se mantiene a mano.
+El generador emite un fichero más, `ZXSinclair.Net.Core/Z80/Generated/Z80Cpu.Im0.g.cs`, con una tabla de 256 bits (`ReadOnlySpan<byte>` de 32 bytes) que marca los opcodes base **implementados de un byte**: los que tienen `Opcode.Length == 1` en el modelo (sin bytes de operando leídos por PC) y no son prefijo (`Specs/spec-correcciones-revision-2.md` 5). Incluye `RST p`. La tabla sale del modelo del generador, no se mantiene a mano.
 
 ### 3.3 Reconocimiento e IM 0 en el Core
 

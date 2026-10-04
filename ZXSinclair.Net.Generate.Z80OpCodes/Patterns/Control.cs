@@ -21,7 +21,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 internal sealed class NopPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "NOP" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => "";
 }
@@ -35,7 +35,7 @@ internal sealed class EdHolePattern : IPattern
 
 internal sealed class DecimalAdjustPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "DAA" && opcode.Operands.Length == 0;
     public bool WritesFlags(Opcode opcode) => true;
     public string EmitBody(Opcode opcode, EmitContext context) => "DecimalAdjust();";
@@ -43,7 +43,7 @@ internal sealed class DecimalAdjustPattern : IPattern
 
 internal sealed class ComplementPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "CPL" && opcode.Operands.Length == 0;
     public bool WritesFlags(Opcode opcode) => true;
     public string EmitBody(Opcode opcode, EmitContext context) => "Complement();";
@@ -51,7 +51,7 @@ internal sealed class ComplementPattern : IPattern
 
 internal sealed class NegatePattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "NEG" && opcode.Operands.Length == 0;
     public bool WritesFlags(Opcode opcode) => true;
     public string EmitBody(Opcode opcode, EmitContext context) => "Negate();";
@@ -59,7 +59,7 @@ internal sealed class NegatePattern : IPattern
 
 internal sealed class SetCarryPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "SCF" && opcode.Operands.Length == 0;
     public bool WritesFlags(Opcode opcode) => true;
     public string EmitBody(Opcode opcode, EmitContext context) => "SetCarry();";
@@ -67,7 +67,7 @@ internal sealed class SetCarryPattern : IPattern
 
 internal sealed class ComplementCarryPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "CCF" && opcode.Operands.Length == 0;
     public bool WritesFlags(Opcode opcode) => true;
     public string EmitBody(Opcode opcode, EmitContext context) => "ComplementCarry();";
@@ -75,28 +75,28 @@ internal sealed class ComplementCarryPattern : IPattern
 
 internal sealed class HaltPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "HALT" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => "Halt();";
 }
 
 internal sealed class DisableInterruptsPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "DI" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => "Registers.IFF1 = Registers.IFF2 = false;";
 }
 
 internal sealed class EnableInterruptsPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "EI" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => "EnableInterrupts();";
 }
 
 internal sealed class InterruptModePattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "IM" && opcode.Operands.Length == 1
         && opcode.Operands[0] is { Kind: OperandKind.InterruptMode, Value: >= 0 and <= 2 };
     public string EmitBody(Opcode opcode, EmitContext context) =>

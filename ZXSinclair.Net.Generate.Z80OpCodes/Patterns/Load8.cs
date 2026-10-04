@@ -23,7 +23,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 internal abstract class Load8Pattern : IPattern
 {
     public virtual bool WritesFlags(Opcode opcode) => false;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "LD" && opcode.Operands.Length == 2
         && Matches(opcode.Operands[0], opcode.Operands[1]);
 

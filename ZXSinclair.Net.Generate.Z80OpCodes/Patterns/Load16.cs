@@ -25,7 +25,7 @@ internal abstract class Load16Pattern : IPattern
     protected static bool Pair(Operand operand) => operand.Kind is OperandKind.Register16 or OperandKind.IndexPair;
     protected abstract string Mnemonic { get; }
     protected abstract bool Matches(Operand[] operands);
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == Mnemonic && Matches(opcode.Operands);
     public abstract string EmitBody(Opcode opcode, EmitContext context);
 }

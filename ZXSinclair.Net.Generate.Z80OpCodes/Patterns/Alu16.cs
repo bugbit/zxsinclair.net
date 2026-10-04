@@ -23,7 +23,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 internal sealed class Add16Pattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic == "ADD" && opcode.Operands.Length == 2
         && (opcode.Operands[0] is { Kind: OperandKind.Register16, Text: "HL" }
             || opcode.Operands[0].Kind == OperandKind.IndexPair)
@@ -39,7 +39,7 @@ internal sealed class Add16Pattern : IPattern
 internal sealed class AdcSbc16Pattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "ADC" or "SBC" && opcode.Operands.Length == 2
         && opcode.Operands[0] is { Kind: OperandKind.Register16, Text: "HL" }
         && opcode.Operands[1].Kind == OperandKind.Register16;
@@ -50,7 +50,7 @@ internal sealed class AdcSbc16Pattern : IPattern
 
 internal sealed class IncDec16Pattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "INC" or "DEC" && opcode.Operands.Length == 1
         && opcode.Operands[0].Kind is OperandKind.Register16 or OperandKind.IndexPair;
 

@@ -24,7 +24,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 internal sealed class InImmediatePattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Mnemonic == "IN" && opcode.Operands.Length == 2
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Mnemonic == "IN" && opcode.Operands.Length == 2
         && opcode.Operands[0] is { Kind: OperandKind.Register8, Text: "A" }
         && opcode.Operands[1].Kind == OperandKind.PortImmediate;
     public string EmitBody(Opcode opcode, EmitContext context) => "InAccumulator();";
@@ -32,7 +32,7 @@ internal sealed class InImmediatePattern : IPattern
 
 internal sealed class OutImmediatePattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Mnemonic == "OUT" && opcode.Operands.Length == 2
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Mnemonic == "OUT" && opcode.Operands.Length == 2
         && opcode.Operands[0].Kind == OperandKind.PortImmediate
         && opcode.Operands[1] is { Kind: OperandKind.Register8, Text: "A" };
     public string EmitBody(Opcode opcode, EmitContext context) => "OutAccumulator();";
@@ -41,7 +41,7 @@ internal sealed class OutImmediatePattern : IPattern
 internal sealed class InRegisterPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED && opcode.Mnemonic == "IN"
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED && opcode.Mnemonic == "IN"
         && opcode.Operands.Length == 2 && opcode.Operands[0].Kind == OperandKind.Register8
         && opcode.Operands[1].Kind == OperandKind.PortC;
     public string EmitBody(Opcode opcode, EmitContext context) => opcode.Operands[0].Text == "F"
@@ -50,7 +50,7 @@ internal sealed class InRegisterPattern : IPattern
 
 internal sealed class OutRegisterPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED && opcode.Mnemonic == "OUT"
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED && opcode.Mnemonic == "OUT"
         && opcode.Operands.Length == 2 && opcode.Operands[0].Kind == OperandKind.PortC
         && (opcode.Operands[1].Kind == OperandKind.Register8
             || opcode.Operands[1] is { Kind: OperandKind.Constant, Value: 0 });
@@ -61,7 +61,7 @@ internal sealed class OutRegisterPattern : IPattern
 internal sealed class BlockIoPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED && opcode.Operands.Length == 0
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED && opcode.Operands.Length == 0
         && opcode.Mnemonic is "INI" or "IND" or "INIR" or "INDR" or "OUTI" or "OUTD" or "OTIR" or "OTDR";
     public string EmitBody(Opcode opcode, EmitContext context)
     {

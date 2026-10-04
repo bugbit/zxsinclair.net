@@ -47,7 +47,7 @@ internal static class BitEmission
 internal sealed class BitTestRegisterPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.CB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.CB
         && opcode.Mnemonic == "BIT" && BitEmission.Operands(new(opcode.Mnemonic, opcode.Operands))
         && opcode.Operands[1].Kind == OperandKind.Register8;
     public string EmitBody(Opcode opcode, EmitContext context) =>
@@ -57,7 +57,7 @@ internal sealed class BitTestRegisterPattern : IPattern
 internal sealed class BitTestMemoryPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
         && opcode.Mnemonic == "BIT" && opcode.InnerInstruction is null
         && BitEmission.Operands(new(opcode.Mnemonic, opcode.Operands)) && BitEmission.Memory(opcode.Operands[1]);
     public string EmitBody(Opcode opcode, EmitContext context)
@@ -69,7 +69,7 @@ internal sealed class BitTestMemoryPattern : IPattern
 
 internal sealed class SetResRegisterPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.CB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.CB
         && opcode.Mnemonic is "SET" or "RES" && BitEmission.Operands(new(opcode.Mnemonic, opcode.Operands))
         && opcode.Operands[1].Kind == OperandKind.Register8;
     public string EmitBody(Opcode opcode, EmitContext context)
@@ -81,7 +81,7 @@ internal sealed class SetResRegisterPattern : IPattern
 
 internal sealed class SetResMemoryPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
         && opcode.Mnemonic is "SET" or "RES" && opcode.InnerInstruction is null
         && BitEmission.Operands(new(opcode.Mnemonic, opcode.Operands)) && BitEmission.Memory(opcode.Operands[1]);
     public string EmitBody(Opcode opcode, EmitContext context) =>
@@ -90,7 +90,7 @@ internal sealed class SetResMemoryPattern : IPattern
 
 internal sealed class SetResMemoryCopyPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.DDFDCB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.DDFDCB
         && opcode.CopyTo is { Kind: OperandKind.Register8 } && opcode.InnerInstruction is { } inner
         && inner.Mnemonic is "SET" or "RES" && BitEmission.Operands(inner)
         && inner.Operands[1].Kind == OperandKind.IndexedMemory;

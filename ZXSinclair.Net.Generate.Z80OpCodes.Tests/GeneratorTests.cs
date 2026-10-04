@@ -232,6 +232,64 @@ public class GeneratorTests
         Assert.False(result.Single(r => r.Table == OpcodeTableKind.DDFD).Opcodes[0xE3].Implemented);
     }
 
+    [Theory]
+    [InlineData((int)OpcodeTableKind.Base, 0x00, 1)]
+    [InlineData((int)OpcodeTableKind.Base, 0x06, 2)]
+    [InlineData((int)OpcodeTableKind.Base, 0x01, 3)]
+    [InlineData((int)OpcodeTableKind.Base, 0x18, 2)]
+    [InlineData((int)OpcodeTableKind.Base, 0x3A, 3)]
+    [InlineData((int)OpcodeTableKind.Base, 0xDB, 2)]
+    [InlineData((int)OpcodeTableKind.Base, 0xCD, 3)]
+    [InlineData((int)OpcodeTableKind.Base, 0x7E, 1)]
+    [InlineData((int)OpcodeTableKind.CB, 0x46, 2)]
+    [InlineData((int)OpcodeTableKind.ED, 0x43, 4)]
+    [InlineData((int)OpcodeTableKind.ED, 0xB0, 2)]
+    [InlineData((int)OpcodeTableKind.DDFD, 0x36, 4)]
+    [InlineData((int)OpcodeTableKind.DDFD, 0x46, 3)]
+    [InlineData((int)OpcodeTableKind.DDFD, 0x21, 4)]
+    [InlineData((int)OpcodeTableKind.DDFDCB, 0x06, 4)]
+    [InlineData((int)OpcodeTableKind.DDFDCB, 0x00, 4)]
+    public void Opcode_LengthMatchesReference(int table, int value, int length)
+    {
+        // Instruction lengths from the Zilog manual, including prefix bytes (DD/FD CB d counts as three).
+        Assert.Equal(length, Tables()[(OpcodeTableKind)table][value].Length);
+    }
+
+    [Fact]
+    public void SingleByteBodies_DoNotReadThroughPc()
+    {
+        // Helpers that read operand bytes through PC. Extend this list whenever a new helper does,
+        // so an opcode that reads operands without declaring them cannot reach the IM 0 table.
+        string[] pcReaders = ["ReadPc(", "ReadPc16(", "ReadPcDiscarded(", "ReadPc16Discarded(", "IndexedAddress<",
+            "InAccumulator(", "OutAccumulator(", "StoreIndexedImmediate<", "JumpAbsolute(", "JumpRelative(",
+            "CallAbsolute(", "DecrementJumpNonZero(", "LoadWordAbsolute(", "StoreWordAbsolute("];
+        var main = Generate().Single(d => d.Table == OpcodeTableKind.Base);
+        var singleByte = main.Opcodes.Where(o => o.Implemented && o.Opcode.Length == 1).ToArray();
+        Assert.NotEmpty(singleByte);
+        foreach (var item in singleByte)
+            foreach (var reader in pcReaders)
+                Assert.False(item.Body.Contains(reader, StringComparison.Ordinal),
+                    $"0x{item.Opcode.Byte:X2} {item.Opcode.Comment} has Length 1 but calls {reader}");
+        foreach (var item in main.Opcodes.Where(o => o.Implemented && o.Opcode.Length > 1))
+            Assert.True(pcReaders.Any(reader => item.Body.Contains(reader, StringComparison.Ordinal)),
+                $"0x{item.Opcode.Byte:X2} {item.Opcode.Comment} has Length {item.Opcode.Length} but reads no operand");
+    }
+
+    [Fact]
+    public void Patterns_IgnoreNonInstructions()
+    {
+        foreach (var opcode in Tables().Values.SelectMany(t => t))
+            foreach (var kind in new[] { OpcodeKind.Prefix, OpcodeKind.Hole, OpcodeKind.Absent })
+            {
+                var copy = opcode with { Kind = kind };
+                // Only EdHolePattern may claim a hole, and only in the ED table.
+                if (kind == OpcodeKind.Hole && opcode.Table == OpcodeTableKind.ED)
+                    Assert.IsType<EdHolePattern>(PatternCatalog.Default.Resolve(copy));
+                else
+                    Assert.Null(PatternCatalog.Default.Resolve(copy));
+            }
+    }
+
     [Fact]
     public void Patterns_AreDisjoint()
     {

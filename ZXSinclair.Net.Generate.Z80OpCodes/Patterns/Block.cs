@@ -24,10 +24,10 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 
 internal sealed class ExchangeRegistersPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Mnemonic == "EXX" && opcode.Operands.Length == 0
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && (opcode.Mnemonic == "EXX" && opcode.Operands.Length == 0
         || opcode.Mnemonic == "EX" && opcode.Operands.Length == 2
         && ((opcode.Operands[0].Text == "DE" && opcode.Operands[1].Text == "HL")
-            || (opcode.Operands[0].Text == "AF" && opcode.Operands[1].Text == "AF'"));
+            || (opcode.Operands[0].Text == "AF" && opcode.Operands[1].Text == "AF'")));
     public string EmitBody(Opcode opcode, EmitContext context) => opcode.Mnemonic == "EXX"
         ? "Registers.Exx();" : opcode.Operands[0].Text == "AF"
         ? "Registers.ExchangeAF();" : "(Registers.DE, Registers.HL) = (Registers.HL, Registers.DE);";
@@ -35,7 +35,7 @@ internal sealed class ExchangeRegistersPattern : IPattern
 
 internal sealed class ExchangeStackPattern : IPattern
 {
-    public bool Matches(Opcode opcode) => opcode.Mnemonic == "EX" && opcode.Operands.Length == 2
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Mnemonic == "EX" && opcode.Operands.Length == 2
         && opcode.Operands[0] is { Kind: OperandKind.MemoryPair, Text: "(SP)" }
         && (opcode.Operands[1] is { Kind: OperandKind.Register16, Text: "HL" }
             || opcode.Operands[1].Kind == OperandKind.IndexPair);
@@ -49,7 +49,7 @@ internal sealed class ExchangeStackPattern : IPattern
 internal sealed class BlockLoadPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED
         && opcode.Operands.Length == 0 && opcode.Mnemonic is "LDI" or "LDD" or "LDIR" or "LDDR";
     public string EmitBody(Opcode opcode, EmitContext context) =>
         $"{(opcode.Mnemonic.Length == 4 ? "BlockLoadRepeat" : "BlockLoad")}({(opcode.Mnemonic[2] == 'I' ? 1 : -1)});";
@@ -58,7 +58,7 @@ internal sealed class BlockLoadPattern : IPattern
 internal sealed class BlockComparePattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED
         && opcode.Operands.Length == 0 && opcode.Mnemonic is "CPI" or "CPD" or "CPIR" or "CPDR";
     public string EmitBody(Opcode opcode, EmitContext context) =>
         $"{(opcode.Mnemonic.Length == 4 ? "BlockCompareRepeat" : "BlockCompare")}({(opcode.Mnemonic[2] == 'I' ? 1 : -1)});";

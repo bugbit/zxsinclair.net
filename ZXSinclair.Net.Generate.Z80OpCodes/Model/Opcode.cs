@@ -28,6 +28,24 @@ internal sealed record Opcode(OpcodeTableKind Table, byte Byte, string Mnemonic,
     Operand[] Operands, OpcodeKind Kind, SourceLocation Source,
     Operand? CopyTo = null, Instruction? InnerInstruction = null)
 {
+    /// <summary>Bytes read through PC after the opcode byte (immediates, offsets, addresses, port, DD/FD displacement).</summary>
+    public int OperandBytes => Operands.Concat(InnerInstruction?.Operands ?? []).Sum(operand => operand.Kind switch
+    {
+        OperandKind.Immediate8 or OperandKind.RelativeOffset or OperandKind.PortImmediate => 1,
+        OperandKind.Immediate16 or OperandKind.AbsoluteMemory => 2,
+        // In DDFDCB the displacement precedes the opcode and is read by the prefix loop.
+        OperandKind.IndexedMemory => Table == OpcodeTableKind.DDFDCB ? 0 : 1,
+        _ => 0,
+    });
+
+    /// <summary>Prefix bytes (DD/FD CB d counts as three) plus the opcode and its operand bytes.</summary>
+    public int Length => Table switch
+    {
+        OpcodeTableKind.Base => 0,
+        OpcodeTableKind.DDFDCB => 3,
+        _ => 1,
+    } + 1 + OperandBytes;
+
     public string Comment => InnerInstruction is null
         ? Mnemonic + (Operands.Length == 0 ? "" : " " + string.Join(",", Operands.Select(o => o.Text)))
         : $"LD {CopyTo!.Text},{InnerInstruction.Mnemonic} {string.Join(",", InnerInstruction.Operands.Select(o => o.Text))}";

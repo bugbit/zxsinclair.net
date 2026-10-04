@@ -23,7 +23,7 @@ namespace ZXSinclair.Net.Generate.Z80OpCodes.Patterns;
 internal sealed class Alu8Pattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "ADD" or "ADC" or "SUB" or "SBC" or "AND" or "XOR" or "OR" or "CP"
         && opcode.Operands.Length is 1 or 2
         && (opcode.Operands.Length == 1 || opcode.Operands[0] is { Kind: OperandKind.Register8, Text: "A" })
@@ -46,7 +46,7 @@ internal sealed class Alu8Pattern : IPattern
 internal sealed class IncDec8Register : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "INC" or "DEC" && opcode.Operands.Length == 1
         && opcode.Operands[0].Kind is OperandKind.Register8 or OperandKind.IndexHigh or OperandKind.IndexLow;
 
@@ -60,7 +60,7 @@ internal sealed class IncDec8Register : IPattern
 internal sealed class IncDec8Memory : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "INC" or "DEC" && opcode.Operands.Length == 1
         && (opcode.Operands[0].Kind == OperandKind.IndexedMemory
             || opcode.Operands[0] is { Kind: OperandKind.MemoryPair, Text: "(HL)" });

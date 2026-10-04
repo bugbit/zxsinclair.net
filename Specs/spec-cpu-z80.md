@@ -56,7 +56,7 @@ La CPU expone `ref Z80Registers Registers` (campo, no propiedad que copie) para 
 |---|---|---|---|---|---|---|---|---|
 | Flag | S | Z | F5 (Y) | H | F3 (X) | P/V | N | C |
 
-Tablas precalculadas de 256 entradas en `Z80Flags` (como `mTablePV` y `mTableZS53` del código legado): `SZ53`, `SZ53P` (con paridad), `Parity`. Las instrucciones combinan tablas y operaciones de bits; nunca `Enum.HasFlag`.
+Tablas precalculadas de 256 entradas en `Z80Flags` (como `mTablePV` y `mTableZS53` del código legado): `SZ53`, `SZ53P` (con paridad), `Parity`, `Inc` y `Dec`. Los arrays son privados y se exponen como propiedades `ReadOnlySpan<byte>`, para que ningún código pueda modificar las tablas compartidas (`Specs/spec-correcciones-revision-2.md` 4). Las instrucciones combinan tablas y operaciones de bits; nunca `Enum.HasFlag`.
 
 ## 4. Ciclo de ejecución
 
@@ -466,6 +466,15 @@ Revisión de la tabla base generada (2026-10-04, `Specs/spec-correcciones-revisi
 | A repetida | 2.2245 ± 0.0103 | 0.6663 ± 0.0045 | 0.7182 ± 0.0044 | 0.7667 ± 0.0060 | 0.5133 ± 0.0016 |
 
 B empeora los bucles un 4–10 % y solo mejora LDIR. Entre A y C las diferencias (hasta un 2–3 %, en ambos sentidos) son del mismo orden que la variación entre las dos ejecuciones de A. Se mantiene A. Todas con 0 B asignados. La medición incluye también el paso común `RepeatBlock` de la misma spec (sección 1). Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/review-A-artifacts`, `review-B-artifacts`, `review-C-artifacts` y `review-A2-artifacts`.
+
+Tablas de flags como `ReadOnlySpan<byte>` sobre arrays privados (2026-10-04, `Specs/spec-correcciones-revision-2.md` 4). Ensamblado tier 1 con PGO de `ExecuteMainDispatch` en el mismo arnés: 16 802 → 14 524 bytes de código y 16 → 14 saltos a `CORINFO_HELP_RNGCHKFAIL` (el acceso con índice `byte` no añade comprobaciones de límites).
+
+| Ejecución (ns; ± error 99.9 %) | ExecuteFrame /opcode | ExecuteLoopFrame /T | ExecuteAluLoopFrame /T | ExecuteMixFrame /T | ExecuteBlockCopyFrame /T |
+|---|---|---|---|---|---|
+| Antes (arrays públicos) | 2.2575 ± 0.0304 | 0.6678 ± 0.0043 | 0.7417 ± 0.0069 | 0.7777 ± 0.0055 | 0.5426 ± 0.0049 |
+| Después (`ReadOnlySpan<byte>`) | 2.2463 ± 0.0118 | 0.6788 ± 0.0037 | 0.7261 ± 0.0116 | 0.7522 ± 0.0036 | 0.5270 ± 0.0039 |
+
+Mejoran ALU (−2,1 %), mezcla (−3,3 %) y LDIR (−2,9 %); el bucle de cargas y saltos, que no usa las tablas, sube un 1,6 %, dentro de la variación entre ejecuciones de la sección anterior. Se conserva `ReadOnlySpan<byte>` y no hace falta la alternativa `internal`. Todas con 0 B asignados. Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/flags-before-artifacts` y `flags-after-artifacts`.
 
 ## 9. Fuera de alcance
 

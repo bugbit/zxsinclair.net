@@ -39,7 +39,7 @@ internal static class RotateEmission
 internal sealed class RotateAccumulatorPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Kind is OpcodeKind.Instruction or OpcodeKind.Alias
+    public bool Matches(Opcode opcode) => opcode.IsInstruction()
         && opcode.Mnemonic is "RLCA" or "RRCA" or "RLA" or "RRA" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) => opcode.Mnemonic switch
     {
@@ -51,7 +51,7 @@ internal sealed class RotateAccumulatorPattern : IPattern
 internal sealed class RotateRegisterPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.CB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.CB
         && RotateEmission.Helper(opcode.Mnemonic) is not null && opcode.Operands.Length == 1
         && opcode.Operands[0].Kind == OperandKind.Register8;
     public string EmitBody(Opcode opcode, EmitContext context)
@@ -64,7 +64,7 @@ internal sealed class RotateRegisterPattern : IPattern
 internal sealed class RotateMemoryPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table is OpcodeTableKind.CB or OpcodeTableKind.DDFDCB
         && opcode.InnerInstruction is null && RotateEmission.Helper(opcode.Mnemonic) is not null
         && opcode.Operands.Length == 1
         && (opcode.Operands[0].Kind == OperandKind.IndexedMemory
@@ -76,7 +76,7 @@ internal sealed class RotateMemoryPattern : IPattern
 internal sealed class RotateMemoryCopyPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.DDFDCB
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.DDFDCB
         && opcode.CopyTo is { Kind: OperandKind.Register8 }
         && opcode.InnerInstruction is { Operands.Length: 1 } inner
         && RotateEmission.Helper(inner.Mnemonic) is not null
@@ -88,7 +88,7 @@ internal sealed class RotateMemoryCopyPattern : IPattern
 internal sealed class RotateDigitPattern : IPattern
 {
     public bool WritesFlags(Opcode opcode) => true;
-    public bool Matches(Opcode opcode) => opcode.Table == OpcodeTableKind.ED
+    public bool Matches(Opcode opcode) => opcode.IsInstruction() && opcode.Table == OpcodeTableKind.ED
         && opcode.Mnemonic is "RLD" or "RRD" && opcode.Operands.Length == 0;
     public string EmitBody(Opcode opcode, EmitContext context) =>
         opcode.Mnemonic == "RLD" ? "Rld();" : "Rrd();";

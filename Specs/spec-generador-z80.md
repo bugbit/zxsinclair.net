@@ -94,10 +94,11 @@ Un operando que el parser no reconoce es un error del generador, no un caso "no 
 
 ### 3.1 Modelo
 
-El parser produce, por tabla, 256 entradas `Opcode { Table, Byte, Mnemonic, Operands[], Kind }` con `Kind` = instrucción, alias resuelto, prefijo, hueco o ausente. Incluye `Source` (fichero y línea; línea 0 para entradas ausentes), `CopyTo` e `InnerInstruction` para formas compuestas. El modelo no contiene código C#.
+El parser produce, por tabla, 256 entradas `Opcode { Table, Byte, Mnemonic, Operands[], Kind }` con `Kind` = instrucción, alias resuelto, prefijo, hueco o ausente. Incluye `Source` (fichero y línea; línea 0 para entradas ausentes), `CopyTo` e `InnerInstruction` para formas compuestas. `OperandBytes` cuenta los bytes que la instrucción lee por PC tras el opcode (inmediatos, desplazamientos, direcciones, puerto y el `d` de DD/FD; en DDFDCB el `d` lo lee el bucle de prefijos) y `Length` suma los bytes de prefijo (DD/FD CB d cuenta como tres). El modelo no contiene código C#.
 
 ### 3.2 Catálogo de patrones
 
+- Todos los patrones, salvo `EdHolePattern`, empiezan con el guard común `opcode.IsInstruction()` (instrucción o alias, `Patterns/PatternGuards.cs`); `Patterns_IgnoreNonInstructions` lo comprueba.
 - `DispatchEmitter.Generate(tables, catalog)` recibe el catálogo como parámetro; la CLI usa `PatternCatalog.Default`. Los tests pueden inyectar patrones sin modificar el catálogo real.
 - Un **patrón** reconoce un conjunto de opcodes por mnemónico y forma de operandos (por ejemplo, `LD r,r'`, `LD r,(HL)`, `ALU A,r`, `JR cc,offset`) y **emite el cuerpo** del `case`.
 - Los patrones se agrupan por grupo del manual en ficheros del generador: `Patterns/Control.cs` (`NOP` y control), `Patterns/Load8.cs`, `Patterns/Load16.cs`… Cada spec de grupo enumera sus patrones y su código emitido.

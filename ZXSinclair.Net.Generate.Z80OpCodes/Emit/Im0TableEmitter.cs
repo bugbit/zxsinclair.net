@@ -31,10 +31,8 @@ internal static class Im0TableEmitter
         var bits = new byte[32];
         foreach (var item in main.Opcodes)
         {
-            if (!item.Implemented || item.Opcode.Kind == OpcodeKind.Prefix
-                || item.Opcode.Operands.Any(o => o.Kind is OperandKind.Immediate8 or OperandKind.Immediate16
-                    or OperandKind.RelativeOffset or OperandKind.AbsoluteMemory
-                    or OperandKind.PortImmediate or OperandKind.IndexedMemory))
+            // Only single-byte opcodes can run from the acknowledge byte without reading through PC.
+            if (!item.Implemented || item.Opcode.Kind == OpcodeKind.Prefix || item.Opcode.Length != 1)
                 continue;
             bits[item.Opcode.Byte >> 3] |= (byte)(1 << (item.Opcode.Byte & 7));
         }
