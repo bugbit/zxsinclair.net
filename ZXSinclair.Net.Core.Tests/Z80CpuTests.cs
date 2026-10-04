@@ -38,7 +38,7 @@ public class Z80CpuTests
         {
             AF = 1, BC = 2, DE = 3, HL = 4, AF_ = 5, BC_ = 6, DE_ = 7, HL_ = 8,
             IX = 9, IY = 10, SP = 11, PC = 12, WZ = 13, IR = 14,
-            IFF1 = true, IFF2 = true, IM = 2, Halted = true, EiPending = true, Q = 0xFF,
+            IFF1 = true, IFF2 = true, IM = 2, Halted = true, EiPending = true, Q = 0xFF, SpecialLoadPending = true,
         };
         cpu.RequestNmi();
         cpu.Reset();
@@ -51,17 +51,14 @@ public class Z80CpuTests
     }
 
     [Theory]
-    [InlineData(new byte[] { 0x00 }, 4, 1)]
-    [InlineData(new byte[] { 0xCB, 0x12 }, 8, 2)]
+    [InlineData(new byte[] { 0xED, 0x00 }, 8, 2)]
     [InlineData(new byte[] { 0xED, 0x12 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0x00 }, 8, 2)]
-    [InlineData(new byte[] { 0xFD, 0x00 }, 8, 2)]
-    [InlineData(new byte[] { 0xDD, 0xFD, 0x00 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xDD, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xDD, 0xED, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xFD, 0xED, 0x00 }, 12, 3)]
+    [InlineData(new byte[] { 0xDD, 0xFD, 0xED, 0x00 }, 16, 4)]
+    [InlineData(new byte[] { 0xFD, 0xDD, 0xED, 0x00 }, 16, 4)]
     [InlineData(new byte[] { 0xDD, 0xED, 0x12 }, 12, 3)]
-    [InlineData(new byte[] { 0xFD, 0xCB, 0xFE, 0x12 }, 16, 2)]
-    [InlineData(new byte[] { 0xDD, 0xCB, 0x80, 0x12 }, 16, 2)]
-    public void UnimplementedDispatchCountsFetches(byte[] program, int cycles, byte refresh)
+    public void EdHoleDispatchCountsFetches(byte[] program, int cycles, byte refresh)
     {
         var (cpu, state) = Create(program);
         cpu.Registers.R = 0x80;
@@ -69,23 +66,24 @@ public class Z80CpuTests
         Assert.Equal(cycles, state.Cycles);
         Assert.Equal((ushort)program.Length, cpu.Registers.PC);
         Assert.Equal((byte)(0x80 | refresh), cpu.Registers.R);
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
-        if (program.Contains((byte)0xCB) && program[0] is 0xDD or 0xFD)
-            Assert.Equal(("Internal", (ushort)3, 2), state.Accesses[^1]);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Fact]
     public void LongAlternatingPrefixChainUsesConstantStackSpace()
     {
         var (cpu, state) = Create();
-        for (var i = 0; i < 65535; i++)
+        cpu.Registers.PC = 1;
+        for (var i = 1; i < 65535; i++)
             state.Memory[i] = (byte)((i & 1) == 0 ? 0xDD : 0xFD);
+        state.Memory[0xFFFF] = 0xED;
+        state.Memory[0] = 0x00;
         cpu.Registers.R = 0x80;
         cpu.Step();
         Assert.Equal(262144, state.Cycles);
-        Assert.Equal((ushort)0, cpu.Registers.PC);
+        Assert.Equal((ushort)1, cpu.Registers.PC);
         Assert.Equal((byte)0x80, cpu.Registers.R);
-        Assert.Equal(1, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Fact]
@@ -95,12 +93,25 @@ public class Z80CpuTests
         state.Memory[0xFFFE] = 0xDD;
         state.Memory[0xFFFF] = 0xFD;
         cpu.Registers.PC = 0xFFFE;
+        cpu.Registers.IY = 0x4002;
+        cpu.Registers.F = 1;
+        state.Memory[0x4000] = 0x80;
         cpu.Step();
-        Assert.Equal(20, state.Cycles);
+        Assert.Equal(27, state.Cycles);
         Assert.Equal((ushort)3, cpu.Registers.PC);
         Assert.Equal((byte)3, cpu.Registers.R);
-        Assert.Equal(new ushort[] { 0xFFFE, 0xFFFF, 0, 1, 2, 2 },
-            state.Accesses.Select(a => a.Address).ToArray());
+        Assert.Equal((byte)1, cpu.Registers.D);
+        Assert.Equal((byte)1, state.Memory[0x4000]);
+        Assert.Equal((byte)1, cpu.Registers.F);
+        Assert.Equal(cpu.Registers.F, cpu.Registers.Q);
+        Assert.Equal((ushort)0x4000, cpu.Registers.WZ);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
+        Assert.Equal(new (string Kind, ushort Address, int Value)[]
+        {
+            ("M1", 0xFFFE, 0xDD), ("M1", 0xFFFF, 0xFD), ("M1", 0, 0xCB),
+            ("Read", 1, 0xFE), ("Read", 2, 0x12), ("Internal", 2, 2),
+            ("Read", 0x4000, 0x80), ("Internal", 0x4000, 1), ("Write", 0x4000, 1),
+        }, state.Accesses);
     }
 
     [Fact]
@@ -165,12 +176,11 @@ public class Z80CpuTests
         Assert.Equal((byte)0x80, cpu.Registers.R);
         Assert.False(cpu.Registers.IFF1);
         Assert.False(cpu.Registers.IFF2);
-        Assert.Equal(new[] { "Ack", "Write", "Write" }, state.Accesses.Select(a => a.Kind));
+        Assert.Equal(new[] { "Ack", "Internal", "Write", "Write" }, state.Accesses.Select(a => a.Kind));
         Assert.Equal(0, cpu.UnimplementedOpcodes);
     }
 
     [Theory]
-    [InlineData(0x00)]
     [InlineData(0xCD)]
     [InlineData(0xCB)]
     [InlineData(0xDD)]
@@ -184,7 +194,7 @@ public class Z80CpuTests
         state.IntActive = true;
         state.InterruptData = data;
         cpu.Step();
-        Assert.Equal(7, state.Cycles);
+        Assert.Equal(6, state.Cycles);
         Assert.Equal((ushort)0x1234, cpu.Registers.PC);
         Assert.Equal((ushort)0x8000, cpu.Registers.SP);
         Assert.Equal((ushort)0xABCD, cpu.Registers.WZ);
@@ -214,7 +224,7 @@ public class Z80CpuTests
         Assert.Equal(19, state.Cycles);
         Assert.Equal((ushort)0x5678, cpu.Registers.PC);
         Assert.Equal((ushort)0x5678, cpu.Registers.WZ);
-        Assert.Equal(new ushort[] { 0, 0x8FFF, 0x8FFE, vector, unchecked((ushort)(vector + 1)) },
+        Assert.Equal(new ushort[] { 0, cpu.Registers.IR, 0x8FFF, 0x8FFE, vector, unchecked((ushort)(vector + 1)) },
             state.Accesses.Select(a => a.Address));
         Assert.Equal((byte)0x12, state.Memory[0x8FFF]);
         Assert.Equal((byte)0x34, state.Memory[0x8FFE]);
@@ -312,7 +322,7 @@ public class Z80CpuTests
         var cpu = new Z80Cpu<SpectrumBus>(machine.Bus);
         cpu.Execute(machine.Timing.TStatesPerFrame);
         Assert.Equal(machine.Timing.TStatesPerFrame, machine.TStates);
-        Assert.Equal(17472, cpu.UnimplementedOpcodes);
+        Assert.Equal(0, cpu.UnimplementedOpcodes);
         Assert.Equal((ushort)17472, cpu.Registers.PC);
         machine.EndFrame();
         Assert.Equal(0, machine.TStates);

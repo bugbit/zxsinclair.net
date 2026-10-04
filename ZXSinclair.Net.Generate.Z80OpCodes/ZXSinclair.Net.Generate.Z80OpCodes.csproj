@@ -11,10 +11,12 @@
     <EmbeddedResource Include="data/opcodes_base.dat" />
     <EmbeddedResource Include="data/opcodes_ddfd.dat" />
     <EmbeddedResource Include="data/opcodes_ed.dat" />
+    <EmbeddedResource Include="data/opcodes_cb.dat" />
+    <EmbeddedResource Include="data/opcodes_ddfdcb.dat" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZXSinclair.Net.Core\ZXSinclair.Net.Core.csproj" />
+    <InternalsVisibleTo Include="ZXSinclair.Net.Generate.Z80OpCodes.Tests" />
   </ItemGroup>
 
 </Project>

@@ -40,6 +40,22 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "check (generateZ80Opcodes)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/ZXSinclair.Net.Generate.Z80OpCodes/ZXSinclair.Net.Generate.Z80OpCodes.csproj",
+                "--",
+                "--check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
         }
     ]
 }

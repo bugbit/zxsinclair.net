@@ -42,4 +42,19 @@ public class Z80FlagsTests
             new[] { Z80Flags.C, Z80Flags.N, Z80Flags.PV, Z80Flags.F3,
                 Z80Flags.H, Z80Flags.F5, Z80Flags.Z, Z80Flags.S });
     }
+
+    [Fact]
+    public void Tables_AreReadOnly()
+    {
+        // Shared lookup tables must not be writable from outside (Specs/spec-correcciones-revision-2.md 4).
+        var flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+        Assert.DoesNotContain(typeof(Z80Flags).GetFields(flags), field => field.FieldType.IsArray);
+        foreach (var name in new[] { "SZ53", "SZ53P", "Parity", "Inc", "Dec" })
+        {
+            var property = typeof(Z80Flags).GetProperty(name, flags);
+            Assert.NotNull(property);
+            Assert.Equal(typeof(ReadOnlySpan<byte>), property!.PropertyType);
+            Assert.Null(property.SetMethod);
+        }
+    }
 }

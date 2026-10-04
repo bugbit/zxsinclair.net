@@ -57,6 +57,21 @@ public class SpectrumBusTests
         Assert.Equal(0x42, machine.Memory.Read(0x4000));
     }
 
+    [Theory]
+    [InlineData(0x8000, 0, 3)]
+    [InlineData(0x4000, 0, 3)]
+    [InlineData(0x4000, 14335, 14344)]
+    [InlineData(0x4000, 14337, 14344)]
+    [InlineData(0x8000, 14335, 14338)]
+    public void ReadDiscarded_ReturnsValueWithReadTimingAndContention(int address, int start, int end)
+    {
+        var machine = At(start);
+        machine.Memory.Write((ushort)address, 0x5A);
+        Assert.Equal((byte)0x5A, machine.Bus.ReadDiscarded((ushort)address));
+        Assert.Equal(end, machine.TStates);
+        Assert.Equal((byte)0x5A, machine.Memory.Read((ushort)address));
+    }
+
     [Fact]
     public void FetchOpcode_TakesFourTStatesPlusContention()
     {
@@ -182,12 +197,26 @@ public class SpectrumBusTests
     }
 
     [Fact]
-    public void AcknowledgeInterrupt_ReturnsFFAndTakesSevenTStates()
+    public void AcknowledgeInterrupt_ReturnsFFAndTakesSixTStates()
     {
         var machine = At(0);
 
         Assert.Equal(0xFF, machine.Bus.AcknowledgeInterrupt());
-        Assert.Equal(7, machine.TStates);
+        Assert.Equal(6, machine.TStates);
+    }
+
+    [Theory]
+    [InlineData(0x42, 19)]
+    [InlineData(0x80, 13)]
+    public void InterruptInternalCycle_UsesIrContention(byte i, int elapsed)
+    {
+        var machine = At(14329);
+        // The ULA's frame INT is inactive here; the same emitted bus sequence is exercised directly.
+        machine.Bus.AcknowledgeInterrupt();
+        machine.Bus.Internal((ushort)((i << 8) | 1), 1);
+        machine.Bus.Write(0x8FFF, 0x80);
+        machine.Bus.Write(0x8FFE, 0);
+        Assert.Equal(14329 + elapsed, machine.TStates);
     }
 
     [Fact]

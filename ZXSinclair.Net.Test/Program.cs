@@ -18,24 +18,54 @@
 using ZXSinclair.Net.Core.Z80;
 using ZXSinclair.Net.Fuse;
 
-// FUSE Z80 test runner (Debug or Release). Cases with unimplemented instructions are counted as skipped.
-
+// Reporting and filtering live outside the per-instruction execution path.
+string? filter = null;
+var verbose = false;
+var listSkipped = false;
+var recordEvents = true;
+var maxFailures = 10;
+for (var i = 0; i < args.Length; i++)
+{
+    switch (args[i])
+    {
+        case "--no-events": recordEvents = false; break;
+        case "--verbose": verbose = true; break;
+        case "--list-skipped": listSkipped = true; break;
+        case "--filter" when i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal):
+            filter = args[++i];
+            break;
+        case "--max-failures" when i + 1 < args.Length && int.TryParse(args[i + 1], out var limit) && limit >= 0:
+            maxFailures = limit;
+            i++;
+            break;
+        default:
+            Console.Error.WriteLine($"Invalid or incomplete argument: {args[i]}");
+            Console.Error.WriteLine("Usage: [--filter <prefix>] [--verbose] [--max-failures <n >= 0>] [--list-skipped] [--no-events]");
+            Environment.ExitCode = 2;
+            return;
+    }
+}
 var testsIn = FuseTestFile.LoadInputs();
 var testsExpected = FuseTestFile.LoadExpected();
-var missing = testsIn.Where(t => !testsExpected.ContainsKey(t.Base.Name)).Select(t => t.Base.Name).ToList();
-
-foreach (var name in missing)
-    Console.Error.WriteLine($"FAIL {name}: missing expected result");
-
+var selected = testsIn.Where(t => filter is null || t.Base.Name.StartsWith(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
 Console.WriteLine($"FUSE: {testsIn.Count} tests loaded, {testsExpected.Count} expected results, {testsExpected.Values.Sum(t => t.Events.Length)} bus events.");
+if (filter is not null) Console.WriteLine($"FUSE filter '{filter}': {selected.Length} selected.");
 var passed = 0;
-var failed = missing.Count;
+var passedWithConvention = 0;
+var failed = 0;
 var skipped = 0;
-var recordEvents = !args.Contains("--no-events");
-foreach (var test in testsIn)
+var failuresBySection = new Dictionary<FuseMismatchKind, int>();
+var failuresByOpcode = new SortedDictionary<string, int>(StringComparer.Ordinal);
+foreach (var test in selected)
 {
     if (!testsExpected.TryGetValue(test.Base.Name, out var expected))
+    {
+        failed++;
+        Console.Error.WriteLine($"FAIL {test.Base.Name}: missing expected result");
+        Count(FuseMismatchKind.Register, failuresBySection);
+        Count(test.Base.Name.Split('_')[0], failuresByOpcode);
         continue;
+    }
     var state = new FuseTestBusState { Events = recordEvents ? new() : null };
     for (var address = 0; address < state.Memory.Length; address += 4)
     {
@@ -57,21 +87,43 @@ foreach (var test in testsIn)
     if (cpu.UnimplementedOpcodes != 0)
     {
         skipped++;
+        if (listSkipped)
+        {
+            var end = cpu.LastUnimplementedAddress;
+            var bytes = Enumerable.Range(0, 4).Select(i => state.Memory[(ushort)(end - 4 + i)].ToString("x2"));
+            Console.WriteLine($"SKIP {test.Base.Name}: opcode {state.Memory[(ushort)(end - 1)]:x2} at {(ushort)(end - 1):x4}; bytes before PC={end:x4}: {string.Join(" ", bytes)} (prefix/opcode context)");
+        }
         continue;
     }
-    var error = FuseCpuState.Compare(expected.Base, in cpu.Registers, state.Cycles)
-        ?? FuseComparison.CompareMemory(FuseComparison.ExpectedMemory(initialMemory, expected),
-            address => state.Memory[address]);
-    if (error is null && recordEvents)
-        error = FuseComparison.CompareEvents(expected, state.Events!);
-    if (error is null)
-        passed++;
-    else
+    var report = new FuseReport(expected, in cpu.Registers, state.Cycles, initialMemory,
+        address => state.Memory[address], state.Events, convention: FuseConventions.ForCase(test.Base.Name));
+    if (!report.Failed)
     {
-        failed++;
-        Console.Error.WriteLine($"FAIL {test.Base.Name}: {error}");
+        passed++;
+        if (report.Convention is not null)
+        {
+            passedWithConvention++;
+            if (report.IgnoredFlagsDiffer || verbose)
+                Console.WriteLine(report.ConventionSummary(test.Base.Name, verbose));
+        }
+        continue;
     }
+    failed++;
+    foreach (var section in report.Mismatches.Select(m => m.Kind == FuseMismatchKind.State ? FuseMismatchKind.Register : m.Kind).Distinct())
+        Count(section, failuresBySection);
+    Count(initialMemory[test.Base.Line1.pc].ToString("x2"), failuresByOpcode);
+    Console.Error.WriteLine(failed <= maxFailures
+        ? report.Format(test, expected, initialMemory, state.Events, verbose)
+        : report.Summary(test.Base.Name));
 }
 Console.WriteLine($"FUSE: {passed} passed / {failed} failed / {skipped} skipped");
-if (failed != 0)
-    Environment.ExitCode = 1;
+Console.WriteLine($"FUSE pasados con convención: {passedWithConvention}");
+Console.WriteLine("FUSE failures by section: " + string.Join(", ",
+    new[] { FuseMismatchKind.Register, FuseMismatchKind.Flags, FuseMismatchKind.Memory, FuseMismatchKind.Event, FuseMismatchKind.TStates }
+        .Select(kind => $"{kind}={failuresBySection.GetValueOrDefault(kind)}")));
+Console.WriteLine("FUSE failures by opcode prefix: " + (failuresByOpcode.Count == 0 ? "none" :
+    string.Join(", ", failuresByOpcode.Select(pair => $"{pair.Key}={pair.Value}"))));
+if (failed != 0) Environment.ExitCode = 1;
+
+static void Count<TKey>(TKey key, IDictionary<TKey, int> counts) where TKey : notnull =>
+    counts[key] = counts.TryGetValue(key, out var value) ? value + 1 : 1;

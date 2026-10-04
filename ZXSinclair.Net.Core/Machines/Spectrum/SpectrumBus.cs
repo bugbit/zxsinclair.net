@@ -57,6 +57,9 @@ public readonly struct SpectrumBus : IZ80Bus
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte ReadDiscarded(ushort address) => Read(address);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Write(ushort address, byte data)
     {
         Cycle(address, 3);

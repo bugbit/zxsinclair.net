@@ -46,7 +46,7 @@ public sealed class SpectrumMachine
     public const byte NoKeysPressed = 0x1F;
 
     /// <summary>T-states of the interrupt acknowledge cycle before the CPU starts pushing PC (FUSE value, to verify).</summary>
-    public const int InterruptAcknowledgeTStates = 7;
+    public const int InterruptAcknowledgeTStates = 6;
 
     // Fields read by SpectrumBus in the hot path.
     internal int tstates;
