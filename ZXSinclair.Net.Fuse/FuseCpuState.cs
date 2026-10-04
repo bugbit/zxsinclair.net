@@ -32,34 +32,72 @@ public static class FuseCpuState
             IX = a.ix, IY = a.iy, SP = a.sp, PC = a.pc,
             I = (byte)b.i, R = (byte)b.r, IFF1 = b.iff1 != 0,
             IFF2 = b.iff2 != 0, IM = (byte)b.im, Halted = b.halted != 0,
+            // FUSE SCF/CCF assume a preceding flag writer (spec-instr-control.md 5.1).
+            Q = (byte)a.af,
+            SpecialLoadPending = false,
         };
     }
 
-    public static string? Compare(clsTestBase expected, in Z80Registers actual, int cycles)
+    /// <summary>All fields represented by FUSE; WZ, Q and EI delay are absent from its format.</summary>
+    public static IReadOnlyList<FuseMismatch> Diff(clsTestBase expected, in Z80Registers actual, int cycles,
+        byte ignoredFlags = 0)
     {
         var e = Load(expected);
-        if (e.AF != actual.AF) return Difference("AF", e.AF, actual.AF);
-        if (e.BC != actual.BC) return Difference("BC", e.BC, actual.BC);
-        if (e.DE != actual.DE) return Difference("DE", e.DE, actual.DE);
-        if (e.HL != actual.HL) return Difference("HL", e.HL, actual.HL);
-        if (e.AF_ != actual.AF_) return Difference("AF'", e.AF_, actual.AF_);
-        if (e.BC_ != actual.BC_) return Difference("BC'", e.BC_, actual.BC_);
-        if (e.DE_ != actual.DE_) return Difference("DE'", e.DE_, actual.DE_);
-        if (e.HL_ != actual.HL_) return Difference("HL'", e.HL_, actual.HL_);
-        if (e.IX != actual.IX) return Difference("IX", e.IX, actual.IX);
-        if (e.IY != actual.IY) return Difference("IY", e.IY, actual.IY);
-        if (e.SP != actual.SP) return Difference("SP", e.SP, actual.SP);
-        if (e.PC != actual.PC) return Difference("PC", e.PC, actual.PC);
-        if (e.I != actual.I) return Difference("I", e.I, actual.I);
-        if (e.R != actual.R) return Difference("R", e.R, actual.R);
-        if (e.IFF1 != actual.IFF1) return $"IFF1: expected {e.IFF1}, actual {actual.IFF1}";
-        if (e.IFF2 != actual.IFF2) return $"IFF2: expected {e.IFF2}, actual {actual.IFF2}";
-        if (e.IM != actual.IM) return Difference("IM", e.IM, actual.IM);
-        if (e.Halted != actual.Halted) return $"halted: expected {e.Halted}, actual {actual.Halted}";
-        return expected.Line2.endtstates == cycles ? null
-            : $"T-states: expected {expected.Line2.endtstates}, actual {cycles}";
+        var result = new List<FuseMismatch>();
+        void Register(string name, ushort wanted, ushort found, int width = 4, string? detail = null)
+        {
+            if (wanted != found)
+                result.Add(new(FuseMismatchKind.Register, name, wanted.ToString($"x{width}"), found.ToString($"x{width}"), detail));
+        }
+        void State(string name, string wanted, string found)
+        {
+            if (wanted != found) result.Add(new(FuseMismatchKind.State, name, wanted, found));
+        }
+        void Flags(string name, byte wanted, byte found)
+        {
+            if (wanted != found)
+                result.Add(new(FuseMismatchKind.Flags, name,
+                    $"{wanted:x2} ({DecodeFlags(wanted)})", $"{found:x2} ({DecodeFlags(found)})",
+                    $"Difieren: {DecodeFlags((byte)(wanted ^ found))}"));
+        }
+        Register("A", e.A, actual.A, 2);
+        if (((e.F ^ actual.F) & ~ignoredFlags) != 0)
+            Flags("F", e.F, actual.F);
+        Register("BC", e.BC, actual.BC);
+        Register("DE", e.DE, actual.DE);
+        Register("HL", e.HL, actual.HL);
+        Register("A'", (byte)(e.AF_ >> 8), (byte)(actual.AF_ >> 8), 2);
+        Flags("F'", (byte)e.AF_, (byte)actual.AF_);
+        Register("BC'", e.BC_, actual.BC_);
+        Register("DE'", e.DE_, actual.DE_);
+        Register("HL'", e.HL_, actual.HL_);
+        Register("IX", e.IX, actual.IX);
+        Register("IY", e.IY, actual.IY);
+        Register("SP", e.SP, actual.SP);
+        Register("PC", e.PC, actual.PC);
+        Register("I", e.I, actual.I, 2);
+        var refreshDifference = e.R ^ actual.R;
+        Register("R", e.R, actual.R, 2, (refreshDifference & 0x80) == 0
+            ? "Difieren solo los 7 bits bajos de R."
+            : (refreshDifference & 0x7F) == 0 ? "Difiere solo el bit 7 de R." : "Difieren el bit 7 y los bits bajos de R.");
+        State("IFF1", e.IFF1.ToString(), actual.IFF1.ToString());
+        State("IFF2", e.IFF2.ToString(), actual.IFF2.ToString());
+        State("IM", e.IM.ToString(), actual.IM.ToString());
+        State("halted", e.Halted.ToString(), actual.Halted.ToString());
+        if (expected.Line2.endtstates != cycles)
+            result.Add(new(FuseMismatchKind.TStates, "T-states", expected.Line2.endtstates.ToString(), cycles.ToString()));
+        return result;
     }
 
-    private static string Difference(string name, ushort expected, ushort actual) =>
-        $"{name}: expected {expected:x4}, actual {actual:x4}";
+    public static string DecodeFlags(byte flags)
+    {
+        string[] names = ["S", "Z", "5", "H", "3", "P/V", "N", "C"];
+        var set = new List<string>();
+        for (var bit = 7; bit >= 0; bit--)
+            if ((flags & (1 << bit)) != 0) set.Add(names[7 - bit]);
+        return set.Count == 0 ? "ninguno" : string.Join(" ", set);
+    }
+
+    public static string? Compare(clsTestBase expected, in Z80Registers actual, int cycles) =>
+        Diff(expected, in actual, cycles).FirstOrDefault()?.ToString();
 }

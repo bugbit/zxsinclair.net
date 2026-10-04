@@ -1,8 +1,15 @@
 <Solution>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="AGENTS.md" />
+    <File Path="CLAUDE.md" />
+    <File Path="Specs/spec-generador-z80.md" />
+    <File Path="Specs/spec-proceso-instrucciones.md" />
+  </Folder>
   <Project Path="ZXSinclair.Net.Benchmarks/ZXSinclair.Net.Benchmarks.csproj" />
   <Project Path="ZXSinclair.Net.Core.Tests/ZXSinclair.Net.Core.Tests.csproj" />
   <Project Path="ZXSinclair.Net.Core/ZXSinclair.Net.Core.csproj" />
   <Project Path="ZXSinclair.Net.Fuse/ZXSinclair.Net.Fuse.csproj" />
+  <Project Path="ZXSinclair.Net.Generate.Z80OpCodes.Tests/ZXSinclair.Net.Generate.Z80OpCodes.Tests.csproj" />
   <Project Path="ZXSinclair.Net.Generate.Z80OpCodes/ZXSinclair.Net.Generate.Z80OpCodes.csproj" />
   <Project Path="ZXSinclair.Net.Test/ZXSinclair.Net.Test.csproj" />
 </Solution>

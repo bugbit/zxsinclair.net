@@ -16,5 +16,19 @@
 #endregion
 
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Filters;
+using ZXSinclair.Net.Benchmarks;
 
-BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+var romPath = Environment.GetEnvironmentVariable("ZX_ROM_48K");
+var hasRom = !string.IsNullOrWhiteSpace(romPath) && File.Exists(romPath);
+if (!hasRom)
+    Console.WriteLine("ExecuteRomBootFrames omitted: set ZX_ROM_48K to a local 16 KiB Spectrum 48K ROM.");
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly)
+    .Run(args, DefaultConfig.Instance.AddFilter(new OptionalRomFilter(hasRom)));
+
+internal sealed class OptionalRomFilter(bool hasRom) : IFilter
+{
+    public bool Predicate(BenchmarkCase benchmarkCase) =>
+        benchmarkCase.Descriptor.WorkloadMethod.Name != nameof(Z80CpuBenchmarks.ExecuteRomBootFrames) || hasRom;
+}

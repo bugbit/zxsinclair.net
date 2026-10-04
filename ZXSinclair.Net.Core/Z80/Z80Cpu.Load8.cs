@@ -15,48 +15,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
+using System.Runtime.CompilerServices;
+
 namespace ZXSinclair.Net.Core.Z80;
 
-// Provisional dispatch: the future generator replaces this file (spec section 5).
 public sealed partial class Z80Cpu<TBus>
 {
-    private void ExecuteMain(byte opcode)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void StoreIndexedImmediate<TIndex>() where TIndex : struct, IIndexRegister
     {
-        switch (opcode)
-        {
-            default: Unimplemented(); break;
-        }
+        var displacement = (sbyte)ReadPc();
+        var value = ReadPc();
+        bus.Internal((ushort)(Registers.PC - 1), 2);
+        var address = (ushort)(TIndex.Pair(ref Registers) + displacement);
+        Registers.WZ = address;
+        bus.Write(address, value);
     }
 
-    private void ExecuteCB(byte opcode)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void LoadAFromSpecial(byte value)
     {
-        switch (opcode)
-        {
-            default: Unimplemented(); break;
-        }
-    }
-
-    private void ExecuteED(byte opcode)
-    {
-        switch (opcode)
-        {
-            default: Unimplemented(); break;
-        }
-    }
-
-    private void ExecuteIndexedOpcode<TIndex>(byte opcode) where TIndex : struct, IIndexRegister
-    {
-        switch (opcode)
-        {
-            default: Unimplemented(); break;
-        }
-    }
-
-    private void ExecuteIndexedCB<TIndex>(ushort address, byte opcode) where TIndex : struct, IIndexRegister
-    {
-        switch (opcode)
-        {
-            default: Unimplemented(); break;
-        }
+        Registers.SpecialLoadPending = true;
+        bus.Internal(Registers.IR, 1);
+        Registers.A = value;
+        Registers.F = (byte)((Registers.F & Z80Flags.C) | Z80Flags.SZ53[value]
+            | (Registers.IFF2 ? Z80Flags.PV : 0));
     }
 }

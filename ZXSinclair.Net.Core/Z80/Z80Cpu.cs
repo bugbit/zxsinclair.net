@@ -27,6 +27,8 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     private bool nmiPending;
     public Z80Registers Registers;
     public int UnimplementedOpcodes { get; private set; }
+    /// <summary>PC when the last unimplemented opcode was recorded; ordinary fetches leave it just after the opcode.</summary>
+    public ushort LastUnimplementedAddress { get; private set; }
     public bool Halted => Registers.Halted;
 
     public Z80Cpu(TBus bus)
@@ -41,6 +43,7 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
         Registers.AF = Registers.SP = 0xFFFF;
         nmiPending = false;
         UnimplementedOpcodes = 0;
+        LastUnimplementedAddress = 0;
     }
 
     public void RequestNmi() => nmiPending = true;
@@ -65,8 +68,10 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
             return;
         }
         Registers.EiPending = false;
+        Registers.SpecialLoadPending = false;
         if (Registers.Halted)
         {
+            Registers.Q = 0;
             bus.FetchOpcode(Registers.PC);
             Registers.IncrementR();
             return;
@@ -94,6 +99,8 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
                 break;
             iy = opcode == 0xFD;
         }
+        // The prefix counts as a previous instruction that did not write flags (SCF/CCF Q rule).
+        Registers.Q = 0;
         if (iy)
             FinishIndexed<IyRegister>(opcode);
         else
@@ -110,7 +117,9 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
             var opcodeAddress = Registers.PC;
             var indexedOpcode = ReadPc();
             bus.Internal(opcodeAddress, 2);
-            ExecuteIndexedCB<TIndex>(unchecked((ushort)(TIndex.Pair(ref Registers) + displacement)), indexedOpcode);
+            var address = unchecked((ushort)(TIndex.Pair(ref Registers) + displacement));
+            Registers.WZ = address;
+            ExecuteIndexedCB<TIndex>(address, indexedOpcode);
         }
         else
             ExecuteIndexedOpcode<TIndex>(opcode);
@@ -128,6 +137,33 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     private byte ReadPc() => bus.Read(Registers.PC++);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort ReadPc16()
+    {
+        var low = ReadPc();
+        return (ushort)(low | ReadPc() << 8);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private byte ReadPcDiscarded() => bus.ReadDiscarded(Registers.PC++);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort ReadPc16Discarded()
+    {
+        var low = ReadPcDiscarded();
+        return (ushort)(low | ReadPcDiscarded() << 8);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private ushort IndexedAddress<TIndex>() where TIndex : struct, IIndexRegister
+    {
+        var displacement = (sbyte)ReadPc();
+        bus.Internal((ushort)(Registers.PC - 1), 5);
+        var address = (ushort)(TIndex.Pair(ref Registers) + displacement);
+        Registers.WZ = address;
+        return address;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Push(ushort value)
     {
         bus.Write(--Registers.SP, (byte)(value >> 8));
@@ -142,5 +178,9 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Unimplemented() => UnimplementedOpcodes++;
+    private void Unimplemented()
+    {
+        UnimplementedOpcodes++;
+        LastUnimplementedAddress = Registers.PC;
+    }
 }

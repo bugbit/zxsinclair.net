@@ -42,16 +42,38 @@ public class FuseTestBusTests
         Assert.Contains("bus event 1", FuseComparison.CompareEvents(expected, state.Events)!);
     }
 
+    [Theory]
+    [InlineData("20_2", new byte[] { 0x20, 0x40 })]
+    [InlineData("c2_2", new byte[] { 0xC2, 0x1B, 0xE1 })]
+    public void NotTakenOperandReadsMatchRealFuseEvents(string name, byte[] program)
+    {
+        var expected = Fixture(name);
+        var state = new FuseTestBusState { Events = new() };
+        program.CopyTo(state.Memory, 0);
+        Assert.Equal(program[1], new FuseTestBus(state).ReadDiscarded(1));
+        Assert.Equal(3, state.Cycles);
+        Assert.Equal(new Z80BusEvent(0, Z80BusEventType.MC, 1, null), Assert.Single(state.Events!));
+
+        state = new FuseTestBusState { Events = new() };
+        program.CopyTo(state.Memory, 0);
+        var cpu = new Z80Cpu<FuseTestBus>(new(state));
+        cpu.Registers.F = (byte)(name == "20_2" ? 0x40 : 0xC7);
+        cpu.Step();
+        Assert.Null(FuseComparison.CompareEvents(expected, state.Events!));
+    }
+
     [Fact]
     public void IndexedPrefixCyclesMatchRealFuseEvents()
     {
         var expected = Fixture("ddcb00");
-        expected.Events = expected.Events.Take(10).ToArray();
+        var input = FuseTestFile.LoadInputs().Single(t => t.Base.Name == "ddcb00");
         var state = new FuseTestBusState { Events = new() };
-        new byte[] { 0xDD, 0xCB, 0x0D, 0 }.CopyTo(state.Memory, 0);
+        foreach (var block in input.Base.Memories)
+            block.Data.CopyTo(state.Memory, block.Address);
         var cpu = new Z80Cpu<FuseTestBus>(new(state));
+        cpu.Registers = FuseCpuState.Load(input.Base);
         cpu.Step();
-        Assert.Equal(16, state.Cycles);
+        Assert.Equal(23, state.Cycles);
         Assert.Null(FuseComparison.CompareEvents(expected, state.Events!));
     }
 
@@ -101,7 +123,7 @@ public class FuseTestBusTests
         }, state.Events!);
         Assert.False(bus.IntActive);
         Assert.Equal((byte)0xFF, bus.AcknowledgeInterrupt());
-        Assert.Equal(15, state.Cycles);
+        Assert.Equal(14, state.Cycles);
         bus.Reset();
         Assert.Equal(0, bus.Cycles);
         Assert.Equal((byte)0x42, state.Memory[0x8000]);
