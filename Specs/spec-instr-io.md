@@ -74,7 +74,7 @@ Los fixtures FUSE `edb2`, `edb3`, `edba` y `edbb` terminan sus bucles en una ite
 | `OUTI`/`OTIR` | `BC + 1` con el B **después** de decrementar |
 | `OUTD`/`OTDR` | `BC - 1` con el B después de decrementar |
 
-- Las repetitivas de E/S **no** ponen `WZ = PC + 1` al repetir (a diferencia de `LDxR`/`CPxR`) **(verificar con `z80memptr`)**.
+- Cuando `INIR`/`INDR`/`OTIR`/`OTDR` **repiten**, el ciclo extra de 5 T que retrocede PC pone `WZ = PC + 1` (PC = dirección del `ED`, ya decrementado), igual que `LDxR`/`CPxR`; la iteración que termina conserva la regla de la tabla. Descubierto a finales de 2023 y confirmado en Zilog y NEC reales (Spectrum Computing, *New discovery on Z80 I/O block instructions*; z80test 1.2a). Implementado según `Specs/spec-correcciones-no-documentado.md`.
 - `Q`: escriben flags (`WritesFlags = true`) `IN r,(C)`, `IN F,(C)` y los ocho de bloque; no escriben (`Q = 0`) `IN A,(n)`, `OUT (n),A`, `OUT (C),r` y `OUT (C),0`. En las repetitivas, `Q` recoge el F con los ajustes de repetición.
 
 ## 3. Variantes
@@ -213,7 +213,6 @@ Tras este grupo los únicos opcodes sin implementar son los huecos de ED (y las 
 ## 8. Pendiente de verificar
 
 - Ajuste de H y P/V de las iteraciones que repiten frente a z80test cuando se integre; ya se contrastó con MAME.
-- WZ de las repetitivas de E/S frente a hardware; coincide con MAME.
 - Medición del arranque con una ROM local del 48K. No se distribuye una ROM de terceros.
 
 ## 9. Implementación y verificación (2026-10-03)

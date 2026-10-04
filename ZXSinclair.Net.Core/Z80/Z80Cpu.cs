@@ -99,6 +99,8 @@ public sealed partial class Z80Cpu<TBus> : ICpu where TBus : struct, IZ80Bus
                 break;
             iy = opcode == 0xFD;
         }
+        // The prefix counts as a previous instruction that did not write flags (SCF/CCF Q rule).
+        Registers.Q = 0;
         if (iy)
             FinishIndexed<IyRegister>(opcode);
         else

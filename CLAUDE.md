@@ -10,7 +10,7 @@ The emulator is being rewritten in `ZXSinclair.Net.Core`; all emulator code goes
 
 ## Z80 Technical Reference
 
-`Docs/z80cpu_um.pdf` is the Z80 technical manual. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
+`Docs/z80cpu_um.pdf` is the Z80 technical manual. `Docs/z80-no-documentado.md` summarises undocumented opcodes, flags (F5/F3, `Q`, interrupted block instructions), MEMPTR rules, R, interrupts and model differences from external sources, with a table of what this project implements. `Specs/spec-correcciones-no-documentado.md` specifies (and the Core implements) two fixes from that comparison: `Q = 0` after a `DD`/`FD` prefix (so prefixed `SCF`/`CCF` see no flag history) and `WZ = PC + 1` when `INxR`/`OTxR` repeat. Consult it when implementing or verifying CPU instructions, registers, flags, and timing.
 
 ## Specifications
 

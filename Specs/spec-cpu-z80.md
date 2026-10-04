@@ -445,6 +445,17 @@ La nueva clasificación IM 0 usa ReadOnlySpan sobre 32 bytes estáticos, sin asi
 
 Reproducir: `dotnet run -c Release --project ZXSinclair.Net.Benchmarks -- --filter '*Z80Cpu*' --affinity 1 --warmupCount 6 --iterationCount 15`. Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/rest-before-artifacts`, `rest-after-artifacts`, `rest-combined-artifacts`, `rest-repeat-artifacts` y `rest-control-repeat-artifacts`.
 
+Medición de las correcciones de comportamiento no documentado (2026-10-04, `Specs/spec-correcciones-no-documentado.md`: `Q = 0` en `ExecuteIndexed` y `WZ = PC + 1` al repetir en E/S en bloque), mismo entorno y argumentos:
+
+| Ejecución | ExecuteFrame ns/opcode | ExecuteLoopFrame ns/T-state | ExecuteAluLoopFrame ns/T-state | ExecuteBlockCopyFrame ns/T-state |
+|---|---|---|---|---|
+| Antes (control) | 2.2629 ± 0.0131 | 0.6746 ± 0.0077 | 0.7373 ± 0.0127 | 0.5280 ± 0.0035 |
+| Después, 1.ª | 2.5829 ± 0.1172 | 0.8181 ± 0.0656 | 0.8570 ± 0.0354 | 0.5453 ± 0.0036 |
+| Después, 2.ª | 2.6629 ± 0.1693 | 0.7668 ± 0.0343 | 0.8032 ± 0.0746 | 0.5437 ± 0.0027 |
+| Control repetido (sin los cambios) | 2.4289 ± 0.1186 | 0.7419 ± 0.0268 | 0.7765 ± 0.0376 | 0.5834 ± 0.0240 |
+
+(± = error del intervalo de confianza del 99.9 %; todas con 0 B asignados.) Las ejecuciones posteriores al primer control tienen errores mucho mayores, y el control repetido sin los cambios también empeora, así que la máquina estaba ruidosa durante la sesión. `ExecuteFrame` (solo NOP) no pasa por ninguna de las dos líneas cambiadas y aun así varía entre ejecuciones. Frente al control repetido, los intervalos de los tres primeros benchmarks se solapan y el de LDIR es menor después: no se puede atribuir una regresión a los cambios. Conviene repetir la medición con la máquina en reposo. Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/fixes-before-artifacts`, `fixes-after-artifacts`, `fixes-after2-artifacts` y `fixes-control2-artifacts`.
+
 ## 9. Fuera de alcance
 
 - Respuestas de IM 0 de varios bytes o prefijos; ver spec de restos 2.2.4.

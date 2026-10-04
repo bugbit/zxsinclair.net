@@ -75,6 +75,7 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         if (!repeat || Registers.B == 0) return;
         bus.Internal(address, 5);
         Registers.PC -= 2;
+        Registers.WZ = (ushort)(Registers.PC + 1);
         BlockIoRepeatFlags(value);
     }
 
@@ -97,6 +98,7 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         if (!repeat || Registers.B == 0) return;
         bus.Internal(Registers.BC, 5);
         Registers.PC -= 2;
+        Registers.WZ = (ushort)(Registers.PC + 1);
         BlockIoRepeatFlags(value);
     }
 

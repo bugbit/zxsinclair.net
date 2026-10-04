@@ -257,7 +257,11 @@ public class IoTests
             expected.HL = (ushort)(expected.HL + step);
             expected.WZ = (ushort)((input ? oldBc : expected.BC) + step);
             var repeat = (opcode & 0x10) != 0 && expected.B != 0;
-            if (repeat) expected.PC -= 2;
+            if (repeat)
+            {
+                expected.PC -= 2;
+                expected.WZ = (ushort)(expected.PC + 1);
+            }
             expected.F = expected.Q = BlockFlags(input, step, 0x9A, expected.B, expected.C, expected.L,
                 repeat ? expected.PC : null);
             var accesses = new List<(string, ushort, int)> { ("Internal", expected.IR, 1) };
@@ -366,6 +370,46 @@ public class IoTests
         if (input) for (var i = 0; i < 3; i++)
             Assert.Equal(0x20 + i, state.Memory[(ushort)(0x9ABC + step * i)]);
         Assert.Equal(0, cpu.UnimplementedOpcodes);
+    }
+
+    [Theory]
+    [InlineData(0xB2, 0x2800)]
+    [InlineData(0xBA, 0x2800)]
+    [InlineData(0xB3, 0x2800)]
+    [InlineData(0xBB, 0x2800)]
+    [InlineData(0xB2, 0xFFFF)]
+    [InlineData(0xBB, 0xFFFF)]
+    public void BlockIoRepeat_WzIsPcPlusOne(int opcode, int pc)
+    {
+        // BC and HL are chosen so that the classic BC +/- 1 value differs from PC + 1.
+        var (cpu, state) = Create();
+        cpu.Registers.PC = (ushort)pc;
+        cpu.Registers.BC = 0x0234;
+        state.Memory[(ushort)pc] = 0xED;
+        state.Memory[(ushort)(pc + 1)] = (byte)opcode;
+        state.InputData.Enqueue(0x5A);
+        cpu.Step();
+        Assert.Equal((ushort)pc, cpu.Registers.PC);
+        Assert.Equal((ushort)(pc + 1), cpu.Registers.WZ);
+        Assert.Equal(21, state.Cycles);
+    }
+
+    [Theory]
+    [InlineData(0xB2)]
+    [InlineData(0xBA)]
+    [InlineData(0xB3)]
+    [InlineData(0xBB)]
+    public void BlockIoFinalIteration_WzClassic(int opcode)
+    {
+        var (cpu, state) = Create(0xED, (byte)opcode);
+        var input = (opcode & 1) == 0;
+        var step = (opcode & 8) == 0 ? 1 : -1;
+        cpu.Registers.BC = 0x0134;
+        state.InputData.Enqueue(0x5A);
+        cpu.Step();
+        Assert.Equal(0x8002, cpu.Registers.PC);
+        Assert.Equal((ushort)((input ? 0x0134 : 0x0034) + step), cpu.Registers.WZ);
+        Assert.Equal(16, state.Cycles);
     }
 
     [Theory]

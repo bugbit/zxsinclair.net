@@ -181,6 +181,60 @@ public class ControlTests
         Assert.Equal((byte)0x28, (byte)(cpu.Registers.F & 0x28));
     }
 
+    [Theory]
+    [InlineData(0xDD, 0x37)]
+    [InlineData(0xFD, 0x37)]
+    [InlineData(0xDD, 0x3F)]
+    [InlineData(0xFD, 0x3F)]
+    public void ScfCcf_AfterIndexPrefix_UseQZero(int prefix, int opcode)
+    {
+        // CP leaves A = 0 and F5/F3 = 0x28 with Q = F; the prefix must reset that history.
+        var (cpu, state) = Create(0xFE, 0x28, (byte)prefix, (byte)opcode);
+        cpu.Registers.A = 0;
+        cpu.Step();
+        Assert.Equal(cpu.Registers.F, cpu.Registers.Q);
+        var cycles = state.Cycles;
+        cpu.Step();
+        Assert.Equal(8, state.Cycles - cycles);
+        Assert.Equal((byte)0x28, (byte)(cpu.Registers.F & 0x28));
+        Assert.Equal(cpu.Registers.F, cpu.Registers.Q);
+    }
+
+    [Theory]
+    [InlineData(0x37)]
+    [InlineData(0x3F)]
+    public void ScfCcf_WithoutPrefix_KeepPreviousQ(int opcode)
+    {
+        var (cpu, _) = Create(0xFE, 0x28, (byte)opcode);
+        cpu.Registers.A = 0;
+        cpu.Step();
+        cpu.Step();
+        Assert.Equal((byte)0, (byte)(cpu.Registers.F & 0x28));
+    }
+
+    [Fact]
+    public void ScfCcf_AfterPrefixChain_UseQZero()
+    {
+        var (cpu, state) = Create(0xFE, 0x28, 0xDD, 0xFD, 0x37);
+        cpu.Registers.A = 0;
+        cpu.Step();
+        var cycles = state.Cycles;
+        cpu.Step();
+        Assert.Equal(12, state.Cycles - cycles);
+        Assert.Equal((byte)0x28, (byte)(cpu.Registers.F & 0x28));
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0xDD, 0x84 }, true)]
+    [InlineData(new byte[] { 0xFD, 0x21, 0x34, 0x12 }, false)]
+    [InlineData(new byte[] { 0xDD, 0xCB, 0x05, 0x06 }, true)]
+    public void IndexPrefix_OtherInstructionsSetQAsBefore(byte[] program, bool writesFlags)
+    {
+        var (cpu, _) = Create(program);
+        cpu.Step();
+        Assert.Equal(writesFlags ? cpu.Registers.F : (byte)0, cpu.Registers.Q);
+    }
+
     public static IEnumerable<object[]> ControlCases()
     {
         foreach (var pc in new[] { 0x8000, 0xFFFF })

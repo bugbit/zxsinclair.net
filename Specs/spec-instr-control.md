@@ -45,7 +45,8 @@ Comprobación con FUSE `27`: `A = 1F`, `F = 00` → `A = 25`, `F = 30`. Puede im
 - En el Z80 NMOS de Zilog, `Q` vale el F escrito por la instrucción anterior si esa instrucción **modificó** los flags, y 0 si no los modificó.
 - `SCF`/`CCF`: `F3/F5 = ((Q ^ F) | A) & (F5 | F3)`, con `Q` y `F` antes de la instrucción. Si la instrucción anterior escribió los flags, el resultado depende solo de A; si no, de `F | A`.
 - Instrucciones que escriben flags (`Q = F` tras ejecutarse): ALU de 8 bits e `INC`/`DEC` (grupo 4), `LD A,I`/`LD A,R` (grupo 1), `DAA`, `CPL`, `NEG`, `SCF`, `CCF` (este grupo) y las de grupos posteriores que la spec de cada grupo marque.
-- Instrucciones que no escriben flags (`Q = 0`): el resto, incluidos `NOP`, cargas, saltos, `HALT` (y cada M1 interno mientras está detenida), `DI`, `EI`, `IM`, y la aceptación de NMI e INT. `POP AF` y `EX AF,AF'` cambian F sin pasar por la ALU: se tratan como `Q = 0` **(verificar con `z80ccf`)**.
+- Instrucciones que no escriben flags (`Q = 0`): el resto, incluidos `NOP`, cargas, saltos, `HALT` (y cada M1 interno mientras está detenida), `DI`, `EI`, `IM`, y la aceptación de NMI e INT. `POP AF` y `EX AF,AF'` cambian F sin pasar por la ALU: se tratan como `Q = 0` **(verificar con `z80ccf`)**; la wiki *Z80Decoder* de David Banks confirma que `POP AF` no cuenta como instrucción que modifica flags.
+- Un prefijo `DD`/`FD` delante de `SCF`/`CCF` (`DD 37`, `FD 3F`…) cuenta como instrucción anterior que no modificó flags: `SCF`/`CCF` ven `Q = 0` aunque la instrucción previa al prefijo escribiera flags (TonyB, 2026, recogido en *Z80Decoder — Undocumented Flags*). `ExecuteIndexed` pone `Q = 0` tras consumir los prefijos (`Specs/spec-correcciones-no-documentado.md`).
 - Los prefijos `DD`/`FD` no son instrucciones: `Q` lo fija la instrucción que completan.
 
 ### 2.3 `HALT`, `DI` y `EI`
