@@ -73,6 +73,8 @@ public class BitTests
         return r;
     }
 
+    // F5/F3 come from the whole register, as FUSE cb40 requires (BIT 0,B with B = BC gives F = 7C);
+    // Young v0.6 derives them from value & mask, which is wrong (Docs/z80-no-documentado.md section 7).
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)]
     [InlineData(4)] [InlineData(5)] [InlineData(6)] [InlineData(7)]

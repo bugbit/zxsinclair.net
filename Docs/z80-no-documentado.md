@@ -79,7 +79,7 @@ En la mayoría de instrucciones que fijan flags, **F5 y F3 son copia de los bits
 | Instrucción | F5 / F3 |
 |---|---|
 | `CP s` | Del **operando** `s`, no del resultado |
-| `BIT b,r` | Del registro probado (en la práctica: F5 = 1 solo si `b = 5` y el bit vale 1; F3 igual con `b = 3`) |
+| `BIT b,r` | Bits 5 y 3 del **registro probado** (el valor completo, no el resultado del `AND` con la máscara; ver la errata de 7) |
 | `BIT b,(HL)` | Bits 13 y 11 de **MEMPTR** (byte alto de WZ) |
 | `BIT b,(ii+d)` | Bits 5 y 3 del byte alto de `ii + d` |
 | `ADD/ADC/SBC` de 16 bits | Del byte alto del resultado (la suma se hace en dos mitades de 8 bits) |
@@ -90,7 +90,7 @@ En la mayoría de instrucciones que fijan flags, **F5 y F3 son copia de los bits
 
 ### 3.2 Otras reglas de flags
 
-- **`BIT`**: Z = P/V = bit probado a 0; S = 1 solo con `b = 7` y bit a 1; H = 1; N = 0; C se conserva.
+- **`BIT`**: Z = P/V = bit probado a 0; S = 1 solo con `b = 7` y bit a 1; H = 1; N = 0; C se conserva; F5/F3: ver 3.1.
 - **`LDI`/`LDD`**: S, Z y C se conservan; H = 0; N = 0; P/V = `BC ≠ 0` tras decrementar.
 - **`CPI`/`CPD`**: S, Z y H de la comparación `A − (HL)`; P/V = `BC ≠ 0`; N = 1; C se conserva.
 - **E/S en bloque** (`INI`, `IND`, `OUTI`, `OUTD` y repetitivas; descubierto por Ramsoft): S, Z, F5, F3 como `DEC B`; N = bit 7 del dato transferido; con `k = dato + ((C ± 1) & 0xFF)` en `INI`/`IND` y `k = dato + L` (L tras incrementar/decrementar HL) en `OUTI`/`OUTD`: H = C = `k > 255`; P/V = paridad de `(k & 7) xor B`.
@@ -197,6 +197,7 @@ Si se acepta una **INT** mientras se ejecuta `LD A,I` o `LD A,R`, la instrucció
 - Errores de codificación en `LD r,(IX+d)` y `ADD IX,pp` en algunas ediciones.
 
 **En fuentes no oficiales:**
+- Young v0.6 dice que, en `BIT b,r`, F5/F3 salen del resultado del `AND` con la máscara (F5 = 1 solo si `b = 5` y el bit vale 1). Los casos FUSE lo contradicen: `cb40` (`BIT 0,B` con `B = BC`) espera `F = 7C`, con F5 y F3 copiados del valor completo de B aunque se pruebe el bit 0. El proyecto sigue a FUSE (`BitTest` en `Z80Cpu.Bits.cs`).
 - Young v0.6 dice que `INI`… usan `BC` **después** de decrementar B y `OUTI`… **antes**. Es al revés: los eventos de bus de FUSE (`eda2`, `eda3`) muestran que `INI` usa el B original y `OUTI` el B ya decrementado, lo que coincide con las reglas de MEMPTR de 4.
 - El resumen de `DDCB` de Bill Smythe lista `28`–`2F` como `SRL`; son `SRA`.
 
@@ -210,7 +211,7 @@ Si se acepta una **INT** mientras se ejecuta `LD A,I` o `LD A,R`, la instrucció
 | `IN F,(C)`, `OUT (C),0` (NMOS) | `spec-instr-io.md` | Implementado; FUSE |
 | Huecos de ED como dos NOP | `spec-instr-restos.md` | Especificado y planificado (grupo 11) |
 | Combinaciones de prefijos; sin interrupción tras `DD`/`FD` | `spec-cpu-z80.md` 4.3 | Implementado |
-| F5/F3 de cada familia, `CP`, `BIT` (r, `(HL)` con WZ, `(ii+d)`) | Specs de cada grupo | Implementado. Los fixtures FUSE de `BIT b,(HL)` usan el valor leído: convención declarada (`spec-instr-bits.md` 2.2.1) |
+| F5/F3 de cada familia, `CP`, `BIT` (r, `(HL)` con WZ, `(ii+d)`) | Specs de cada grupo | Implementado. `BIT b,r` toma F5/F3 del registro completo, como FUSE y no como Young v0.6 (errata en 7). Los fixtures FUSE de `BIT b,(HL)` usan el valor leído: convención declarada (`spec-instr-bits.md` 2.2.1) |
 | `Q` en `SCF`/`CCF` (Zilog NMOS) | `spec-instr-control.md` | Implementado (`POP AF`/`EX AF,AF'` con `Q = 0`, que coincide con la fuente) |
 | `SCF`/`CCF` tras un prefijo `DD`/`FD` (TonyB, 2026) | `spec-correcciones-no-documentado.md`, `spec-instr-control.md` 2.2 | Implementado: `ExecuteIndexed` pone `Q = 0` tras los prefijos; tests en `ControlTests` |
 | Flags de `LDxR`/`CPxR` interrumpidos | `spec-instr-bloques.md` | Implementado |

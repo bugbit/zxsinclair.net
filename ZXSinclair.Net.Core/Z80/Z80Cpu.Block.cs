@@ -58,10 +58,7 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         var address = Registers.DE;
         BlockLoad(step);
         if (Registers.BC == 0) return;
-        bus.Internal(address, 5);
-        Registers.PC -= 2;
-        Registers.WZ = (ushort)(Registers.PC + 1);
-        Registers.F = (byte)((Registers.F & ~0x28) | ((Registers.PC >> 8) & 0x28));
+        RepeatBlock(address);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,9 +84,18 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         var address = Registers.HL;
         BlockCompare(step);
         if (Registers.BC == 0 || (Registers.F & Z80Flags.Z) != 0) return;
-        bus.Internal(address, 5);
+        RepeatBlock(address);
+    }
+
+    // Extra 5 T-state M-cycle of a repeating block instruction: internal cycles, PC back to the ED
+    // prefix, WZ = PC + 1 and F5/F3 from the PC high byte (spec-instr-bloques.md 2.2-2.3, spec-instr-io.md 2.2-2.3).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RepeatBlock(ushort internalAddress)
+    {
+        bus.Internal(internalAddress, 5);
         Registers.PC -= 2;
         Registers.WZ = (ushort)(Registers.PC + 1);
-        Registers.F = (byte)((Registers.F & ~0x28) | ((Registers.PC >> 8) & 0x28));
+        Registers.F = (byte)((Registers.F & ~(Z80Flags.F5 | Z80Flags.F3))
+            | ((Registers.PC >> 8) & (Z80Flags.F5 | Z80Flags.F3)));
     }
 }

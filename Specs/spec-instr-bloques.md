@@ -82,6 +82,8 @@ Fórmulas:
 
 ### 4.1 Auxiliares escritos a mano (Core)
 
+El ciclo extra de las iteraciones que repiten (5 T internos, `PC -= 2`, `WZ = PC + 1`, F5/F3 de PC) lo hace un único auxiliar, `RepeatBlock(ushort internalAddress)`, compartido con las repetitivas de E/S (`Specs/spec-correcciones-revision.md` 1).
+
 Nuevo `partial` `ZXSinclair.Net.Core/Z80/Z80Cpu.Block.cs`, `[MethodImpl(MethodImplOptions.AggressiveInlining)]`:
 
 | Método | Comportamiento |

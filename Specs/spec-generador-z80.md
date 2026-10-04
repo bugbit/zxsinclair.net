@@ -131,6 +131,8 @@ Se sustituye `ZXSinclair.Net.Core/Z80/Z80Cpu.Instructions.cs` (despacho provisio
 
 La tabla base emite auxiliares privados `ExecuteMainXX`, con los cuerpos concretos de los patrones y `AggressiveInlining`; los casos implementados retornan directamente. Cuando `00` está implementado con cuerpo vacío, `ExecuteMain` es una entrada pequeña con `AggressiveInlining`: detecta el cuerpo vacío del patrón, antes de añadir Q, y emite `if (opcode == 0) { Registers.Q = 0; return; }` y delega los demás opcodes en `ExecuteMainDispatch`, que contiene el único switch base y también usa `AggressiveInlining`. Esto permite insertar la salida de NOP en `Step` aunque crezca el IL del switch (spec CPU 8.4). Sin NOP vacío, el switch se emite directamente en `ExecuteMain`. El `case 0x00` se conserva para revisar la tabla completa. Las demás tablas conservan los cuerpos en sus casos.
 
+Revisión del 2026-10-04 (`Specs/spec-correcciones-revision.md` 3): el ensamblado tier 1 con PGO de `Z80Cpu<SpectrumBus>` muestra los 252 auxiliares inlineados en `ExecuteMainDispatch` (16,8 KB; solo un bloque frío conserva tres llamadas al bus) y `ExecuteMainDispatch` como llamada desde `Execute`. Frente a la variante sin auxiliares (cuerpos en el `switch`), la actual es un 4–10 % más rápida en los bucles; frente a auxiliares sin `AggressiveInlining`, las diferencias quedan dentro de la variación entre ejecuciones. Se mantiene la emisión actual.
+
 Las firmas son las actuales; el ciclo de prefijos (`Step`, `ExecuteIndexed`, `FinishIndexed`) sigue escrito a mano en `Z80Cpu.cs`.
 
 ### 4.2 Formato

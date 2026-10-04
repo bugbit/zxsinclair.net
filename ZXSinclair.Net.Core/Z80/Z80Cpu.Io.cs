@@ -73,10 +73,8 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         Registers.HL = (ushort)(address + step);
         BlockIoFlags(value, value + ((Registers.C + step) & 255));
         if (!repeat || Registers.B == 0) return;
-        bus.Internal(address, 5);
-        Registers.PC -= 2;
-        Registers.WZ = (ushort)(Registers.PC + 1);
-        BlockIoRepeatFlags(value);
+        RepeatBlock(address);
+        BlockIoRepeatAdjust(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,10 +94,8 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
         Registers.WZ = (ushort)(Registers.BC + step);
         BlockIoFlags(value, value + Registers.L);
         if (!repeat || Registers.B == 0) return;
-        bus.Internal(Registers.BC, 5);
-        Registers.PC -= 2;
-        Registers.WZ = (ushort)(Registers.PC + 1);
-        BlockIoRepeatFlags(value);
+        RepeatBlock(Registers.BC);
+        BlockIoRepeatAdjust(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,10 +106,11 @@ public sealed partial class Z80Cpu<TBus> where TBus : struct, IZ80Bus
             | Z80Flags.Parity[(sum & 7) ^ Registers.B]);
     }
 
+    // H and P/V adjustment of a repeating INxR/OTxR, applied after RepeatBlock (spec-instr-io.md 2.2).
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void BlockIoRepeatFlags(byte value)
+    private void BlockIoRepeatAdjust(byte value)
     {
-        var flags = (Registers.F & ~0x28) | ((Registers.PC >> 8) & 0x28);
+        int flags = Registers.F;
         var parityValue = Registers.B;
         if ((flags & Z80Flags.C) != 0)
         {

@@ -456,6 +456,17 @@ Medición de las correcciones de comportamiento no documentado (2026-10-04, `Spe
 
 (± = error del intervalo de confianza del 99.9 %; todas con 0 B asignados.) Las ejecuciones posteriores al primer control tienen errores mucho mayores, y el control repetido sin los cambios también empeora, así que la máquina estaba ruidosa durante la sesión. `ExecuteFrame` (solo NOP) no pasa por ninguna de las dos líneas cambiadas y aun así varía entre ejecuciones. Frente al control repetido, los intervalos de los tres primeros benchmarks se solapan y el de LDIR es menor después: no se puede atribuir una regresión a los cambios. Conviene repetir la medición con la máquina en reposo. Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/fixes-before-artifacts`, `fixes-after-artifacts`, `fixes-after2-artifacts` y `fixes-control2-artifacts`.
 
+Revisión de la tabla base generada (2026-10-04, `Specs/spec-correcciones-revision.md` 3). Ensamblado tier 1 con PGO (`DOTNET_JitDisasm`, `Z80Cpu<SpectrumBus>`, arnés con 41 opcodes distintos): los 252 auxiliares `ExecuteMainXX` quedan inlineados en `ExecuteMainDispatch` (16 808 bytes de código, 506 inlinees de un bloque); solo un bloque frío conserva llamadas a `SpectrumBus.Delay`, `ContentionMask` y `PagedMemory.Read`. `Execute` inlinea `Step` y `ExecuteMain` (salida de NOP) y llama a `ExecuteMainDispatch` una vez por instrucción base. Nuevo benchmark `ExecuteMixFrame`: 53 opcodes base distintos repartidos por toda la tabla, en RAM no contenida.
+
+| Variante (ns; ± error 99.9 %) | ExecuteFrame /opcode | ExecuteLoopFrame /T | ExecuteAluLoopFrame /T | ExecuteMixFrame /T | ExecuteBlockCopyFrame /T |
+|---|---|---|---|---|---|
+| A, actual: auxiliares con `AggressiveInlining` | 2.2169 ± 0.0284 | 0.6610 ± 0.0055 | 0.7029 ± 0.0065 | 0.7691 ± 0.0067 | 0.5299 ± 0.0062 |
+| B: cuerpos en el `switch`, sin auxiliares | 2.2251 ± 0.0136 | 0.7277 ± 0.0122 | 0.7528 ± 0.0100 | 0.7987 ± 0.0050 | 0.5140 ± 0.0021 |
+| C: auxiliares sin atributo de inlining | 2.2051 ± 0.0067 | 0.6739 ± 0.0062 | 0.7013 ± 0.0056 | 0.7581 ± 0.0043 | 0.5428 ± 0.0051 |
+| A repetida | 2.2245 ± 0.0103 | 0.6663 ± 0.0045 | 0.7182 ± 0.0044 | 0.7667 ± 0.0060 | 0.5133 ± 0.0016 |
+
+B empeora los bucles un 4–10 % y solo mejora LDIR. Entre A y C las diferencias (hasta un 2–3 %, en ambos sentidos) son del mismo orden que la variación entre las dos ejecuciones de A. Se mantiene A. Todas con 0 B asignados. La medición incluye también el paso común `RepeatBlock` de la misma spec (sección 1). Informes excluidos de git: `ZXSinclair.Net.Benchmarks/bin/review-A-artifacts`, `review-B-artifacts`, `review-C-artifacts` y `review-A2-artifacts`.
+
 ## 9. Fuera de alcance
 
 - Respuestas de IM 0 de varios bytes o prefijos; ver spec de restos 2.2.4.

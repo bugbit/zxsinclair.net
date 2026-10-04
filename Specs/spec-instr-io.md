@@ -90,6 +90,8 @@ Los fixtures FUSE `edb2`, `edb3`, `edba` y `edbb` terminan sus bucles en una ite
 
 ### 4.1 Auxiliares escritos a mano (Core)
 
+`BlockInCore`/`BlockOutCore` usan en la repetición el auxiliar común `RepeatBlock` de `Z80Cpu.Block.cs` (ciclo de 5 T, `PC -= 2`, `WZ = PC + 1`, F5/F3 de PC) y después `BlockIoRepeatAdjust`, que solo ajusta H y P/V (`Specs/spec-correcciones-revision.md` 1).
+
 Nuevo `partial` `ZXSinclair.Net.Core/Z80/Z80Cpu.Io.cs`, `[MethodImpl(MethodImplOptions.AggressiveInlining)]`:
 
 | Método | Comportamiento |
