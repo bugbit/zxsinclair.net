@@ -12,4 +12,7 @@
   <Project Path="ZXSinclair.Net.Generate.Z80OpCodes.Tests/ZXSinclair.Net.Generate.Z80OpCodes.Tests.csproj" />
   <Project Path="ZXSinclair.Net.Generate.Z80OpCodes/ZXSinclair.Net.Generate.Z80OpCodes.csproj" />
   <Project Path="ZXSinclair.Net.Test/ZXSinclair.Net.Test.csproj" />
+  <Project Path="ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Client/ZXSinclair.Net.Web.Prototype.Client.csproj" Id="db12c6ff-8682-4efc-ab80-1f79ea934ab5" />
+  <Project Path="ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Workers/ZXSinclair.Net.Web.Prototype.Workers.csproj" Id="91cef366-99ab-40ec-bf61-66ebddb68ec6" />
+  <Project Path="ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.csproj" Id="6ed9b335-367d-4435-8f1a-87dfaba86606" />
 </Solution>

@@ -1,0 +1,44 @@
+﻿@implements IAsyncDisposable
+
+@inject IJSRuntime JS
+
+<canvas @ref="emulatorCanvas" width="320" height="240"></canvas>
+<button @onclick="RunAsync">Run</button>
+
+@code {
+    private ElementReference emulatorCanvas;
+    private IJSObjectReference? module;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Emulator.razor.js");
+
+            await module.InvokeVoidAsync("initCanvas", emulatorCanvas, false);
+        }
+    }
+
+    private async Task RunAsync()
+    {
+        if (module is not null)
+        {
+            await module.InvokeVoidAsync("Run");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try
+            {
+                await module.InvokeVoidAsync("dispose");
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+}
