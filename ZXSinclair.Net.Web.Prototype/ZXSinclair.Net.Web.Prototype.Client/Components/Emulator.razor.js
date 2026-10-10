@@ -4,6 +4,8 @@ let c2d = null;
 let webgl = null;
 let imageData = null;
 let pixels = null;
+let presentElement = null;
+let presentReady = null;
 
 export function hello() {
     alert("Hello, World!");
@@ -54,6 +56,8 @@ export async function TestPutImage() {
 
 export function dispose() {
     WorkTest.dispose();
+    presentElement = null;
+    presentReady = null;
     canvas = null;
     c2d = null;
     webgl = null;
@@ -61,6 +65,28 @@ export function dispose() {
     pixels = null;
 }
 
-export function reportTiming(name, ms) {
-    (globalThis.__zxTimings ??= []).push({ name, ms });
+export function reportTiming(name, ms, extra = {}) {
+    (globalThis.__zxTimings ??= []).push({ name, ms, ...extra, backend: name === "TestPresent" ? presentElement?.dataset.backend : undefined });
+}
+
+export async function TestPresent(canvasElement) {
+    if (presentElement !== canvasElement) {
+        presentElement = canvasElement;
+        // Cache the promise before transferring so concurrent clicks cannot transfer twice.
+        presentReady = Promise.resolve().then(async () => {
+            const backend = new URLSearchParams(location.search).get('present') ?? 'webgl2';
+            if (backend !== 'webgl2' && backend !== '2d') throw new Error(`Unknown presentation backend: ${backend}`);
+            const offscreen = canvasElement.transferControlToOffscreen();
+            const info = await WorkTest.InitPresent(offscreen, canvasElement.width, canvasElement.height, backend);
+            canvasElement.dataset.backend = info.backend;
+            canvasElement.dataset.renderer = info.renderer;
+        });
+    }
+    // A rejected initialization stays rejected: the transferred canvas cannot be retried.
+    await presentReady;
+    return WorkTest.TestPresent();
+}
+
+export function readPresentPixel() {
+    return WorkTest.ReadPresentPixel();
 }

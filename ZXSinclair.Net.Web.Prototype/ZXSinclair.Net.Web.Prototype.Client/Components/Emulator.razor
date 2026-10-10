@@ -3,13 +3,17 @@
 
 @inject IJSRuntime JS
 
-<canvas @ref="emulatorCanvas" width="320" height="240"></canvas>
+<canvas data-testid="main-canvas" @ref="emulatorCanvas" width="320" height="240"></canvas>
+<canvas data-testid="present-canvas" @ref="presentCanvas" width="320" height="240"></canvas>
 <button @onclick="Test1Async">Test1</button>
 <button data-testid="test2" @onclick="Test2Async">Test2</button>
 <button data-testid="test-put-image" @onclick="TestPutImageAsync">TestPutImage</button>
+<button data-testid="test-present" @onclick="TestPresentAsync">TestPresent</button>
 
 @code {
     private ElementReference emulatorCanvas;
+    private ElementReference presentCanvas;
+    private sealed record PresentResult(int Index, double WorkerMs);
     private IJSObjectReference? module;
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -58,6 +62,18 @@
             await module.InvokeVoidAsync("TestPutImage");
             double elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             await module.InvokeVoidAsync("reportTiming", "TestPutImage", elapsed);
+        }
+    }
+
+    private async Task TestPresentAsync()
+    {
+        if (module is not null)
+        {
+            long start = Stopwatch.GetTimestamp();
+            PresentResult result = await module.InvokeAsync<PresentResult>("TestPresent", presentCanvas);
+            double elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            await module.InvokeVoidAsync("reportTiming", "TestPresent", elapsed,
+                new { result.Index, result.WorkerMs });
         }
     }
 

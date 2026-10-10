@@ -47,36 +47,28 @@ function getWorker() {
     return dotnetWorker;
 }
 
-export function Test() {
+function request(command, payload = {}, transfer = []) {
     const worker = getWorker();
     const requestId = ++pendingRequestId;
-    const result = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         pendingRequests[requestId] = { resolve, reject };
         try {
-            worker.postMessage({ command: 'Test', requestId });
+            worker.postMessage({ ...payload, command, requestId }, transfer);
         } catch (error) {
             delete pendingRequests[requestId];
             reject(error);
         }
     });
-
-    return result;
 }
 
-export function TestPutImage() {
-    const worker = getWorker();
-    const requestId = ++pendingRequestId;
-    const result = new Promise((resolve, reject) => {
-        pendingRequests[requestId] = { resolve, reject };
-        try {
-            worker.postMessage({ command: 'TestPutImage', requestId });
-        } catch (error) {
-            delete pendingRequests[requestId];
-            reject(error);
-        }
-    });
-    return result;
+export function Test() { return request('Test'); }
+export function TestPutImage() { return request('TestPutImage'); }
+export function InitPresent(canvas, width, height, backend) {
+    return request('InitPresent', { canvas, width, height, backend }, [canvas]);
 }
+export function TestPresent() { return request('TestPresent'); }
+export function ReadPresentPixel() { return request('ReadPresentPixel'); }
+
 export function dispose() {
     failRequests(new Error('Emulator disposed.'));
     workerError = null;

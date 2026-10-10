@@ -108,7 +108,8 @@ public sealed class PrototypeServerFixture : IAsyncLifetime
             playwright = await Playwright.CreateAsync();
             if (Channel != "chromium" && Channel != "chrome" && Channel != "msedge")
                 throw new ArgumentException("ZX_PLAYWRIGHT_CHANNEL must be chromium, chrome or msedge.");
-            Browser = await playwright.Chromium.LaunchAsync(new() { Headless = !Headed, Channel = Channel == "chromium" ? null : Channel });
+            Browser = await playwright.Chromium.LaunchAsync(new() { Headless = !Headed, Channel = Channel == "chromium" ? null : Channel,
+                Args = Headed ? [] : ["--enable-unsafe-swiftshader"] });
         }
         catch
         {

@@ -30,6 +30,21 @@ struct Result
 [SupportedOSPlatform("browser")]
 public partial class WorkTest
 {
+    private static byte[]? _data1;
+    private static readonly byte[] sFrame = new byte[320 * 240];
+
+    [JSImport("present", "emulator")]
+    private static partial void Present([JSMarshalAs<JSType.MemoryView>] Span<byte> frame);
+
+    [JSExport]
+    internal static int TestPresent()
+    {
+        int index = Random.Shared.Next(0, 16);
+        sFrame.AsSpan().Fill((byte)index);
+        Present(sFrame);
+        return index;
+    }
+
     [JSImport("createResult", "emulator")]
     private static partial JSObject CreateResult(int value, byte[] data);
 
@@ -43,7 +58,7 @@ public partial class WorkTest
     internal static JSObject TestPutImage()
     {
         byte color = (byte)Random.Shared.Next(0, 255);
-        byte[] data = new byte[320 * 240 * 4];
+        byte[] data = _data1 ?? (_data1 = new byte[320 * 240 * 4]);
 
         for (int i = 0; i < data.Length; i += 4)
         {
