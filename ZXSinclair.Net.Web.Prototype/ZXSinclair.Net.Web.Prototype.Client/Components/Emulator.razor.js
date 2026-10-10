@@ -57,8 +57,12 @@ export function hello() {
     alert("Hello, World!");
 }
 
-export function initCanvas(canvasElement, useWebGL) {
+export function initCanvas(canvasElement, width, height, useWebGL) {
     canvas = canvasElement;
+    c2d = null;
+    webgl = null;
+    imageData = null;
+    pixels = null;
     if (useWebGL) {
         webgl = canvas.getContext("webgl");
         if (webgl)
@@ -66,16 +70,42 @@ export function initCanvas(canvasElement, useWebGL) {
     }
     if (!webgl) {
         c2d = canvas.getContext("2d");
-        if (c2d)
+        if (c2d) {
+            imageData = c2d.createImageData(width, height);
+            pixels = imageData.data;
             console.log("using 2d rendering");
+        }
     }
 }
 
-export async function Run() {
-    return await Test();
+// data is the Uint8Array received from a C# byte[], in RGBA order.
+export function putImage(width, height, data) {
+    if (!c2d) {
+        throw new Error('Initialize the canvas with a 2D context before drawing.');
+    }
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
+        throw new RangeError('Image dimensions must be positive integers.');
+    }
+    if (!(data instanceof Uint8Array) || data.length !== width * height * 4) {
+        throw new RangeError('Image data must contain exactly width * height * 4 RGBA bytes.');
+    }
+    if (!imageData || imageData.width !== width || imageData.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        imageData = c2d.createImageData(width, height);
+        pixels = imageData.data;
+    }
+    pixels.set(data);
+    c2d.putImageData(imageData, 0, 0);
 }
 
-export async function Test() {
+export function putImagen2D(data) {
+    if (!c2d || !pixels || !imageData) return;
+    pixels.set(data);
+    c2d.putImageData(imageData, 0, 0);
+}
+
+export async function Test1() {
     const worker = getWorker();
     const requestId = ++pendingRequestId;
     const result = await new Promise((resolve, reject) => {
@@ -99,5 +129,7 @@ export function dispose() {
     canvas = null;
     c2d = null;
     webgl = null;
+    imageData = null;
+    pixels = null;
     workerError = null;
 }

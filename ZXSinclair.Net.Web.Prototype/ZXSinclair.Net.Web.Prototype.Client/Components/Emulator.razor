@@ -3,7 +3,8 @@
 @inject IJSRuntime JS
 
 <canvas @ref="emulatorCanvas" width="320" height="240"></canvas>
-<button @onclick="RunAsync">Run</button>
+<button @onclick="Test1Async">Test1</button>
+<button @onclick="Test2Async">Test2</button>
 
 @code {
     private ElementReference emulatorCanvas;
@@ -15,15 +16,32 @@
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Emulator.razor.js");
 
-            await module.InvokeVoidAsync("initCanvas", emulatorCanvas, false);
+            await module.InvokeVoidAsync("initCanvas", emulatorCanvas, 320, 240, false);
         }
     }
 
-    private async Task RunAsync()
+    private async Task Test1Async()
     {
         if (module is not null)
         {
-            await module.InvokeVoidAsync("Run");
+            await module.InvokeVoidAsync("Test1");
+        }
+    }
+
+    private async Task Test2Async()
+    {
+        if (module is not null)
+        {
+            byte color = (byte)Random.Shared.Next(0, 255);
+            byte[] data = new byte[320 * 240 * 4];
+
+            for (int i = 0; i < data.Length; i += 4)
+            {
+                data[i] = color;     // Rojo; verde y azul quedan en 0.
+                data[i + 3] = 255; // Alfa opaco.
+            }
+
+            await module.InvokeVoidAsync("putImagen2D", data);
         }
     }
 
