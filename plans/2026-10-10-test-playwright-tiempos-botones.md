@@ -1,7 +1,7 @@
 # Plan: test de navegador (Playwright) para medir Test2 y TestPutImage
 
 Fecha: 2026-10-10
-Estado: pendiente de implementar
+Estado: implementado y verificado con Chrome instalado; instalación de Chromium pendiente por timeout de descarga
 
 ## Objetivo
 Crear un test de navegador con Playwright para `ZXSinclair.Net.Web.Prototype.Client` que mida cuánto tardan los
@@ -94,3 +94,14 @@ botones **Test2** y **TestPutImage** del componente `Emulator.razor` (pulsación
 - Medir la ruta WebGL (`useWebGL` está a `false`).
 - Integración en CI y caché de navegadores Playwright.
 - Benchmarks del emulador real (no existe aún `SpectrumEmulator`).
+
+## Resultado de ejecución (2026-10-10)
+
+- Se implementaron la instrumentación, el proyecto xUnit/Playwright, el fixture y los informes; se actualizaron AGENTS.md y CLAUDE.md.
+- `dispose()` ya estaba corregido antes de ejecutar el plan. Se declaró un favicon vacío en App.razor para evitar el 404 de `/favicon.ico` detectado por la comprobación de consola.
+- Playwright 1.63.0 se instaló desde NuGet. La instalación de Chromium falló tras cinco timeouts del CDN. Se añadió `ZX_PLAYWRIGHT_CHANNEL=chrome|msedge` como opción; Chromium sigue siendo el navegador predeterminado.
+- El test pasó con Chrome 154.0.8037.98 headless, con servidor propio y con `ZX_PROTOTYPE_URL=http://localhost:5218` (perfil `http` de web-prototype). Cada ejecución tomó una pulsación inicial, cinco de calentamiento y treinta medidas por botón; píxel y ausencia de errores de consola verificados.
+- Servidor propio, Debug interpretado: Test2 frío 9,5 ms, mediana 3,0 ms, p95 3,2 ms; TestPutImage frío 174,8 ms, mediana 12,8 ms, p95 15,1 ms. Son tiempos del handler, sin compositor.
+- Informes locales ignorados por Git: `TestResults/button-timings-owned-server.json` y `TestResults/button-timings.json` (segunda ejecución con servidor externo). No se midió Release/AOT.
+- Build de solución: 0 warnings/errores. Regresión sin Browser: Core 2853 y generador 174, todos correctos (las cifras del plan estaban desactualizadas). FUSE: 1335 pasados, 0 fallos, 0 omitidos; 8 con convención BIT (HL).
+- El build y las pruebas requirieron ejecución fuera del sandbox para permitir procesos auxiliares de MSBuild y navegador. Los servidores creados se cerraron al terminar.

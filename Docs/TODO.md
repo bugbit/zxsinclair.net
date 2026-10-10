@@ -1,0 +1,1 @@
+* falta favicon.ico

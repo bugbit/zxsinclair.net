@@ -25,6 +25,7 @@ export function initCanvas(canvasElement, width, height, useWebGL) {
         if (c2d) {
             imageData = c2d.createImageData(width, height);
             pixels = imageData.data;
+            canvas.dataset.ready = "1";
             console.log("using 2d rendering");
         }
     }
@@ -58,4 +59,8 @@ export function dispose() {
     webgl = null;
     imageData = null;
     pixels = null;
+}
+
+export function reportTiming(name, ms) {
+    (globalThis.__zxTimings ??= []).push({ name, ms });
 }

@@ -5,6 +5,9 @@
     <File Path="Specs/spec-generador-z80.md" />
     <File Path="Specs/spec-proceso-instrucciones.md" />
   </Folder>
+  <Folder Name="/ZXSinclair.Net.Web.Prototype/">
+    <Project Path="ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Tests/ZXSinclair.Net.Web.Prototype.Tests.csproj" />
+  </Folder>
   <Project Path="ZXSinclair.Net.Benchmarks/ZXSinclair.Net.Benchmarks.csproj" />
   <Project Path="ZXSinclair.Net.Core.Tests/ZXSinclair.Net.Core.Tests.csproj" />
   <Project Path="ZXSinclair.Net.Core/ZXSinclair.Net.Core.csproj" />

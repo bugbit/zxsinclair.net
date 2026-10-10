@@ -117,3 +117,21 @@ Group 10 verified (2026-10-03): Core 2605 tests (56 new I/O cases and one duplic
 
 
 Group 11 verified (2026-10-03): Core 2832 tests, generator 156, FUSE 1335 passed / 0 failed / 0 skipped (8 existing BIT (HL) convention passes), build 0 warnings/errors, generator --check exit 0. All instruction groups and the 178 ED holes are implemented. IM 0 executes single-byte base opcodes, including RST, HALT and EI; multi-byte/prefix responses remain unsupported. Interrupt acknowledgement is 6 T plus the instruction's internal extension (IM 1/2 still total 13/19 T). A pending LD A,I/R clears P/V on an immediately accepted INT. RestTests covers ED holes, IM 0 timing, HALT return/wraparound and the pending flag. NMI P/V and the hardware bus address after HALT in IM 0 remain provisional; the IR contention choice is an inference documented in Specs/spec-instr-restos.md. Five dispatches and Z80Cpu.Im0.g.cs are generated. Repeated benchmark intervals overlap the previous-commit control in NOP/LDIR, and the jump/ALU means decrease; all allocate 0 B. The combined 16-bit pending-flag clear was measured and rejected because it slowed NOP; original offsets are preserved.
+
+### Browser button timing tests
+
+`ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Tests` is an xUnit/Playwright project with no Core reference. It measures Test2 and TestPutImage in the WASM handler, checks the canvas pixel and browser errors, and reports the first click separately from warm samples. The secondary Playwright wall clock includes automation latency. Neither clock measures compositor presentation; there are no performance thresholds.
+
+Run from the repository root:
+
+```sh
+dotnet build ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Tests
+pwsh ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Tests/bin/Debug/net10.0/playwright.ps1 install chromium
+dotnet test ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype.Tests --logger "console;verbosity=detailed"
+dotnet test zxsinclair.net.slnx --filter "Category!=Browser"
+```
+
+Without `ZX_PROTOTYPE_URL`, the fixture starts and stops its own Development server with `dotnet run -c Debug`: WASM is interpreted. `ZX_PROTOTYPE_URL` selects an existing HTTP/HTTPS server, which the fixture leaves running. For AOT measurements, publish the host with `dotnet publish ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype -c Release`, serve the publication separately, and set `ZX_PROTOTYPE_URL` to that URL. External-server configuration cannot be inferred by the test; record the build configuration with the results.
+
+`ZX_TIMING_ITERATIONS` is a positive integer (default 30); five warmup clicks are discarded per button. `ZX_PLAYWRIGHT_HEADED=1` shows Chromium. The report includes URL, browser version, server configuration, cold/min/median/p95/max/mean in ms, and raw samples in `TestResults/button-timings.json` (ignored by Git; overwritten each run). p95 uses nearest rank. A fresh browser context starts each run, but the TestPutImage first click can reuse assets downloaded by the main runtime. Solution-wide tests include the browser test unless `Category!=Browser` is specified; build the test and install Chromium first.
+Optional `ZX_PLAYWRIGHT_CHANNEL=chrome` or `msedge` uses an already installed browser; the default is Playwright Chromium. The selected channel and version are recorded so results from different browsers can be distinguished.

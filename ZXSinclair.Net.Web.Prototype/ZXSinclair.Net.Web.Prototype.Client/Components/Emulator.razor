@@ -1,11 +1,12 @@
-﻿@implements IAsyncDisposable
+@using System.Diagnostics
+@implements IAsyncDisposable
 
 @inject IJSRuntime JS
 
 <canvas @ref="emulatorCanvas" width="320" height="240"></canvas>
 <button @onclick="Test1Async">Test1</button>
-<button @onclick="Test2Async">Test2</button>
-<button @onclick="TestPutImageAsync">TestPutImage</button>
+<button data-testid="test2" @onclick="Test2Async">Test2</button>
+<button data-testid="test-put-image" @onclick="TestPutImageAsync">TestPutImage</button>
 
 @code {
     private ElementReference emulatorCanvas;
@@ -33,6 +34,7 @@
     {
         if (module is not null)
         {
+            long start = Stopwatch.GetTimestamp();
             byte color = (byte)Random.Shared.Next(0, 255);
             byte[] data = new byte[320 * 240 * 4];
 
@@ -43,6 +45,8 @@
             }
 
             await module.InvokeVoidAsync("putImagen2D", data);
+            double elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            await module.InvokeVoidAsync("reportTiming", "Test2", elapsed);
         }
     }
 
@@ -50,7 +54,10 @@
     {
         if (module is not null)
         {
+            long start = Stopwatch.GetTimestamp();
             await module.InvokeVoidAsync("TestPutImage");
+            double elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            await module.InvokeVoidAsync("reportTiming", "TestPutImage", elapsed);
         }
     }
 
