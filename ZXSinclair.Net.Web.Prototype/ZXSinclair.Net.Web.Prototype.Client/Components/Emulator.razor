@@ -5,6 +5,7 @@
 <canvas @ref="emulatorCanvas" width="320" height="240"></canvas>
 <button @onclick="Test1Async">Test1</button>
 <button @onclick="Test2Async">Test2</button>
+<button @onclick="TestPutImageAsync">TestPutImage</button>
 
 @code {
     private ElementReference emulatorCanvas;
@@ -42,6 +43,14 @@
             }
 
             await module.InvokeVoidAsync("putImagen2D", data);
+        }
+    }
+
+    private async Task TestPutImageAsync()
+    {
+        if (module is not null)
+        {
+            await module.InvokeVoidAsync("TestPutImage");
         }
     }
 

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-prototype",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "ZXSinclair.Net.Web.Prototype/ZXSinclair.Net.Web.Prototype", "--launch-profile", "http"],
+      "port": 5218
+    }
+  ]
+}

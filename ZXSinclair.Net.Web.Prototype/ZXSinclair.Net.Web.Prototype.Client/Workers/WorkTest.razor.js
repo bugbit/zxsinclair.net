@@ -6,7 +6,7 @@ const runtimeReady = dotnet.create().then(async runtime => {
 });
 
 // Requests report startup failures through the response channel.
-runtimeReady.catch(() => {});
+runtimeReady.catch(() => { });
 
 self.addEventListener('message', async e => {
     try {
@@ -16,6 +16,9 @@ self.addEventListener('message', async e => {
         switch (e.data.command) {
             case 'Test':
                 result = assemblyExports.ZXSinclair.Net.Web.Prototype.Workers.WorkTest.Test();
+                break;
+            case 'TestPutImage':
+                result = assemblyExports.ZXSinclair.Net.Web.Prototype.Workers.WorkTest.TestPutImage();
                 break;
             default:
                 throw new Error(`Unknown command: ${e.data.command}`);

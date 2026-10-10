@@ -23,4 +23,8 @@
 	  <ProjectReference Include="..\ZXSinclair.Net.Web.Prototype.Workers\ZXSinclair.Net.Web.Prototype.Workers.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+
 </Project>

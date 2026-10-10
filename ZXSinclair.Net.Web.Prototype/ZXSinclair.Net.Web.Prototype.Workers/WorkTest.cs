@@ -38,4 +38,19 @@ public partial class WorkTest
     {
         return CreateResult(42, new byte[] { 1, 2, 3, 4, 5 });
     }
+
+    [JSExport]
+    internal static JSObject TestPutImage()
+    {
+        byte color = (byte)Random.Shared.Next(0, 255);
+        byte[] data = new byte[320 * 240 * 4];
+
+        for (int i = 0; i < data.Length; i += 4)
+        {
+            data[i] = color;     // Rojo; verde y azul quedan en 0.
+            data[i + 3] = 255; // Alfa opaco.
+        }
+
+        return CreateResult(42, data);
+    }
 }
