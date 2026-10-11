@@ -143,7 +143,7 @@ La entrada se aplica **una vez al principio de cada frame**. Es suficiente porqu
 
 ### 6.2 Sonido
 
-- **Core**: al terminar cada frame expone las muestras del frame, mono, `float` en [-1, 1], a la frecuencia de muestreo fijada en `Init` (la del `AudioContext`, normalmente 48 000 o 44 100 Hz). El número de muestras por frame no es entero (48K a 48 kHz: 48 000 × 69 888 / 3 500 000 = 958,46), así que el Core lleva un acumulador fraccionario y entrega 958 o 959. El filtrado (integración del nivel del beeper por intervalo de muestra) y el AY los fija la especificación de sonido.
+- **Core**: al terminar cada frame expone las muestras del frame, mono, `float` en [-1, 1], a la frecuencia de muestreo fijada en `Init` (la del `AudioContext`, normalmente 48 000 o 44 100 Hz). El número de muestras por frame no es entero (48K a 48 kHz: 48 000 × 69 888 / 3 500 000 = 958,46), así que el Core lleva un acumulador fraccionario y entrega 958 o 959. El filtrado (integración del nivel del beeper por intervalo de muestra) y el AY los fija la especificación de sonido, [spec-sonido.md](spec-sonido.md) (diseño previo, sin implementar).
 - **Con SAB**: ring buffer de un solo productor (worker) y un solo consumidor (worklet): `Float32Array` de capacidad potencia de 2 (orientativo: 16 384 muestras) más una cabecera `Int32Array` con índice de escritura, índice de lectura y contador de faltas. `pushAudio` copia las muestras a un buffer temporal preasignado y de ahí al anillo en, como mucho, dos tramos.
 - **Sin SAB**: el hilo principal crea un `MessageChannel` y transfiere un extremo al worklet (por `AudioWorkletNode.port`) y otro al worker. El worker envía cada frame un `Float32Array` transferido; el worklet lo encola y devuelve los buffers vacíos para reutilizarlos. El audio no pasa por el hilo principal.
 - **Worklet**: `process()` consume 128 muestras por cuántum. Si faltan, repite la última muestra atenuándola hacia 0 (evita clics) e incrementa el contador de faltas, que el worker publica en las estadísticas.
@@ -216,6 +216,8 @@ Como el contrato es independiente del navegador, `SpectrumEmulator` se prueba co
 | 1 | Entrada y vídeo | Especificación de vídeo | Pantalla y teclado con SAB y `postMessage` |
 | 2 | Sonido y reloj de audio | Especificación de sonido | Beeper con el audio como reloj maestro |
 | 3 | Órdenes de control | Especificaciones de snapshot y cinta | Carga de SNA/Z80/TAP, turbo |
+
+Antes de la fase 0, `ZXSinclair.Net.Web.Prototype` probó el worker con runtime propio y la presentación por índices de paleta en `OffscreenCanvas` (WebGL2 y 2D), sin emulación; su diseño, protocolo y medidas están en [prototipo-web-worker-render.md](prototipo-web-worker-render.md).
 
 ## 13. Fuera de alcance
 
