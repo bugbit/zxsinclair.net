@@ -6,6 +6,13 @@ let imageData = null;
 let pixels = null;
 let presentElement = null;
 let presentReady = null;
+let audioReady = null;
+let audioContext = null;
+let audioNode = null;
+let audioRunning = false;
+let audioBusy = false;
+let audioInfo = null;
+let audioProcessorError = null;
 
 export function hello() {
     alert("Hello, World!");
@@ -54,7 +61,15 @@ export async function TestPutImage() {
     putImagen2D(result.data);
 }
 
-export function dispose() {
+export async function dispose() {
+    // Await initialization before closing; it may still be loading the worker runtime.
+    try { await audioReady; } catch { }
+    audioNode?.disconnect();
+    audioNode?.port.close();
+    if (audioContext) await audioContext.close();
+    audioContext = audioNode = audioReady = audioInfo = null;
+    audioRunning = audioBusy = false;
+    audioProcessorError = null;
     WorkTest.dispose();
     presentElement = null;
     presentReady = null;
@@ -89,4 +104,51 @@ export async function TestPresent(canvasElement) {
 
 export function readPresentPixel() {
     return WorkTest.ReadPresentPixel();
+}
+
+export async function TestAudio() {
+    if (audioBusy) throw new Error('Audio toggle is already in progress.');
+    audioBusy = true;
+    try {
+        if (!audioReady) {
+            const value = new URLSearchParams(location.search).get('audioFrames');
+            const target = value === null ? 3 : Number(value);
+            if (!Number.isInteger(target) || target < 2 || target > 6) throw new Error('audioFrames must be 2–6.');
+            audioContext = new AudioContext({ latencyHint: 'interactive' });
+            const resumed = audioContext.resume();
+            audioReady = (async () => {
+                await resumed;
+                if (audioContext.state !== 'running') throw new Error('AudioContext is not running.');
+                await audioContext.audioWorklet.addModule(new URL('../Worklets/AudioTestWorklet.razor.js', document.baseURI));
+                audioNode = new AudioWorkletNode(audioContext, 'zx-audio-test', { numberOfInputs: 0, outputChannelCount: [1] });
+                audioNode.onprocessorerror = () => { audioProcessorError = 'AudioWorklet processor failed.'; };
+                audioNode.connect(audioContext.destination);
+                const channel = new MessageChannel();
+                audioNode.port.postMessage({ port: channel.port1 }, [channel.port1]);
+                audioInfo = await WorkTest.InitAudio(channel.port2, audioContext.sampleRate, target);
+            })();
+        }
+        await audioReady;
+        if (audioProcessorError) throw new Error(audioProcessorError);
+        if (audioRunning) await WorkTest.StopAudio();
+        else {
+            await audioContext.resume();
+            await WorkTest.StartAudio();
+        }
+        audioRunning = !audioRunning;
+        const button = document.querySelector('[data-testid="test-audio"]');
+        button.dataset.audioState = audioRunning ? 'running' : 'stopped';
+        button.dataset.sampleRate = String(audioContext.sampleRate);
+        return { running: audioRunning, sampleRate: audioContext.sampleRate, ...audioInfo };
+    } finally {
+        audioBusy = false;
+    }
+}
+
+export async function audioStats() {
+    await audioReady;
+    if (audioProcessorError) throw new Error(audioProcessorError);
+    return { ...await WorkTest.AudioStats(), sampleRate: audioContext.sampleRate,
+        baseLatency: audioContext.baseLatency, outputLatency: audioContext.outputLatency,
+        contextState: audioContext.state };
 }

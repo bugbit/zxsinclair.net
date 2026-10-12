@@ -1,12 +1,13 @@
 # Prototipo web: worker .NET y render
 
-Documenta el prototipo `ZXSinclair.Net.Web.Prototype` tal como está implementado (2026-10-10): el Web Worker con
+Documenta el prototipo `ZXSinclair.Net.Web.Prototype` tal como está implementado (2026-10-12): el Web Worker con
 runtime .NET propio, el protocolo de mensajes con el hilo principal, las tres rutas de render que se comparan
-(Test2, TestPutImage y TestPresent) y su medición con Playwright. Es la base experimental de la fase 0 de
+(Test2, TestPutImage y TestPresent), el audio continuo TestAudio y su verificación con Playwright. Es la base experimental de la fase 0 de
 [spec-frontend-blazor.md](spec-frontend-blazor.md); no contiene emulación.
 
 Planes de origen: [plans/2026-10-10-test-playwright-tiempos-botones.md](../plans/2026-10-10-test-playwright-tiempos-botones.md)
 y [plans/2026-10-10-testpresent-offscreencanvas-paleta.md](../plans/2026-10-10-testpresent-offscreencanvas-paleta.md),
+además de [plans/2026-10-12-testaudio-worklet-messageport.md](../plans/2026-10-12-testaudio-worklet-messageport.md),
 cada uno con su sección de resultados.
 
 ## 1. Proyectos
@@ -29,7 +30,7 @@ Hilo principal                                         Web Worker (module)
 ──────────────                                         ───────────────────
 Blazor (.NET UI)                                       WorkTest.razor.js
   Emulator.razor ──IJSObjectReference──►                 dotnet.create()   (runtime .NET propio)
-  Emulator.razor.js                                      setModuleImports('emulator', { createResult, present })
+  Emulator.razor.js                                      setModuleImports('emulator', { createResult, present, pushAudio })
     ClientWorkTest.razor.js ──postMessage(cmd)──►        getAssemblyExports('ZXSinclair.Net.Web.Prototype.Workers.dll')
                             ◄──postMessage(response)──   WorkTest.cs  [JSExport]/[JSImport]
   <canvas main-canvas>  (2D, hilo principal)
@@ -63,6 +64,10 @@ Blazor (.NET UI)                                       WorkTest.razor.js
 | `InitPresent` | `{ canvas, width, height, backend }`, transfiere `[canvas]` | `initPresent(...)` | `{ backend, renderer }` |
 | `TestPresent` | — | `WorkTest.TestPresent()` medido con `performance.now()` | `{ index, workerMs }` |
 | `ReadPresentPixel` | — | redibuja y lee el píxel (0,0) | `[r, g, b, a]` |
+| `InitAudio` | `{ port, sampleRate, target }`, transfiere `[port]` | Inicializa síntesis, puerto y pool | `{ samplesPerFrame }` |
+| `StartAudio` | — | Prellena `target` frames; activa producción por devolución | `{ running: true }` |
+| `StopAudio` | — | Detiene producción y espera drenaje de FIFO | `{ running: false }` |
+| `AudioStats` | — | Consulta al worklet por el puerto directo | Consumo, cola, faltas, pool, frames, tiempos y frecuencia |
 
 ## 4. Interop C# del worker (`WorkTest.cs`)
 
@@ -73,6 +78,9 @@ Blazor (.NET UI)                                       WorkTest.razor.js
 | `TestPutImage` | `[JSExport] JSObject ()` | Rellena un RGBA 320×240 (`_data1`, reutilizado) con un rojo aleatorio y alfa 255, byte a byte |
 | `Present` | `[JSImport("present","emulator")] void ([JSMarshalAs<JSType.MemoryView>] Span<byte>)` | **Sin copia**: JS recibe una vista sobre la memoria de WASM |
 | `TestPresent` | `[JSExport] int ()` | `index = Random.Shared.Next(0,16)`, `sFrame.AsSpan().Fill((byte)index)` sobre `byte[320*240]` estático, `Present(sFrame)`, devuelve `index`. Sin reservas por llamada |
+| `PushAudio` | `[JSImport("pushAudio","emulator")] void ([JSMarshalAs<JSType.MemoryView>] Span<byte>)` | Floats como bytes; copia síncrona al almacenamiento del pool |
+| `InitAudio` / `RunAudioFrame` | `[JSExport] int (int)` / `int ()` | Frecuencia nativa del contexto; genera un frame de 20 ms y devuelve su longitud |
+| `MeasureLastAudioFrame` | `[JSExport] double ()` | Frecuencia por cruces ascendentes interpolados; fuera del bucle |
 
 Reglas de `JSType.MemoryView` con `Span<byte>`:
 
@@ -222,21 +230,73 @@ Interpretación:
   conduce el JS del worker y el hilo principal no toca el vídeo, así que el coste relevante es el del worker.
 - No se midió throughput continuo, composición, Release/AOT ni reservas del runtime/interop.
 
+## Audio: TestAudio
+
+`TestAudio` alterna arranque y parada. El gesto crea y reanuda un `AudioContext` con su frecuencia nativa,
+conecta un AudioWorklet mono y transfiere un extremo de `MessageChannel` al worker y el otro al worklet.
+`?audioFrames=2..6` fija el prellenado; el valor por defecto es 3 (60 ms de muestras).
+El módulo `Worklets/AudioTestWorklet.razor.js` se publica mediante un `.razor` asociado, como el worker.
+
+C# reutiliza `float[4096]` y genera frames de 20 ms de C4 (261,6256 Hz, amplitud 0,25). Admite frecuencias
+enteras de 8 000 a 192 000 Hz; un acumulador entero conserva las fracciones de muestras y la fase continúa
+entre frames. `pushAudio(MemoryMarshal.AsBytes(...))` usa `JSType.MemoryView`: JS copia síncronamente los
+bytes a un buffer libre y transfiere su almacenamiento. La vista WASM no se conserva después del import.
+
+El pool contiene `target + 1` buffers de 4096 floats. La FIFO circular del worklet tiene capacidad 8.
+Cada buffer agotado vuelve transferido al worker; su devolución dispara `RunAudioFrame()`. No hay temporizador
+ni RPC con el hilo principal por frame. El worklet espera el prellenado, copia muestras a la salida del
+cuántum y atenúa la última muestra cuando falta audio. Las faltas se cuentan por cuántum afectado después del
+prellenado. Al parar, deja de producir, drena la FIFO y confirma la devolución del pool antes de permitir
+el siguiente arranque. El cierre espera la inicialización, desconecta el nodo, cierra el contexto y termina
+el worker.
+
+Se reutiliza la memoria de muestras en C# y el almacenamiento transferido. El transporte crea mensajes,
+envoltorios de TypedArray/ArrayBuffer y vistas de bytes por frame; no se afirma que JS ni el interop tengan
+cero reservas. No se ha medido su coste de GC. `MathF.Sin` representa una onda de prueba, no beeper ni AY.
+
+`audioStats()` informa frecuencia estimada por cruces ascendentes interpolados del último frame, muestras
+producidas/consumidas, frames, buffers libres, cola, faltas, descartes, media/máximo de `RunAudioFrame()`
+(incluye copia y envío), `baseLatency` y `outputLatency`. La consulta al worklet queda fuera del bucle.
+`reportTiming("TestAudio", ...)` mide el arranque/parada del handler, incluido el drenaje al parar.
+
+`EmulatorAudioTests` comprueba tres segundos de consumo (`ZX_AUDIO_SECONDS`, entero positivo), frecuencia
+±2 %, cero descartes, cuentas de producción/consumo, parada estable tras 200 ms, recuperación del pool y
+reinicio. Ejecuta objetivos 3 y 2; conserva los informes por objetivo en `TestResults/audio-loop.json`.
+Las faltas y los tiempos se informan sin umbrales de rendimiento. Usa las mismas variables de servidor y
+navegador que las pruebas de vídeo. La escucha manual, Release/AOT y otros navegadores se verifican aparte.
+
+Referencia de la API: [AudioWorkletProcessor.port (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/port).
+
+Resultados del 2026-10-12: Chrome 154.0.8037.98 headless, servidor Development con Debug interpretado,
+48 000 Hz, unos tres segundos por objetivo; `baseLatency` 10 ms y `outputLatency` 40 ms.
+
+| Objetivo | Frames producidos | Muestras consumidas | Faltas / descartes | Media / máximo RunAudioFrame (ms) | Frecuencia estimada (Hz) |
+|---|---:|---:|---:|---:|---:|
+| 3 | 155 | 146 432 | 0 / 0 | 0,094 / 0,900 | 261,625607 |
+| 2 | 154 | 145 920 | 0 / 0 | 0,077 / 0,900 | 261,625607 |
+
+Los tres casos Browser pasaron, incluido el caso existente de vídeo. La parada recuperó todos los buffers,
+el contador de frames quedó estable y el reinicio produjo audio. No se necesitó un flag de autoplay.
+El Chromium de Playwright no estaba instalado; se usó `ZX_PLAYWRIGHT_CHANNEL=chrome`.
+No se realizó escucha manual ni medición Release/AOT; estos resultados no certifican ausencia de clics audibles.
+
 ## 7. Relación con la especificación del front end
 
 Puntos de [spec-frontend-blazor.md](spec-frontend-blazor.md) §14 que el prototipo aclara parcialmente:
 
-- `JSType.MemoryView` con `Span<byte>` funciona en .NET 10 (10.0.12) con `copyTo`; `Span<float>` sigue sin probar.
+- `JSType.MemoryView` con `Span<byte>` funciona en .NET 10 (10.0.12) con `copyTo`; las muestras `float` de audio se pasan como bytes con `MemoryMarshal.AsBytes`, sin marshalling de `Span<float>`.
+- AudioWorklet y MessagePort directo se verifican con `EmulatorAudioTests`; el consumo conduce la generación de frames de audio.
 - `OffscreenCanvas` con WebGL2 transferido a un worker funciona en Chrome 154 (Windows, GPU NVIDIA). Safari y
   otros navegadores siguen sin verificar.
 - `dotnet.create()` en el worker: no se ha verificado si carga los ensamblados de la UI; la primera pulsación
   de TestPutImage puede reutilizar recursos ya descargados por el runtime principal.
 
 Diferencias con el diseño final: el prototipo comparte un worker de prueba entre botones, usa 320×240 en vez de
-352×296, no escala ni aplica efectos en el shader, no tiene bucle por frame ni audio, y no usa COOP/COEP.
+352×296, no escala ni aplica efectos en el shader, su bucle continuo solo genera audio de prueba, y no usa COOP/COEP.
 
 ## 8. Pendiente
 
+- Comparar audio con SharedArrayBuffer y medir reservas y GC del transporte MessagePort.
 - Medir Release/AOT publicado (`ZX_PROTOTYPE_URL`).
 - Medir frames continuos dentro del worker (sin ida y vuelta con la UI) y reservas de JS/C# por frame.
 - Corregir la inversión vertical del shader antes de usarlo con imágenes reales.

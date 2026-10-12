@@ -9,12 +9,34 @@
 <button data-testid="test2" @onclick="Test2Async">Test2</button>
 <button data-testid="test-put-image" @onclick="TestPutImageAsync">TestPutImage</button>
 <button data-testid="test-present" @onclick="TestPresentAsync">TestPresent</button>
+<button data-testid="test-audio" data-audio-state="stopped" disabled="@audioBusy" @onclick="TestAudioAsync">@(audioRunning ? "StopAudio" : "TestAudio")</button>
 
 @code {
     private ElementReference emulatorCanvas;
     private ElementReference presentCanvas;
     private sealed record PresentResult(int Index, double WorkerMs);
     private IJSObjectReference? module;
+    private bool audioRunning;
+    private bool audioBusy;
+    private sealed record AudioResult(bool Running, int SampleRate, int SamplesPerFrame);
+
+    private async Task TestAudioAsync()
+    {
+        if (module is null || audioBusy) return;
+        audioBusy = true;
+        try
+        {
+            long start = Stopwatch.GetTimestamp();
+            AudioResult result = await module.InvokeAsync<AudioResult>("TestAudio");
+            audioRunning = result.Running;
+            await module.InvokeVoidAsync("reportTiming", "TestAudio", Stopwatch.GetElapsedTime(start).TotalMilliseconds,
+                new { result.Running });
+        }
+        finally
+        {
+            audioBusy = false;
+        }
+    }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {

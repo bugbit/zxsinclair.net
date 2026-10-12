@@ -143,3 +143,15 @@ Optional `ZX_PLAYWRIGHT_CHANNEL=chrome` or `msedge` uses an already installed br
 The Browser test includes Test2, TestPutImage and TestPresent with both requested backends in separate contexts. It prestarts the worker with one TestPutImage before TestPresent: its cold sample includes canvas transfer and graphics initialization, not runtime startup. It verifies each palette pixel through worker readback outside the measured interval and fails if WebGL2 falls back to 2D. Reports include handler, Playwright wall and worker clocks, effective backend and WebGL renderer. Readback redraws the last frame and synchronizes the GPU between samples; these measurements describe isolated button calls, not sustained frame throughput or compositor presentation.
 
 Headless tests allow SwiftShader with `--enable-unsafe-swiftshader`; check the reported renderer to determine whether WebGL actually uses software. `ZX_PLAYWRIGHT_HEADED=1` runs with a visible browser and without that flag, but does not guarantee hardware acceleration: check the renderer there too. Use the existing Browser commands and variables above. No fallback-allowance variable is added; requested backends are checked strictly.
+
+### TestAudio: continuous worker audio
+
+TestAudio toggles a C4 tone generated in the .NET worker in 20 ms chunks. A direct MessagePort connects
+its reusable buffer pool to an AudioWorklet FIFO; returned buffers trigger the next frame. Stop waits
+for the FIFO to drain before restart. `Specs/prototipo-web-worker-render.md` documents the protocol,
+float samples passed as bytes with MemoryView, lifecycle and measured results.
+
+`?audioFrames=2..6` selects prefill (default 3). Browser tests cover targets 3 and 2, consumption, frequency,
+stop and restart. `ZX_AUDIO_SECONDS` is a positive integer (default 3). The existing Browser test commands
+and browser/server variables apply; `TestResults/audio-loop.json` stores reports by target. Timings and
+underruns have no performance thresholds. Automated checks do not establish audible quality or AOT cost.

@@ -68,6 +68,12 @@ export function InitPresent(canvas, width, height, backend) {
 }
 export function TestPresent() { return request('TestPresent'); }
 export function ReadPresentPixel() { return request('ReadPresentPixel'); }
+export function InitAudio(port, sampleRate, target) {
+    return request('InitAudio', { port, sampleRate, target }, [port]);
+}
+export function StartAudio() { return request('StartAudio'); }
+export function StopAudio() { return request('StopAudio'); }
+export function AudioStats() { return request('AudioStats'); }
 
 export function dispose() {
     failRequests(new Error('Emulator disposed.'));

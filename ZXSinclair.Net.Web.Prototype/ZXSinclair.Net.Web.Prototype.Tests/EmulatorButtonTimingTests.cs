@@ -106,7 +106,7 @@ public sealed class EmulatorButtonTimingTests(PrototypeServerFixture fixture, IT
             await page.Locator("[data-testid='main-canvas'][data-ready='1']").WaitForAsync();
             await measure(page);
             // Dispose both the normal canvas and worker before checking errors.
-            await page.EvaluateAsync("async () => { const m = await import('./Components/Emulator.razor.js'); m.dispose(); }");
+            await page.EvaluateAsync("async () => { const m = await import('./Components/Emulator.razor.js'); await m.dispose(); }");
         }
         finally
         {

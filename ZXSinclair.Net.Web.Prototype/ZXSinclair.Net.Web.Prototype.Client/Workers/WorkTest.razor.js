@@ -32,10 +32,87 @@ let initialized = false;
 const pixel = new Uint8Array(4);
 
 const runtimeReady = dotnet.create().then(async runtime => {
-    runtime.setModuleImports('emulator', { createResult, present });
+    runtime.setModuleImports('emulator', { createResult, present, pushAudio });
     return runtime.getAssemblyExports('ZXSinclair.Net.Web.Prototype.Workers.dll');
 });
 runtimeReady.catch(() => { });
+
+let audioPort = null;
+let audioApi = null;
+let audioTarget = 3;
+let audioRunning = false;
+let audioFree = [];
+let audioFrames = 0;
+let audioProduced = 0;
+let audioDropped = 0;
+let audioTotalMs = 0;
+let audioMaxMs = 0;
+let audioError = null;
+let stopAudioResolve = null;
+let audioStatsId = 0;
+const audioStatsRequests = new Map();
+
+function runAudioFrame() {
+    const start = performance.now();
+    audioProduced += audioApi.RunAudioFrame();
+    const ms = performance.now() - start;
+    audioFrames++;
+    audioTotalMs += ms;
+    audioMaxMs = Math.max(audioMaxMs, ms);
+}
+
+function pushAudio(view) {
+    const buffer = audioFree.pop();
+    if (!buffer) { audioDropped++; return; }
+    const length = view.byteLength / 4;
+    view.copyTo(new Uint8Array(buffer.buffer, 0, length * 4));
+    audioPort.postMessage({ type: 'samples', buffer, length }, [buffer.buffer]);
+}
+
+function initAudio(port, sampleRate, target, api) {
+    if (audioPort) throw new Error('Audio already initialized.');
+    if (!Number.isInteger(target) || target < 2 || target > 6) throw new Error('Invalid audio target.');
+    const samplesPerFrame = api.InitAudio(sampleRate);
+    audioApi = api;
+    audioTarget = target;
+    audioFree = Array.from({ length: target + 1 }, () => new Float32Array(4096));
+    audioPort = port;
+    port.onmessage = e => {
+        const message = e.data;
+        if (message.type === 'returned') {
+            audioFree.push(message.buffer);
+            if (audioRunning) {
+                try { runAudioFrame(); }
+                catch (error) {
+                    audioError = error.message;
+                    audioRunning = false;
+                    port.postMessage({ type: 'stop' });
+                }
+            }
+        } else if (message.type === 'stopped') {
+            stopAudioResolve?.();
+            stopAudioResolve = null;
+        } else if (message.type === 'stats') {
+            audioStatsRequests.get(message.id)?.(message);
+            audioStatsRequests.delete(message.id);
+        }
+    };
+    port.onmessageerror = () => { audioError = 'Audio message could not be decoded.'; audioRunning = false; };
+    return { samplesPerFrame };
+}
+
+async function getAudioStats() {
+    if (!audioPort) throw new Error('Audio is not initialized.');
+    const id = ++audioStatsId;
+    const stats = await new Promise(resolve => {
+        audioStatsRequests.set(id, resolve);
+        audioPort.postMessage({ type: 'stats', id });
+    });
+    return { ...stats, running: audioRunning, target: audioTarget, pool: audioTarget + 1,
+        free: audioFree.length, frames: audioFrames, produced: audioProduced, dropped: audioDropped,
+        meanMs: audioFrames ? audioTotalMs / audioFrames : 0, maxMs: audioMaxMs,
+        frequency: audioApi.MeasureLastAudioFrame(), error: audioError };
+}
 
 function compileShader(type, source) {
     const shader = gl.createShader(type);
@@ -159,6 +236,33 @@ self.addEventListener('message', async e => {
         const assemblyExports = await runtimeReady;
         let result;
         switch (e.data.command) {
+            case 'InitAudio':
+                result = initAudio(e.data.port, e.data.sampleRate, e.data.target,
+                    assemblyExports.ZXSinclair.Net.Web.Prototype.Workers.WorkTest);
+                break;
+            case 'StartAudio':
+                if (!audioPort || stopAudioResolve) throw new Error('Audio is not ready to start.');
+                if (!audioRunning) {
+                    audioFrames = audioProduced = audioDropped = audioTotalMs = audioMaxMs = 0;
+                    audioError = null;
+                    audioRunning = true;
+                    audioPort.postMessage({ type: 'start', target: audioTarget });
+                    for (let i = 0; i < audioTarget; i++) runAudioFrame();
+                }
+                result = { running: true };
+                break;
+            case 'StopAudio':
+                if (!audioPort) throw new Error('Audio is not initialized.');
+                audioRunning = false;
+                await new Promise(resolve => {
+                    stopAudioResolve = resolve;
+                    audioPort.postMessage({ type: 'stop' });
+                });
+                result = { running: false };
+                break;
+            case 'AudioStats':
+                result = await getAudioStats();
+                break;
             case 'Test':
                 result = assemblyExports.ZXSinclair.Net.Web.Prototype.Workers.WorkTest.Test();
                 break;

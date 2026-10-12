@@ -15,6 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 #endregion
 
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
@@ -32,6 +33,62 @@ public partial class WorkTest
 {
     private static byte[]? _data1;
     private static readonly byte[] sFrame = new byte[320 * 240];
+    private static readonly float[] sAudio = new float[4096];
+    private static int sSampleRate;
+    private static int sSampleRemainder;
+    private static int sLastAudioLength;
+    private static double sPhase;
+    private static double sPhaseStep;
+
+    [JSImport("pushAudio", "emulator")]
+    private static partial void PushAudio([JSMarshalAs<JSType.MemoryView>] Span<byte> samples);
+
+    [JSExport]
+    internal static int InitAudio(int sampleRate)
+    {
+        if (sampleRate < 8000 || sampleRate > 192000)
+            throw new ArgumentOutOfRangeException(nameof(sampleRate));
+        sSampleRate = sampleRate;
+        sSampleRemainder = 0;
+        sLastAudioLength = 0;
+        sPhase = 0;
+        sPhaseStep = 2 * Math.PI * 261.6256 / sampleRate;
+        return sampleRate / 50;
+    }
+
+    [JSExport]
+    internal static int RunAudioFrame()
+    {
+        if (sSampleRate == 0) throw new InvalidOperationException("Audio is not initialized.");
+        sSampleRemainder += sSampleRate;
+        int length = sSampleRemainder / 50;
+        sSampleRemainder %= 50;
+        for (int i = 0; i < length; i++)
+        {
+            sAudio[i] = 0.25f * MathF.Sin((float)sPhase);
+            sPhase += sPhaseStep;
+            if (sPhase >= 2 * Math.PI) sPhase -= 2 * Math.PI;
+        }
+        sLastAudioLength = length;
+        PushAudio(MemoryMarshal.AsBytes(sAudio.AsSpan(0, length)));
+        return length;
+    }
+
+    [JSExport]
+    internal static double MeasureLastAudioFrame()
+    {
+        double first = 0, last = 0;
+        int crossings = 0;
+        for (int i = 1; i < sLastAudioLength; i++)
+        {
+            if (sAudio[i - 1] <= 0 && sAudio[i] > 0)
+            {
+                last = i - 1 + (double)-sAudio[i - 1] / (sAudio[i] - sAudio[i - 1]);
+                if (crossings++ == 0) first = last;
+            }
+        }
+        return crossings > 1 ? (crossings - 1) * sSampleRate / (last - first) : 0;
+    }
 
     [JSImport("present", "emulator")]
     private static partial void Present([JSMarshalAs<JSType.MemoryView>] Span<byte> frame);
